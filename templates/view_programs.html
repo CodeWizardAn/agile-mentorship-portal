@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Programs</title>
+</head>
+<body>
+
+<h1>Available Programs</h1>
+<a href="/mentee-dashboard">Back to Dashboard</a>
+
+<br><br>
+
+{% for program in programs %}
+<div>
+    <h3>{{ program.title }}</h3>
+    <p>{{ program.description }}</p>
+    <p>Category: {{ program.category }}</p>
+    <p>Duration: {{ program.duration_weeks }} weeks</p>
+    <p>Start: {{ program.start_date }} | End: {{ program.end_date }}</p>
+    <hr>
+</div>
+{% endfor %}
+
+</body>
+</html>

@@ -10,6 +10,9 @@ from database import get_db
 from models.user import User
 from models.mentor_invite import MentorInvite
 from models.mentor import Mentor
+from fastapi import Cookie
+from security import create_access_token, decode_access_token
+
 
 app = FastAPI()
 
@@ -37,6 +40,16 @@ def validate_password(password: str) -> bool:
         return False
     return True
 
+# ── GET CURRENT USER FROM COOKIE ─────────────────────────────────────────────
+
+def get_current_user(access_token: str = Cookie(None), db: Session = Depends(get_db)):
+    if not access_token:
+        return None
+    payload = decode_access_token(access_token)
+    if not payload:
+        return None
+    user = db.query(User).filter(User.user_id == payload.get("user_id")).first()
+    return user
 
 # ── PAGES ─────────────────────────────────────────────────────────────────────
 
@@ -156,6 +169,8 @@ def create_user(
 
 # ── LOGIN ─────────────────────────────────────────────────────────────────────
 
+# ── LOGIN ─────────────────────────────────────────────────────────────────────
+
 @app.post("/login/{role}")
 def login_user(
     role: str,
@@ -183,13 +198,23 @@ def login_user(
     if not verify_password(password, user.password_hash):
         return HTMLResponse("<h2>Invalid password</h2>", status_code=401)
 
-    # redirect based on role
+    # generate JWT token
+    token = create_access_token(data={
+        "user_id": user.user_id,
+        "role": user.role,
+        "email": user.email
+    })
+
+    # redirect based on role and set cookie
     if user.role == "mentor":
-        return RedirectResponse(url="/mentor-dashboard", status_code=302)
+        response = RedirectResponse(url="/mentor-dashboard", status_code=302)
     elif user.role == "mentee":
-        return RedirectResponse(url="/mentee-dashboard", status_code=302)
+        response = RedirectResponse(url="/mentee-dashboard", status_code=302)
     elif user.role == "admin":
-        return RedirectResponse(url="/admin-dashboard", status_code=302)
+        response = RedirectResponse(url="/admin-dashboard", status_code=302)
+
+    response.set_cookie(key="access_token", value=token, httponly=True)
+    return response
 
 
 # ── GENERATE MENTOR INVITE (admin only) ───────────────────────────────────────
@@ -219,3 +244,46 @@ def generate_invite(
     db.commit()
 
     return {"invite_code": invite_code, "invite_id": invite_id}
+
+# ── MENTOR PROFILE ────────────────────────────────────────────────────────────
+
+@app.get("/mentor-profile", response_class=HTMLResponse)
+def mentor_profile_page(request: Request, current_user: User = Depends(get_current_user)):
+    if not current_user or current_user.role != "mentor":
+        return RedirectResponse(url="/login/mentor", status_code=302)
+    return templates.TemplateResponse(
+        request=request,
+        name="mentor_profile.html",
+        context={"user": current_user}
+    )
+
+
+@app.post("/mentor-profile/update")
+def update_mentor_profile(
+    expertise: str = Form(None),
+    experience_years: int = Form(None),
+    bio: str = Form(None),
+    linkedin_url: str = Form(None),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "mentor":
+        return HTMLResponse("<h2>Unauthorized</h2>", status_code=403)
+
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.user_id).first()
+    if not mentor:
+        return HTMLResponse("<h2>Mentor profile not found</h2>", status_code=404)
+
+    # update only fields that were provided
+    if expertise:
+        mentor.expertise = expertise
+    if experience_years:
+        mentor.experience_years = experience_years
+    if bio:
+        mentor.bio = bio
+    if linkedin_url:
+        mentor.linkedin_url = linkedin_url
+
+    db.commit()
+
+    return {"message": "Profile updated successfully", "mentor_profile_id": mentor.mentor_profile_id}

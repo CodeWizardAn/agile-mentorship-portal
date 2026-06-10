@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mentor Profile</title>
+</head>
+
+<body>
+
+<h1>Update Your Profile</h1>
+<p>Welcome, {{ user.full_name }}</p>
+
+<form action="/mentor-profile/update" method="post">
+
+    <input
+        type="text"
+        name="expertise"
+        placeholder="Expertise (e.g. Python, Agile, ML)"
+    >
+    <br><br>
+
+    <input
+        type="number"
+        name="experience_years"
+        placeholder="Years of Experience"
+    >
+    <br><br>
+
+    <textarea
+        name="bio"
+        placeholder="Short bio about yourself"
+        rows="4"
+        cols="40"
+    ></textarea>
+    <br><br>
+
+    <input
+        type="url"
+        name="linkedin_url"
+        placeholder="LinkedIn URL"
+    >
+    <br><br>
+
+    <button type="submit">Update Profile</button>
+
+</form>
+
+<br>
+<a href="/mentor-dashboard">Back to Dashboard</a>
+
+</body>
+</html>

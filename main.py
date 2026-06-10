@@ -287,3 +287,11 @@ def update_mentor_profile(
     db.commit()
 
     return {"message": "Profile updated successfully", "mentor_profile_id": mentor.mentor_profile_id}
+
+# ── LOGOUT ────────────────────────────────────────────────────────────────────
+
+@app.get("/logout")
+def logout():
+    response = RedirectResponse(url="/", status_code=302)
+    response.delete_cookie(key="access_token")
+    return response

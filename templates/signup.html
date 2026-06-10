@@ -37,6 +37,16 @@
 
     <br><br>
 
+    {% if role == "mentor" %}
+    <input
+        type="text"
+        name="invite_code"
+        placeholder="Enter Invite Code"
+        required
+    >
+    <br><br>
+    {% endif %}
+
     <button type="submit">
         Create Account
     </button>

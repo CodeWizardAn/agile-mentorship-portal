@@ -1,13 +1,12 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Admin Dashboard</title>
-</head>
-<body>
+<h2>Generate Mentor Invite</h2>
 
-<h1>Admin Dashboard</h1>
-
-<p>Welcome Admin!</p>
-
-</body>
-</html>
+<form action="/admin/generate-invite" method="post">
+    <input 
+        type="email" 
+        name="admin_email" 
+        placeholder="Your Admin Email" 
+        required
+    >
+    <br><br>
+    <button type="submit">Generate Invite Code</button>
+</form>

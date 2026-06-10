@@ -12,6 +12,7 @@ from models.user import User
 from models.mentor_invite import MentorInvite
 from models.mentor import Mentor
 from models.program import Program
+from models.enrollment import Enrollment
 
 app = FastAPI()
 
@@ -71,7 +72,15 @@ def generate_invite_id(db: Session) -> str:
     else:
         last_serial = 1
     return f"INV{last_serial:04d}"
-
+def generate_enrollment_id(db: Session, user_id: str, program_id: str) -> str:
+    year = str(datetime.now().year)[2:]
+    # for now simple format until batches are decided
+    last_enrollment = db.query(func.max(Enrollment.enrollment_id)).scalar()
+    if last_enrollment:
+        last_serial = int(last_enrollment[-4:]) + 1
+    else:
+        last_serial = 1
+    return f"{year}{program_id[3:]}{last_serial:04d}"
 
 # ── GET CURRENT USER FROM COOKIE ─────────────────────────────────────────────
 
@@ -430,4 +439,76 @@ def view_programs(request: Request, current_user: User = Depends(get_current_use
         request=request,
         name="view_programs.html",
         context={"programs": programs, "user": current_user}
+    )
+    
+# ── ENROLLMENT ────────────────────────────────────────────────────────────────
+
+@app.post("/enroll/{program_id}")
+def enroll_program(
+    program_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "mentee":
+        return HTMLResponse("<h2>Only mentees can enroll</h2>", status_code=403)
+
+    # check program exists and is active
+    program = db.query(Program).filter(
+        Program.program_id == program_id,
+        Program.status == "active"
+    ).first()
+    if not program:
+        return HTMLResponse("<h2>Program not found or not active</h2>", status_code=404)
+
+    # check if already enrolled
+    existing = db.query(Enrollment).filter(
+        Enrollment.user_id == current_user.user_id,
+        Enrollment.program_id == program_id
+    ).first()
+    if existing:
+        return HTMLResponse("<h2>Already enrolled in this program</h2>", status_code=400)
+
+    enrollment_id = generate_enrollment_id(db, current_user.user_id, program_id)
+
+    enrollment = Enrollment(
+        enrollment_id=enrollment_id,
+        user_id=current_user.user_id,
+        program_id=program_id,
+        status="active"
+    )
+
+    db.add(enrollment)
+    db.commit()
+
+    return {"message": "Enrolled successfully", "enrollment_id": enrollment_id}
+
+
+@app.get("/my-enrollments", response_class=HTMLResponse)
+def my_enrollments(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "mentee":
+        return RedirectResponse(url="/login/mentee", status_code=302)
+
+    enrollments = db.query(Enrollment).filter(
+        Enrollment.user_id == current_user.user_id
+    ).all()
+
+    # get program details for each enrollment
+    programs = []
+    for e in enrollments:
+        program = db.query(Program).filter(Program.program_id == e.program_id).first()
+        programs.append({
+            "enrollment_id": e.enrollment_id,
+            "program": program,
+            "status": e.status,
+            "enrollment_date": e.enrollment_date
+        })
+
+    return templates.TemplateResponse(
+        request=request,
+        name="my_enrollments.html",
+        context={"enrollments": programs, "user": current_user}
     )

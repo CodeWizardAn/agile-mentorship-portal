@@ -17,6 +17,9 @@
     <p>Category: {{ program.category }}</p>
     <p>Duration: {{ program.duration_weeks }} weeks</p>
     <p>Start: {{ program.start_date }} | End: {{ program.end_date }}</p>
+    <form action="/enroll/{{ program.program_id }}" method="post">
+        <button type="submit">Enroll</button>
+    </form>
     <hr>
 </div>
 {% endfor %}

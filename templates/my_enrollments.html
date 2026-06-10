@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Enrollments</title>
+</head>
+<body>
+
+<h1>My Enrollments</h1>
+<a href="/mentee-dashboard">Back to Dashboard</a>
+
+<br><br>
+
+{% for e in enrollments %}
+<div>
+    <h3>{{ e.program.title }}</h3>
+    <p>Status: {{ e.status }}</p>
+    <p>Enrolled on: {{ e.enrollment_date }}</p>
+    <p>Enrollment ID: {{ e.enrollment_id }}</p>
+    <hr>
+</div>
+{% else %}
+<p>You are not enrolled in any programs yet.</p>
+{% endfor %}
+
+</body>
+</html>

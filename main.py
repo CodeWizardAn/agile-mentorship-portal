@@ -13,6 +13,7 @@ from models.mentor_invite import MentorInvite
 from models.mentor import Mentor
 from models.program import Program
 from models.enrollment import Enrollment
+from models.session import Session as MentorSession
 
 app = FastAPI()
 
@@ -81,6 +82,14 @@ def generate_enrollment_id(db: Session, user_id: str, program_id: str) -> str:
     else:
         last_serial = 1
     return f"{year}{program_id[3:]}{last_serial:04d}"
+
+def generate_session_id(db: Session) -> str:
+    last_session = db.query(func.max(MentorSession.session_id)).scalar()
+    if last_session:
+        last_serial = int(last_session[3:]) + 1
+    else:
+        last_serial = 1
+    return f"SES{last_serial:04d}"
 
 # ── GET CURRENT USER FROM COOKIE ─────────────────────────────────────────────
 
@@ -330,13 +339,14 @@ def update_mentor_profile(
 # ── PROGRAMS ──────────────────────────────────────────────────────────────────
 
 @app.get("/admin/programs", response_class=HTMLResponse)
-def programs_page(request: Request, current_user: User = Depends(get_current_user)):
+def programs_page(request: Request, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     if not current_user or current_user.role != "admin":
         return RedirectResponse(url="/login/admin", status_code=302)
+    programs = db.query(Program).all()
     return templates.TemplateResponse(
         request=request,
         name="programs.html",
-        context={"user": current_user}
+        context={"user": current_user, "programs": programs}
     )
 
 
@@ -511,4 +521,313 @@ def my_enrollments(
         request=request,
         name="my_enrollments.html",
         context={"enrollments": programs, "user": current_user}
+    )
+# ── ADMIN USER MANAGEMENT ─────────────────────────────────────────────────────
+
+@app.get("/admin/users", response_class=HTMLResponse)
+def manage_users(request: Request, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    if not current_user or current_user.role != "admin":
+        return RedirectResponse(url="/login/admin", status_code=302)
+    users = db.query(User).filter(User.role != "admin").all()
+    return templates.TemplateResponse(
+        request=request,
+        name="manage_users.html",
+        context={"users": users, "user": current_user}
+    )
+
+
+@app.post("/admin/users/delete/{user_id}")
+def delete_user(
+    user_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "admin":
+        return HTMLResponse("<h2>Unauthorized</h2>", status_code=403)
+
+    # remove mentor profile if exists
+    mentor = db.query(Mentor).filter(Mentor.user_id == user_id).first()
+    if mentor:
+        db.query(Program).filter(Program.assigned_mentor == mentor.mentor_profile_id).update({"assigned_mentor": None})
+        db.delete(mentor)
+
+    # remove enrollments
+    db.query(Enrollment).filter(Enrollment.user_id == user_id).delete()
+
+    # delete user
+    user = db.query(User).filter(User.user_id == user_id).first()
+    if not user:
+        return HTMLResponse("<h2>User not found</h2>", status_code=404)
+
+    db.delete(user)
+    db.commit()
+
+    return RedirectResponse(url="/admin/users", status_code=302)
+
+# ── SESSIONS ──────────────────────────────────────────────────────────────────
+
+@app.get("/admin/sessions", response_class=HTMLResponse)
+def admin_sessions_page(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "admin":
+        return RedirectResponse(url="/login/admin", status_code=302)
+    sessions = db.query(MentorSession).all()
+    programs = db.query(Program).all()
+    
+    # join mentor with user to get name
+    mentors = db.query(Mentor, User).join(User, Mentor.user_id == User.user_id).all()
+    
+    return templates.TemplateResponse(
+        request=request,
+        name="admin_sessions.html",
+        context={"user": current_user, "sessions": sessions, "programs": programs, "mentors": mentors}
+    )
+
+
+@app.post("/admin/sessions/create")
+def admin_create_session(
+    program_id: str = Form(...),
+    mentor_id: str = Form(...),
+    title: str = Form(...),
+    description: str = Form(None),
+    session_type: str = Form(...),
+    scheduled_at: str = Form(None),
+    meeting_link: str = Form(None),
+    video_url: str = Form(None),
+    duration_minutes: int = Form(None),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "admin":
+        return HTMLResponse("<h2>Unauthorized</h2>", status_code=403)
+
+    session_id = generate_session_id(db)
+
+    session = MentorSession(
+        session_id=session_id,
+        program_id=program_id,
+        mentor_id=mentor_id,
+        title=title,
+        description=description,
+        session_type=session_type,
+        scheduled_at=scheduled_at if scheduled_at else None,
+        meeting_link=meeting_link if meeting_link else None,
+        video_url=video_url if video_url else None,
+        duration_minutes=duration_minutes,
+        status="scheduled"
+    )
+
+    db.add(session)
+    db.commit()
+
+    return {"message": "Session created successfully", "session_id": session_id}
+
+
+@app.post("/admin/sessions/update/{session_id}")
+def admin_update_session(
+    session_id: str,
+    title: str = Form(None),
+    description: str = Form(None),
+    scheduled_at: str = Form(None),
+    meeting_link: str = Form(None),
+    video_url: str = Form(None),
+    duration_minutes: int = Form(None),
+    status: str = Form(None),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "admin":
+        return HTMLResponse("<h2>Unauthorized</h2>", status_code=403)
+
+    session = db.query(MentorSession).filter(MentorSession.session_id == session_id).first()
+    if not session:
+        return HTMLResponse("<h2>Session not found</h2>", status_code=404)
+
+    if title: session.title = title
+    if description: session.description = description
+    if scheduled_at: session.scheduled_at = scheduled_at
+    if meeting_link: session.meeting_link = meeting_link
+    if video_url: session.video_url = video_url
+    if duration_minutes: session.duration_minutes = duration_minutes
+    if status: session.status = status
+
+    db.commit()
+    return {"message": "Session updated successfully"}
+
+
+@app.post("/admin/sessions/delete/{session_id}")
+def admin_delete_session(
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "admin":
+        return HTMLResponse("<h2>Unauthorized</h2>", status_code=403)
+
+    session = db.query(MentorSession).filter(MentorSession.session_id == session_id).first()
+    if not session:
+        return HTMLResponse("<h2>Session not found</h2>", status_code=404)
+
+    db.delete(session)
+    db.commit()
+    return {"message": "Session deleted successfully"}
+
+
+# ── MENTOR SESSIONS ───────────────────────────────────────────────────────────
+
+@app.get("/mentor/sessions", response_class=HTMLResponse)
+def mentor_sessions_page(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "mentor":
+        return RedirectResponse(url="/login/mentor", status_code=302)
+
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.user_id).first()
+    sessions = db.query(MentorSession).filter(MentorSession.mentor_id == mentor.mentor_profile_id).all()
+
+    return templates.TemplateResponse(
+        request=request,
+        name="mentor_sessions.html",
+        context={"user": current_user, "sessions": sessions, "mentor": mentor}
+    )
+
+
+@app.post("/mentor/sessions/create")
+def mentor_create_session(
+    program_id: str = Form(...),
+    title: str = Form(...),
+    description: str = Form(None),
+    session_type: str = Form(...),
+    scheduled_at: str = Form(None),
+    meeting_link: str = Form(None),
+    video_url: str = Form(None),
+    duration_minutes: int = Form(None),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "mentor":
+        return HTMLResponse("<h2>Unauthorized</h2>", status_code=403)
+
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.user_id).first()
+
+    # check mentor is assigned to this program
+    program = db.query(Program).filter(
+        Program.program_id == program_id,
+        Program.assigned_mentor == mentor.mentor_profile_id
+    ).first()
+    if not program:
+        return HTMLResponse("<h2>You are not assigned to this program</h2>", status_code=403)
+
+    session_id = generate_session_id(db)
+
+    session = MentorSession(
+        session_id=session_id,
+        program_id=program_id,
+        mentor_id=mentor.mentor_profile_id,
+        title=title,
+        description=description,
+        session_type=session_type,
+        scheduled_at=scheduled_at if scheduled_at else None,
+        meeting_link=meeting_link if meeting_link else None,
+        video_url=video_url if video_url else None,
+        duration_minutes=duration_minutes,
+        status="scheduled"
+    )
+
+    db.add(session)
+    db.commit()
+
+    return {"message": "Session created successfully", "session_id": session_id}
+
+
+@app.post("/mentor/sessions/update/{session_id}")
+def mentor_update_session(
+    session_id: str,
+    title: str = Form(None),
+    description: str = Form(None),
+    scheduled_at: str = Form(None),
+    meeting_link: str = Form(None),
+    video_url: str = Form(None),
+    duration_minutes: int = Form(None),
+    status: str = Form(None),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "mentor":
+        return HTMLResponse("<h2>Unauthorized</h2>", status_code=403)
+
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.user_id).first()
+    session = db.query(MentorSession).filter(
+        MentorSession.session_id == session_id,
+        MentorSession.mentor_id == mentor.mentor_profile_id
+    ).first()
+    if not session:
+        return HTMLResponse("<h2>Session not found or unauthorized</h2>", status_code=404)
+
+    if title: session.title = title
+    if description: session.description = description
+    if scheduled_at: session.scheduled_at = scheduled_at
+    if meeting_link: session.meeting_link = meeting_link
+    if video_url: session.video_url = video_url
+    if duration_minutes: session.duration_minutes = duration_minutes
+    if status: session.status = status
+
+    db.commit()
+    return {"message": "Session updated successfully"}
+
+
+@app.post("/mentor/sessions/delete/{session_id}")
+def mentor_delete_session(
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "mentor":
+        return HTMLResponse("<h2>Unauthorized</h2>", status_code=403)
+
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.user_id).first()
+    session = db.query(MentorSession).filter(
+        MentorSession.session_id == session_id,
+        MentorSession.mentor_id == mentor.mentor_profile_id
+    ).first()
+    if not session:
+        return HTMLResponse("<h2>Session not found or unauthorized</h2>", status_code=404)
+
+    db.delete(session)
+    db.commit()
+    return {"message": "Session deleted successfully"}
+
+
+# ── MENTEE SESSIONS ───────────────────────────────────────────────────────────
+
+@app.get("/my-sessions", response_class=HTMLResponse)
+def mentee_sessions(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "mentee":
+        return RedirectResponse(url="/login/mentee", status_code=302)
+
+    # get programs mentee is enrolled in
+    enrollments = db.query(Enrollment).filter(
+        Enrollment.user_id == current_user.user_id
+    ).all()
+
+    program_ids = [e.program_id for e in enrollments]
+
+    # get all sessions for those programs
+    sessions = db.query(MentorSession).filter(
+        MentorSession.program_id.in_(program_ids)
+    ).all()
+
+    return templates.TemplateResponse(
+        request=request,
+        name="my_sessions.html",
+        context={"user": current_user, "sessions": sessions}
     )

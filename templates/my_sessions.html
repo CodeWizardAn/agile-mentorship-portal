@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head><title>My Sessions</title></head>
+<body>
+
+<h1>My Sessions</h1>
+<a href="/mentee-dashboard">Back to Dashboard</a>
+
+<br><br>
+
+{% for s in sessions %}
+<div>
+    <h3>{{ s.title }}</h3>
+    <p>Type: {{ s.session_type }}</p>
+    <p>Status: {{ s.status }}</p>
+    {% if s.session_type == 'live' %}
+        <p>Scheduled: {{ s.scheduled_at }}</p>
+        {% if s.meeting_link %}
+            <a href="{{ s.meeting_link }}" target="_blank">Join Meeting</a>
+        {% endif %}
+    {% else %}
+        {% if s.video_url %}
+            <a href="{{ s.video_url }}" target="_blank">Watch Video</a>
+        {% endif %}
+    {% endif %}
+    <hr>
+</div>
+{% else %}
+<p>No sessions available yet.</p>
+{% endfor %}
+
+</body>
+</html>

@@ -10,6 +10,7 @@
 
 <br><br>
 
+<!-- ── CREATE PROGRAM ── -->
 <h2>Create New Program</h2>
 
 <form action="/admin/programs/create" method="post">
@@ -62,6 +63,39 @@
     <button type="submit">Create Program</button>
 
 </form>
+
+<hr>
+
+<!-- ── ALL PROGRAMS ── -->
+<h2>All Programs</h2>
+
+{% for program in programs %}
+<div>
+    <p><b>ID:</b> {{ program.program_id }} | <b>Title:</b> {{ program.title }} | <b>Status:</b> {{ program.status }}</p>
+
+    <!-- Update Form -->
+    <form action="/admin/programs/update/{{ program.program_id }}" method="post">
+        <input type="text" name="title" placeholder="New Title" value="{{ program.title }}">
+        <input type="text" name="category" placeholder="Category" value="{{ program.category }}">
+        <input type="text" name="assigned_mentor" placeholder="Mentor ID" value="{{ program.assigned_mentor }}">
+        <select name="status">
+            <option value="draft" {% if program.status == 'draft' %}selected{% endif %}>Draft</option>
+            <option value="active" {% if program.status == 'active' %}selected{% endif %}>Active</option>
+            <option value="completed" {% if program.status == 'completed' %}selected{% endif %}>Completed</option>
+        </select>
+        <button type="submit">Update</button>
+    </form>
+
+    <!-- Delete Form -->
+    <form action="/admin/programs/delete/{{ program.program_id }}" method="post">
+        <button type="submit" onclick="return confirm('Delete this program?')">Delete</button>
+    </form>
+
+    <hr>
+</div>
+{% else %}
+<p>No programs yet.</p>
+{% endfor %}
 
 </body>
 </html>

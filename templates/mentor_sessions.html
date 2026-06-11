@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head><title>My Sessions</title></head>
+<body>
+
+<h1>My Sessions</h1>
+<a href="/mentor-dashboard">Back to Dashboard</a>
+
+<br><br>
+
+<h2>Create Session</h2>
+<form action="/mentor/sessions/create" method="post">
+
+    <input type="text" name="program_id" placeholder="Program ID (e.g. PRG0001)" required>
+    <br><br>
+
+    <input type="text" name="title" placeholder="Session Title" required>
+    <br><br>
+
+    <textarea name="description" placeholder="Description" rows="3" cols="40"></textarea>
+    <br><br>
+
+    <select name="session_type" required>
+        <option value="">Session Type</option>
+        <option value="live">Live</option>
+        <option value="recorded">Recorded</option>
+    </select>
+    <br><br>
+
+    <label>Scheduled At (for live)</label>
+    <input type="datetime-local" name="scheduled_at">
+    <br><br>
+
+    <input type="url" name="meeting_link" placeholder="Meeting Link (for live)">
+    <br><br>
+
+    <input type="url" name="video_url" placeholder="Video URL (for recorded)">
+    <br><br>
+
+    <input type="number" name="duration_minutes" placeholder="Duration (minutes)">
+    <br><br>
+
+    <button type="submit">Create Session</button>
+</form>
+
+<hr>
+
+<h2>My Sessions</h2>
+{% for s in sessions %}
+<div>
+    <p><b>{{ s.session_id }}</b> | {{ s.title }} | {{ s.session_type }} | {{ s.status }}</p>
+
+    <form action="/mentor/sessions/update/{{ s.session_id }}" method="post">
+        <input type="text" name="title" value="{{ s.title }}">
+        <input type="url" name="meeting_link" value="{{ s.meeting_link }}">
+        <input type="url" name="video_url" value="{{ s.video_url }}">
+        <select name="status">
+            <option value="scheduled" {% if s.status == 'scheduled' %}selected{% endif %}>Scheduled</option>
+            <option value="completed" {% if s.status == 'completed' %}selected{% endif %}>Completed</option>
+            <option value="cancelled" {% if s.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+        </select>
+        <button type="submit">Update</button>
+    </form>
+
+    <form action="/mentor/sessions/delete/{{ s.session_id }}" method="post">
+        <button type="submit" onclick="return confirm('Delete?')">Delete</button>
+    </form>
+    <hr>
+</div>
+{% else %}
+<p>No sessions yet.</p>
+{% endfor %}
+
+</body>
+</html>

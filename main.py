@@ -14,6 +14,8 @@ from models.mentor import Mentor
 from models.program import Program
 from models.enrollment import Enrollment
 from models.session import Session as MentorSession
+from models.attendance import Attendance
+
 
 app = FastAPI()
 
@@ -91,6 +93,13 @@ def generate_session_id(db: Session) -> str:
         last_serial = 1
     return f"SES{last_serial:04d}"
 
+def generate_attendance_id(db: Session) -> str:
+    last = db.query(func.max(Attendance.attendance_id)).scalar()
+    if last:
+        last_serial = int(last[3:]) + 1
+    else:
+        last_serial = 1
+    return f"ATT{last_serial:04d}"
 # ── GET CURRENT USER FROM COOKIE ─────────────────────────────────────────────
 
 def get_current_user(access_token: str = Cookie(None), db: Session = Depends(get_db)):
@@ -688,6 +697,9 @@ def mentor_sessions_page(
         return RedirectResponse(url="/login/mentor", status_code=302)
 
     mentor = db.query(Mentor).filter(Mentor.user_id == current_user.user_id).first()
+    if not mentor:
+        return HTMLResponse("<h2>Mentor profile not found. Please contact admin.</h2>", status_code=404)
+
     sessions = db.query(MentorSession).filter(MentorSession.mentor_id == mentor.mentor_profile_id).all()
 
     return templates.TemplateResponse(
@@ -695,7 +707,6 @@ def mentor_sessions_page(
         name="mentor_sessions.html",
         context={"user": current_user, "sessions": sessions, "mentor": mentor}
     )
-
 
 @app.post("/mentor/sessions/create")
 def mentor_create_session(
@@ -830,4 +841,132 @@ def mentee_sessions(
         request=request,
         name="my_sessions.html",
         context={"user": current_user, "sessions": sessions}
+    )
+    
+# ── ATTENDANCE ────────────────────────────────────────────────────────────────
+
+@app.get("/admin/attendance", response_class=HTMLResponse)
+def admin_attendance_page(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "admin":
+        return RedirectResponse(url="/login/admin", status_code=302)
+    sessions = db.query(MentorSession).all()
+    return templates.TemplateResponse(
+        request=request,
+        name="admin_attendance.html",
+        context={"user": current_user, "sessions": sessions}
+    )
+
+
+@app.get("/attendance/{session_id}", response_class=HTMLResponse)
+def view_session_attendance(
+    request: Request,
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role not in ["admin", "mentor"]:
+        return RedirectResponse(url="/login/admin", status_code=302)
+
+    session = db.query(MentorSession).filter(MentorSession.session_id == session_id).first()
+    if not session:
+        return HTMLResponse("<h2>Session not found</h2>", status_code=404)
+
+    # get all mentees enrolled in this program
+    enrollments = db.query(Enrollment).filter(
+        Enrollment.program_id == session.program_id
+    ).all()
+
+    mentees = []
+    for e in enrollments:
+        user = db.query(User).filter(User.user_id == e.user_id).first()
+        attendance = db.query(Attendance).filter(
+            Attendance.session_id == session_id,
+            Attendance.user_id == e.user_id
+        ).first()
+        mentees.append({
+            "user": user,
+            "attendance": attendance
+        })
+
+    return templates.TemplateResponse(
+        request=request,
+        name="mark_attendance.html",
+        context={
+            "user": current_user,
+            "session": session,
+            "mentees": mentees
+        }
+    )
+
+
+@app.post("/attendance/mark/{session_id}")
+def mark_attendance(
+    session_id: str,
+    user_id: str = Form(...),
+    status: str = Form(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role not in ["admin", "mentor"]:
+        return HTMLResponse("<h2>Unauthorized</h2>", status_code=403)
+
+    # check if attendance already marked
+    existing = db.query(Attendance).filter(
+        Attendance.session_id == session_id,
+        Attendance.user_id == user_id
+    ).first()
+
+    if existing:
+        # update existing
+        existing.status = status
+        db.commit()
+        return {"message": "Attendance updated", "attendance_id": existing.attendance_id}
+
+    attendance_id = generate_attendance_id(db)
+
+    attendance = Attendance(
+        attendance_id=attendance_id,
+        session_id=session_id,
+        user_id=user_id,
+        status=status
+    )
+
+    db.add(attendance)
+    db.commit()
+
+    return {"message": "Attendance marked", "attendance_id": attendance_id}
+
+
+@app.get("/my-attendance", response_class=HTMLResponse)
+def my_attendance(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "mentee":
+        return RedirectResponse(url="/login/mentee", status_code=302)
+
+    attendance_records = db.query(Attendance).filter(
+        Attendance.user_id == current_user.user_id
+    ).all()
+
+    records = []
+    for a in attendance_records:
+        session = db.query(MentorSession).filter(
+            MentorSession.session_id == a.session_id
+        ).first()
+        records.append({
+            "session": session,
+            "status": a.status,
+            "marked_at": a.marked_at
+        })
+
+    return templates.TemplateResponse(
+        request=request,
+        name="my_attendance.html",
+        context={"user": current_user, "records": records}
     )

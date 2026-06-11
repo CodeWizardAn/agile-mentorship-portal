@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head><title>Attendance</title></head>
+<body>
+
+<h1>Attendance Management</h1>
+<a href="/admin-dashboard">Back to Dashboard</a>
+
+<br><br>
+
+<h2>Select Session to Mark Attendance</h2>
+{% for s in sessions %}
+<div>
+    <p><b>{{ s.session_id }}</b> - {{ s.title }} | {{ s.session_type }} | {{ s.status }}</p>
+    <a href="/attendance/{{ s.session_id }}">Mark / View Attendance</a>
+    <hr>
+</div>
+{% else %}
+<p>No sessions found.</p>
+{% endfor %}
+
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head><title>Mark Attendance</title></head>
+<body>
+
+<h1>Attendance - {{ session.title }}</h1>
+<a href="/admin/attendance">Back</a>
+
+<br><br>
+
+{% for m in mentees %}
+<div>
+    <p><b>{{ m.user.full_name }}</b> ({{ m.user.user_id }})</p>
+    <p>Current Status: {{ m.attendance.status if m.attendance else 'Not marked' }}</p>
+
+    <form action="/attendance/mark/{{ session.session_id }}" method="post">
+        <input type="hidden" name="user_id" value="{{ m.user.user_id }}">
+        <select name="status">
+            <option value="present" {% if m.attendance and m.attendance.status == 'present' %}selected{% endif %}>Present</option>
+            <option value="absent" {% if m.attendance and m.attendance.status == 'absent' %}selected{% endif %}>Absent</option>
+        </select>
+        <button type="submit">Mark</button>
+    </form>
+    <hr>
+</div>
+{% else %}
+<p>No mentees enrolled in this program.</p>
+{% endfor %}
+
+</body>
+</html>

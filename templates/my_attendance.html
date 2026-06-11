@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head><title>My Attendance</title></head>
+<body>
+
+<h1>My Attendance</h1>
+<a href="/mentee-dashboard">Back to Dashboard</a>
+
+<br><br>
+
+{% for r in records %}
+<div>
+    <p><b>{{ r.session.title }}</b></p>
+    <p>Status: {{ r.status }}</p>
+    <p>Marked at: {{ r.marked_at }}</p>
+    <hr>
+</div>
+{% else %}
+<p>No attendance records yet.</p>
+{% endfor %}
+
+</body>
+</html>

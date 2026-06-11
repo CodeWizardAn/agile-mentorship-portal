@@ -50,21 +50,32 @@
 <div>
     <p><b>{{ s.session_id }}</b> | {{ s.title }} | {{ s.session_type }} | {{ s.status }}</p>
 
+    <a href="/attendance/{{ s.session_id }}">Mark Attendance</a>
+
+    <br><br>
+
     <form action="/mentor/sessions/update/{{ s.session_id }}" method="post">
         <input type="text" name="title" value="{{ s.title }}">
-        <input type="url" name="meeting_link" value="{{ s.meeting_link }}">
-        <input type="url" name="video_url" value="{{ s.video_url }}">
+        <br><br>
+        <input type="url" name="meeting_link" value="{{ s.meeting_link or '' }}">
+        <br><br>
+        <input type="url" name="video_url" value="{{ s.video_url or '' }}">
+        <br><br>
         <select name="status">
             <option value="scheduled" {% if s.status == 'scheduled' %}selected{% endif %}>Scheduled</option>
             <option value="completed" {% if s.status == 'completed' %}selected{% endif %}>Completed</option>
             <option value="cancelled" {% if s.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
         </select>
+        <br><br>
         <button type="submit">Update</button>
     </form>
+
+    <br>
 
     <form action="/mentor/sessions/delete/{{ s.session_id }}" method="post">
         <button type="submit" onclick="return confirm('Delete?')">Delete</button>
     </form>
+
     <hr>
 </div>
 {% else %}

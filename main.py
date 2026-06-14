@@ -15,6 +15,9 @@ from models.program import Program
 from models.enrollment import Enrollment
 from models.session import Session as MentorSession
 from models.attendance import Attendance
+from fastapi import UploadFile, File
+from cloudinary_config import upload_file
+from models.mentor_certificate import MentorCertificate
 
 
 app = FastAPI()
@@ -100,6 +103,14 @@ def generate_attendance_id(db: Session) -> str:
     else:
         last_serial = 1
     return f"ATT{last_serial:04d}"
+
+def generate_cert_id(db: Session) -> str:
+    last = db.query(func.max(MentorCertificate.cert_id)).scalar()
+    if last:
+        last_serial = int(last[3:]) + 1
+    else:
+        last_serial = 1
+    return f"CRT{last_serial:04d}"
 # ── GET CURRENT USER FROM COOKIE ─────────────────────────────────────────────
 
 def get_current_user(access_token: str = Cookie(None), db: Session = Depends(get_db)):
@@ -131,16 +142,34 @@ def login(request: Request, role: str):
     )
 
 @app.get("/mentor-dashboard", response_class=HTMLResponse)
-def mentor_dashboard(request: Request):
-    return templates.TemplateResponse(request=request, name="mentor_dashboard.html")
+def mentor_dashboard(request: Request, current_user: User = Depends(get_current_user)):
+    if not current_user or current_user.role != "mentor":
+        return RedirectResponse(url="/login/mentor", status_code=302)
+    return templates.TemplateResponse(
+        request=request,
+        name="mentor_dashboard.html",
+        context={"user": current_user}
+    )
 
 @app.get("/mentee-dashboard", response_class=HTMLResponse)
-def mentee_dashboard(request: Request):
-    return templates.TemplateResponse(request=request, name="mentee_dashboard.html")
+def mentee_dashboard(request: Request, current_user: User = Depends(get_current_user)):
+    if not current_user or current_user.role != "mentee":
+        return RedirectResponse(url="/login/mentee", status_code=302)
+    return templates.TemplateResponse(
+        request=request,
+        name="mentee_dashboard.html",
+        context={"user": current_user}
+    )
 
 @app.get("/admin-dashboard", response_class=HTMLResponse)
-def admin_dashboard(request: Request):
-    return templates.TemplateResponse(request=request, name="admin_dashboard.html")
+def admin_dashboard(request: Request, current_user: User = Depends(get_current_user)):
+    if not current_user or current_user.role != "admin":
+        return RedirectResponse(url="/login/admin", status_code=302)
+    return templates.TemplateResponse(
+        request=request,
+        name="admin_dashboard.html",
+        context={"user": current_user}
+    )
 
 
 # ── SIGNUP ────────────────────────────────────────────────────────────────────
@@ -970,3 +999,107 @@ def my_attendance(
         name="my_attendance.html",
         context={"user": current_user, "records": records}
     )
+    
+# ── PROFILE PHOTO UPLOAD ──────────────────────────────────────────────────────
+
+@app.post("/upload/profile-photo")
+async def upload_profile_photo(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user:
+        return HTMLResponse("<h2>Unauthorized</h2>", status_code=401)
+
+    contents = await file.read()
+    url = upload_file(contents, folder="agilementor/profiles", resource_type="image")
+
+    current_user.profile_photo = url
+    db.commit()
+
+    return {"message": "Profile photo updated", "url": url}
+
+
+# ── MENTOR CERTIFICATE UPLOAD ─────────────────────────────────────────────────
+
+@app.post("/mentor/upload-certificate")
+async def upload_certificate(
+    title: str = Form(...),
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "mentor":
+        return HTMLResponse("<h2>Unauthorized</h2>", status_code=403)
+
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.user_id).first()
+    if not mentor:
+        return HTMLResponse("<h2>Mentor profile not found</h2>", status_code=404)
+
+    contents = await file.read()
+    
+    # detect file type
+    filename = file.filename.lower()
+    if filename.endswith(".pdf"):
+        file_type = "pdf"
+        resource_type = "raw"
+    else:
+        file_type = "image"
+        resource_type = "image"
+
+    url = upload_file(contents, folder="agilementor/certificates", resource_type=resource_type)
+
+    cert_id = generate_cert_id(db)
+
+    cert = MentorCertificate(
+        cert_id=cert_id,
+        mentor_profile_id=mentor.mentor_profile_id,
+        title=title,
+        file_url=url,
+        file_type=file_type
+    )
+
+    db.add(cert)
+    db.commit()
+
+    return {"message": "Certificate uploaded", "cert_id": cert_id, "url": url}
+
+
+@app.get("/mentor/certificates", response_class=HTMLResponse)
+def mentor_certificates_page(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "mentor":
+        return RedirectResponse(url="/login/mentor", status_code=302)
+
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.user_id).first()
+    certs = db.query(MentorCertificate).filter(
+        MentorCertificate.mentor_profile_id == mentor.mentor_profile_id
+    ).all()
+
+    return templates.TemplateResponse(
+        request=request,
+        name="mentor_certificates.html",
+        context={"user": current_user, "certs": certs, "mentor": mentor}
+    )
+
+
+@app.post("/mentor/delete-certificate/{cert_id}")
+def delete_certificate(
+    cert_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "mentor":
+        return HTMLResponse("<h2>Unauthorized</h2>", status_code=403)
+
+    cert = db.query(MentorCertificate).filter(MentorCertificate.cert_id == cert_id).first()
+    if not cert:
+        return HTMLResponse("<h2>Certificate not found</h2>", status_code=404)
+
+    db.delete(cert)
+    db.commit()
+
+    return RedirectResponse(url="/mentor/certificates", status_code=302)

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head><title>My Certificates</title></head>
+<body>
+
+<h1>My Certificates</h1>
+<a href="/mentor-dashboard">Back to Dashboard</a>
+
+<br><br>
+
+<h2>Upload New Certificate</h2>
+<form action="/mentor/upload-certificate" method="post" enctype="multipart/form-data">
+    <input type="text" name="title" placeholder="Certificate Title" required>
+    <br><br>
+    <input type="file" name="file" accept=".jpg,.jpeg,.png,.pdf" required>
+    <br><br>
+    <button type="submit">Upload</button>
+</form>
+
+<hr>
+
+<h2>My Uploaded Certificates</h2>
+{% for cert in certs %}
+<div>
+    <p><b>{{ cert.title }}</b> ({{ cert.file_type }})</p>
+    <p>Uploaded: {{ cert.uploaded_at }}</p>
+    {% if cert.file_type == 'pdf' %}
+        <a href="{{ cert.file_url }}" target="_blank">View PDF</a>
+    {% else %}
+        <img src="{{ cert.file_url }}" width="200" style="border-radius:8px;">
+    {% endif %}
+    <br><br>
+    <form action="/mentor/delete-certificate/{{ cert.cert_id }}" method="post">
+        <button type="submit" onclick="return confirm('Delete this certificate?')">Delete</button>
+    </form>
+    <hr>
+</div>
+{% else %}
+<p>No certificates uploaded yet.</p>
+{% endfor %}
+
+</body>
+</html>

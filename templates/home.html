@@ -1,70 +1,391 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Agile Mentorship Portal</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AgileMentor — Learn. Connect. Grow.</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:   #0F2645;
+      --blue:   #2563EB;
+      --teal:   #0EA5E9;
+      --white:  #FFFFFF;
+      --offwhite: #F8FAFF;
+      --gray:   #E8EFF8;
+      --muted:  #64748B;
+      --text:   #1E293B;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--offwhite); color: var(--text); }
 
-    <style>
+    /* NAVBAR */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--white);
+      border-bottom: 1px solid var(--gray);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 6%; height: 68px;
+      box-shadow: 0 1px 12px rgba(15,38,69,0.07);
+    }
+    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--blue), var(--teal));
+      display: flex; align-items: center; justify-content: center;
+    }
+    .nav-logo-icon svg { width: 20px; height: 20px; fill: none; stroke: white; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .nav-logo-text { font-size: 1.2rem; font-weight: 800; color: var(--navy); letter-spacing: -0.5px; }
+    .nav-logo-text span { color: var(--blue); }
+    .nav-links { display: flex; gap: 32px; list-style: none; }
+    .nav-links a { text-decoration: none; color: var(--muted); font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--blue); }
+    .nav-actions { display: flex; gap: 12px; align-items: center; }
+    .btn-ghost { padding: 8px 20px; border-radius: 8px; border: 1.5px solid var(--gray); background: transparent; color: var(--navy); font-size: 0.88rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.2s; }
+    .btn-ghost:hover { border-color: var(--blue); color: var(--blue); }
+    .btn-primary { padding: 8px 20px; border-radius: 8px; border: none; background: linear-gradient(135deg, var(--blue), var(--teal)); color: white; font-size: 0.88rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: opacity 0.2s; }
+    .btn-primary:hover { opacity: 0.9; }
 
-        body{
-            font-family: Arial;
-            text-align:center;
-            background:#f5f7fa;
-            padding-top:80px;
-        }
+    /* HERO */
+    .hero {
+      background: linear-gradient(135deg, var(--navy) 0%, #1a3a6b 50%, #0e3060 100%);
+      padding: 90px 6% 80px;
+      display: flex; align-items: center; gap: 60px;
+      min-height: 88vh; position: relative; overflow: hidden;
+    }
+    .hero::before { content: ''; position: absolute; top: -100px; right: -100px; width: 600px; height: 600px; border-radius: 50%; background: radial-gradient(circle, rgba(37,99,235,0.15) 0%, transparent 70%); pointer-events: none; }
+    .hero::after { content: ''; position: absolute; bottom: -150px; left: 30%; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(circle, rgba(14,165,233,0.1) 0%, transparent 70%); pointer-events: none; }
+    .hero-left { flex: 1; z-index: 1; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(37,99,235,0.2); border: 1px solid rgba(37,99,235,0.4); color: #93C5FD; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.5px; padding: 6px 14px; border-radius: 20px; margin-bottom: 28px; }
+    .hero-badge span { width: 6px; height: 6px; border-radius: 50%; background: #60A5FA; display: inline-block; }
+    .hero-title { font-size: 3.8rem; font-weight: 900; line-height: 1.1; color: white; letter-spacing: -2px; margin-bottom: 24px; }
+    .hero-title .accent { color: #60A5FA; }
+    .hero-title .accent2 { color: var(--teal); }
+    .hero-sub { font-size: 1.1rem; color: #94A3B8; line-height: 1.7; max-width: 480px; margin-bottom: 40px; font-weight: 400; }
+    .hero-ctas { display: flex; gap: 16px; flex-wrap: wrap; }
+    .cta-main { padding: 14px 32px; border-radius: 10px; border: none; background: linear-gradient(135deg, var(--blue), var(--teal)); color: white; font-size: 1rem; font-weight: 700; cursor: pointer; text-decoration: none; box-shadow: 0 8px 24px rgba(37,99,235,0.35); transition: transform 0.2s, box-shadow 0.2s; display: inline-block; }
+    .cta-main:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(37,99,235,0.45); }
+    .cta-outline { padding: 14px 32px; border-radius: 10px; border: 1.5px solid rgba(255,255,255,0.25); color: white; font-size: 1rem; font-weight: 600; cursor: pointer; text-decoration: none; background: transparent; transition: background 0.2s, border-color 0.2s; display: inline-block; }
+    .cta-outline:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.4); }
+    .hero-right { flex: 0.85; z-index: 1; display: flex; flex-direction: column; gap: 16px; }
+    .hero-card { background: rgba(255,255,255,0.07); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 20px 24px; color: white; }
+    .hero-card-label { font-size: 0.75rem; color: #94A3B8; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px; }
+    .hero-card-title { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+    .hero-card-sub { font-size: 0.82rem; color: #94A3B8; }
+    .hero-card-row { display: flex; align-items: center; justify-content: space-between; }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: #22C55E; display: inline-block; margin-right: 6px; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .live-badge { font-size: 0.75rem; color: #22C55E; font-weight: 600; display: flex; align-items: center; }
+    .avatar-stack { display: flex; }
+    .avatar { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); margin-left: -8px; background: linear-gradient(135deg, var(--blue), var(--teal)); display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; color: white; }
+    .avatar:first-child { margin-left: 0; }
+    .mentor-row { display: flex; gap: 12px; }
+    .mentor-avatar-icon { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #6366F1, #8B5CF6); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; color: white; flex-shrink: 0; }
+    .enroll-btn { padding: 7px 16px; border-radius: 8px; border: none; background: var(--blue); color: white; font-size: 0.8rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: opacity 0.2s; display: inline-block; }
+    .enroll-btn:hover { opacity: 0.85; }
 
-        h1{
-            color:#1f2937;
-        }
+    /* STATS */
+    .stats { background: var(--white); padding: 36px 6%; display: flex; justify-content: space-around; align-items: center; border-bottom: 1px solid var(--gray); }
+    .stat { text-align: center; }
+    .stat-num { font-size: 2.2rem; font-weight: 900; color: var(--navy); letter-spacing: -1px; }
+    .stat-num span { color: var(--blue); }
+    .stat-label { font-size: 0.82rem; color: var(--muted); font-weight: 500; margin-top: 2px; }
+    .stat-divider { width: 1px; height: 48px; background: var(--gray); }
 
-        .container{
-            margin-top:50px;
-        }
+    /* SECTION */
+    .section { padding: 72px 6%; }
+    .section-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px; }
+    .section-title { font-size: 1.9rem; font-weight: 800; color: var(--navy); letter-spacing: -0.5px; }
+    .section-title span { color: var(--blue); }
+    .section-sub { font-size: 0.9rem; color: var(--muted); margin-top: 6px; }
+    .view-all { font-size: 0.88rem; font-weight: 600; color: var(--blue); text-decoration: none; }
+    .view-all:hover { text-decoration: underline; }
+    .bg-gray { background: var(--gray); }
 
-        button{
-            width:220px;
-            padding:15px;
-            margin:15px;
-            font-size:18px;
-            border:none;
-            border-radius:10px;
-            cursor:pointer;
-            background:#2563eb;
-            color:white;
-        }
+    /* PROGRAMS */
+    .programs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .program-card { background: var(--white); border-radius: 16px; border: 1px solid var(--gray); overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; }
+    .program-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(15,38,69,0.1); }
+    .program-card-top { height: 140px; display: flex; align-items: center; justify-content: center; font-size: 3rem; position: relative; }
+    .program-tag { position: absolute; top: 12px; left: 12px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px; padding: 4px 10px; border-radius: 6px; }
+    .tag-live { background: #DCFCE7; color: #15803D; }
+    .tag-popular { background: #EEF2FF; color: #4338CA; }
+    .tag-new { background: #FFF7ED; color: #C2410C; }
+    .program-card-body { padding: 20px; }
+    .program-card-title { font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+    .program-card-meta { font-size: 0.8rem; color: var(--muted); margin-bottom: 14px; display: flex; gap: 12px; }
+    .program-card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 14px; border-top: 1px solid var(--gray); }
+    .program-level { font-size: 0.78rem; color: var(--muted); font-weight: 500; }
 
-        button:hover{
-            background:#1d4ed8;
-        }
+    /* STEPS */
+    .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+    .step { text-align: center; padding: 32px 20px; background: var(--white); border-radius: 16px; border: 1px solid rgba(255,255,255,0.8); }
+    .step-num { width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, var(--blue), var(--teal)); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 900; color: white; margin: 0 auto 16px; }
+    .step-title { font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+    .step-desc { font-size: 0.83rem; color: var(--muted); line-height: 1.6; }
 
-    </style>
+    /* MENTORS */
+    .mentors-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .mentor-card { background: var(--white); border-radius: 16px; padding: 28px 20px; text-align: center; border: 1px solid var(--gray); transition: transform 0.2s, box-shadow 0.2s; }
+    .mentor-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(15,38,69,0.09); }
+    .mentor-card-avatar { width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 14px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 800; color: white; }
+    .mentor-card-name { font-size: 0.98rem; font-weight: 700; color: var(--navy); }
+    .mentor-card-role { font-size: 0.8rem; color: var(--muted); margin-top: 4px; margin-bottom: 14px; }
+    .mentor-card-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 16px; }
+    .tag-skill { font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 20px; background: var(--gray); color: var(--navy); }
+    .mentor-card-btn { width: 100%; padding: 9px; border-radius: 9px; border: 1.5px solid var(--blue); background: transparent; color: var(--blue); font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .mentor-card-btn:hover { background: var(--blue); color: white; }
 
+    /* CTA BANNER */
+    .cta-banner { margin: 0 6% 72px; background: linear-gradient(135deg, var(--navy), #1a3a6b); border-radius: 24px; padding: 60px; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden; }
+    .cta-banner::before { content: ''; position: absolute; right: -60px; top: -60px; width: 300px; height: 300px; border-radius: 50%; background: radial-gradient(circle, rgba(37,99,235,0.2) 0%, transparent 70%); }
+    .cta-banner-title { font-size: 2rem; font-weight: 800; color: white; letter-spacing: -0.5px; margin-bottom: 10px; }
+    .cta-banner-sub { font-size: 0.95rem; color: #94A3B8; }
+    .cta-banner-actions { display: flex; gap: 12px; z-index: 1; flex-shrink: 0; }
+
+    /* FOOTER */
+    footer { background: var(--navy); color: #94A3B8; padding: 48px 6% 28px; }
+    .footer-top { display: flex; gap: 60px; margin-bottom: 40px; }
+    .footer-brand { flex: 1.5; }
+    .footer-brand p { font-size: 0.85rem; color: #64748B; line-height: 1.7; margin-top: 12px; max-width: 280px; }
+    .footer-col h4 { color: white; font-size: 0.88rem; font-weight: 700; margin-bottom: 16px; }
+    .footer-col a { display: block; color: #64748B; font-size: 0.83rem; text-decoration: none; margin-bottom: 10px; transition: color 0.2s; }
+    .footer-col a:hover { color: #93C5FD; }
+    .footer-bottom { border-top: 1px solid rgba(255,255,255,0.08); padding-top: 24px; display: flex; justify-content: space-between; font-size: 0.8rem; color: #475569; }
+  </style>
 </head>
 <body>
 
-    <h1>Agile Mentorship Portal</h1>
-
-    <p>
-        Learn. Mentor. Grow.
-    </p>
-
-    <div class="container">
-
-        <a href="/signup/mentor">
-            <button>I am a Mentor</button>
-        </a>
-    
-        <br>
-    
-        <a href="/signup/mentee">
-            <button>I am a Mentee</button>
-        </a>
-    
-        <br>
-    
-        <a href="/login/admin">
-            <button>I am Admin</button>
-        </a>
-    
+<nav>
+  <a class="nav-logo" href="/">
+    <div class="nav-logo-icon">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
     </div>
+    <span class="nav-logo-text">Agile<span>Mentor</span></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#">Home</a></li>
+    <li><a href="#">Programs</a></li>
+    <li><a href="#">Mentors</a></li>
+    <li><a href="#">Live Sessions</a></li>
+    <li><a href="#">About</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a class="btn-ghost" href="/login/mentee">Login</a>
+    <a class="btn-primary" href="/signup/mentee">Get Started</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-badge"><span></span> India's #1 Agile Mentorship Platform</div>
+    <h1 class="hero-title">
+      Grow Faster with<br/>
+      <span class="accent">Expert</span> <span class="accent2">Mentors</span><br/>
+      Who've Been There.
+    </h1>
+    <p class="hero-sub">Get matched with industry mentors, attend live Agile sessions, and build the skills that actually get you hired.</p>
+    <div class="hero-ctas">
+      <a class="cta-main" href="/signup/mentee">Explore Programs →</a>
+      <a class="cta-outline" href="/signup/mentor">Become a Mentor</a>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-card">
+      <div class="hero-card-row">
+        <div>
+          <div class="hero-card-label">Next Live Session</div>
+          <div class="hero-card-title">Agile Sprint Planning Masterclass</div>
+          <div class="hero-card-sub">Today · 6:00 PM IST · 45 min</div>
+        </div>
+        <div class="live-badge"><span class="live-dot"></span>LIVE</div>
+      </div>
+      <div style="margin-top:14px;display:flex;align-items:center;justify-content:space-between;">
+        <div class="avatar-stack">
+          <div class="avatar">A</div>
+          <div class="avatar" style="background:linear-gradient(135deg,#6366F1,#8B5CF6)">R</div>
+          <div class="avatar" style="background:linear-gradient(135deg,#F59E0B,#EF4444)">S</div>
+          <div class="avatar" style="background:linear-gradient(135deg,#10B981,#059669);font-size:0.6rem">+12</div>
+        </div>
+        <a class="enroll-btn" href="/signup/mentee">Join Now</a>
+      </div>
+    </div>
+    <div class="mentor-row">
+      <div class="hero-card" style="flex:1;padding:16px 18px;">
+        <div class="hero-card-label">Featured Mentor</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
+          <div class="mentor-avatar-icon">R</div>
+          <div>
+            <div style="font-size:0.85rem;font-weight:700;color:white;">Rahul Verma</div>
+            <div style="font-size:0.72rem;color:#94A3B8;">Scrum Master · TCS</div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-card" style="flex:1;padding:16px 18px;">
+        <div class="hero-card-label">This Week</div>
+        <div style="font-size:2rem;font-weight:900;color:white;line-height:1;">8</div>
+        <div style="font-size:0.78rem;color:#94A3B8;margin-top:4px;">Live sessions scheduled</div>
+      </div>
+    </div>
+    <div class="hero-card">
+      <div class="hero-card-row">
+        <div>
+          <div class="hero-card-label">Program Spotlight</div>
+          <div class="hero-card-title">Certified Scrum Master Track</div>
+          <div class="hero-card-sub">8 weeks · Beginner to Advanced · Certificate</div>
+        </div>
+        <div style="font-size:0.85rem;font-weight:700;color:#60A5FA;">PRG0001</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="stats">
+  <div class="stat"><div class="stat-num">500<span>+</span></div><div class="stat-label">Expert Mentors</div></div>
+  <div class="stat-divider"></div>
+  <div class="stat"><div class="stat-num">1,200<span>+</span></div><div class="stat-label">Programs Completed</div></div>
+  <div class="stat-divider"></div>
+  <div class="stat"><div class="stat-num">18K<span>+</span></div><div class="stat-label">Active Mentees</div></div>
+  <div class="stat-divider"></div>
+  <div class="stat"><div class="stat-num">96<span>%</span></div><div class="stat-label">Satisfaction Rate</div></div>
+  <div class="stat-divider"></div>
+  <div class="stat"><div class="stat-num">200<span>+</span></div><div class="stat-label">Live Sessions / Month</div></div>
+</div>
+
+<section class="section">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Explore Top <span>Programs</span></div>
+      <div class="section-sub">Structured tracks designed by industry practitioners</div>
+    </div>
+    <a class="view-all" href="/programs">View all programs →</a>
+  </div>
+  <div class="programs-grid">
+    <div class="program-card">
+      <div class="program-card-top" style="background:linear-gradient(135deg,#EEF2FF,#C7D2FE);">🚀<span class="program-tag tag-popular">POPULAR</span></div>
+      <div class="program-card-body">
+        <div class="program-card-title">Agile & Scrum Mastery</div>
+        <div class="program-card-meta"><span>📅 8 Weeks</span><span>👥 240 enrolled</span></div>
+        <div class="program-card-footer"><span class="program-level">Beginner → Advanced</span><a class="enroll-btn" href="/signup/mentee">Enroll</a></div>
+      </div>
+    </div>
+    <div class="program-card">
+      <div class="program-card-top" style="background:linear-gradient(135deg,#DCFCE7,#BBF7D0);">📋<span class="program-tag tag-live">LIVE</span></div>
+      <div class="program-card-body">
+        <div class="program-card-title">Product Management Fundamentals</div>
+        <div class="program-card-meta"><span>📅 6 Weeks</span><span>👥 180 enrolled</span></div>
+        <div class="program-card-footer"><span class="program-level">Intermediate</span><a class="enroll-btn" href="/signup/mentee">Enroll</a></div>
+      </div>
+    </div>
+    <div class="program-card">
+      <div class="program-card-top" style="background:linear-gradient(135deg,#FFF7ED,#FED7AA);">⚡<span class="program-tag tag-new">NEW</span></div>
+      <div class="program-card-body">
+        <div class="program-card-title">DevOps for Agile Teams</div>
+        <div class="program-card-meta"><span>📅 10 Weeks</span><span>👥 95 enrolled</span></div>
+        <div class="program-card-footer"><span class="program-level">Intermediate</span><a class="enroll-btn" href="/signup/mentee">Enroll</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section bg-gray">
+  <div class="section-header">
+    <div>
+      <div class="section-title">How <span>AgileMentor</span> Works</div>
+      <div class="section-sub">From signup to success in four simple steps</div>
+    </div>
+  </div>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-title">Create Your Account</div><div class="step-desc">Sign up as a mentee in under 2 minutes. No credit card needed.</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-title">Browse Programs</div><div class="step-desc">Explore structured tracks across Agile, Product, and Tech domains.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-title">Attend Live Sessions</div><div class="step-desc">Join live webinars and Q&As with experienced mentors.</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-title">Earn Your Certificate</div><div class="step-desc">Complete the program and get a verifiable certificate of completion.</div></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Meet Our <span>Mentors</span></div>
+      <div class="section-sub">Hand-picked professionals from top companies</div>
+    </div>
+    <a class="view-all" href="#">View all mentors →</a>
+  </div>
+  <div class="mentors-grid">
+    <div class="mentor-card">
+      <div class="mentor-card-avatar" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);">R</div>
+      <div class="mentor-card-name">Rahul Verma</div>
+      <div class="mentor-card-role">Scrum Master · TCS</div>
+      <div class="mentor-card-tags"><span class="tag-skill">Scrum</span><span class="tag-skill">SAFe</span><span class="tag-skill">Jira</span></div>
+      <button class="mentor-card-btn">View Profile</button>
+    </div>
+    <div class="mentor-card">
+      <div class="mentor-card-avatar" style="background:linear-gradient(135deg,#F59E0B,#EF4444);">P</div>
+      <div class="mentor-card-name">Priya Sharma</div>
+      <div class="mentor-card-role">Product Manager · Infosys</div>
+      <div class="mentor-card-tags"><span class="tag-skill">Product</span><span class="tag-skill">Roadmaps</span><span class="tag-skill">OKRs</span></div>
+      <button class="mentor-card-btn">View Profile</button>
+    </div>
+    <div class="mentor-card">
+      <div class="mentor-card-avatar" style="background:linear-gradient(135deg,#10B981,#059669);">A</div>
+      <div class="mentor-card-name">Arjun Mehta</div>
+      <div class="mentor-card-role">DevOps Engineer · Wipro</div>
+      <div class="mentor-card-tags"><span class="tag-skill">CI/CD</span><span class="tag-skill">Docker</span><span class="tag-skill">Agile</span></div>
+      <button class="mentor-card-btn">View Profile</button>
+    </div>
+    <div class="mentor-card">
+      <div class="mentor-card-avatar" style="background:linear-gradient(135deg,#EC4899,#BE185D);">N</div>
+      <div class="mentor-card-name">Neha Kulkarni</div>
+      <div class="mentor-card-role">Agile Coach · Accenture</div>
+      <div class="mentor-card-tags"><span class="tag-skill">Coaching</span><span class="tag-skill">Kanban</span><span class="tag-skill">Lean</span></div>
+      <button class="mentor-card-btn">View Profile</button>
+    </div>
+  </div>
+</section>
+
+<div class="cta-banner">
+  <div>
+    <div class="cta-banner-title">Ready to accelerate your Agile career?</div>
+    <div class="cta-banner-sub">Join 18,000+ mentees already learning on AgileMentor.</div>
+  </div>
+  <div class="cta-banner-actions">
+    <a class="cta-main" href="/signup/mentee">Start Learning Free</a>
+    <a class="cta-outline" href="/signup/mentor">Apply as Mentor</a>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <div style="font-size:1.3rem;font-weight:800;color:white;">Agile<span style="color:#60A5FA">Mentor</span></div>
+      <p>India's leading platform connecting Agile professionals with the next generation of practitioners.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Platform</h4>
+      <a href="#">Programs</a>
+      <a href="#">Live Sessions</a>
+      <a href="#">Mentors</a>
+      <a href="#">Certificates</a>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <a href="#">About Us</a>
+      <a href="#">Careers</a>
+      <a href="#">Blog</a>
+      <a href="#">Contact</a>
+    </div>
+    <div class="footer-col">
+      <h4>Support</h4>
+      <a href="#">Help Center</a>
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Use</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 AgileMentor. All rights reserved.</span>
+    <span>Made with ❤️ in India</span>
+  </div>
+</footer>
+
 </body>
 </html>

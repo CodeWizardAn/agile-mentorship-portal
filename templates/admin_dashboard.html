@@ -130,6 +130,13 @@
       <div class="card">
         <div class="card-header"><div class="card-title">Generate Mentor Invite</div></div>
         <div class="card-body">
+          {% if request.query_params.get('invite_code') %}
+<div style="background:#DCFCE7;border:1.5px solid #86EFAC;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+  <div style="font-size:0.75rem;font-weight:700;color:#15803D;margin-bottom:4px;">INVITE CODE GENERATED</div>
+  <div style="font-size:1.2rem;font-weight:900;color:#15803D;letter-spacing:2px;">{{ request.query_params.get('invite_code') }}</div>
+  <div style="font-size:0.75rem;color:#166534;margin-top:4px;">Share this code with the mentor. It can only be used once.</div>
+</div>
+{% endif %}
           <p style="font-size:0.83rem;color:var(--muted);margin-bottom:16px;">Generate a one-time invite code to onboard a new mentor.</p>
           <form class="invite-form" action="/admin/generate-invite" method="post">
             <input class="invite-input" type="email" name="admin_email" placeholder="Your admin email" required/>

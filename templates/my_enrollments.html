@@ -1,26 +1,114 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>My Enrollments</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Enrollments — AgileMentor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --navy:#0F2645;--blue:#2563EB;--teal:#0EA5E9;--white:#FFFFFF;--offwhite:#F8FAFF;--gray:#E8EFF8;--muted:#64748B;--text:#1E293B; }
+    body { font-family:'Inter',sans-serif; background:var(--offwhite); min-height:100vh; display:flex; }
+    .sidebar { width:240px; background:var(--navy); min-height:100vh; display:flex; flex-direction:column; position:fixed; left:0; top:0; bottom:0; z-index:100; }
+    .sidebar-logo { padding:24px 20px; border-bottom:1px solid rgba(255,255,255,0.08); }
+    .logo-wrap { display:flex; align-items:center; gap:10px; text-decoration:none; }
+    .logo-icon { width:32px; height:32px; border-radius:8px; background:linear-gradient(135deg,var(--blue),var(--teal)); display:flex; align-items:center; justify-content:center; }
+    .logo-icon svg { width:16px; height:16px; fill:none; stroke:white; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .logo-text { font-size:1.05rem; font-weight:800; color:white; }
+    .logo-text span { color:#60A5FA; }
+    .sidebar-user { padding:20px; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; gap:12px; }
+    .user-avatar { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,var(--blue),var(--teal)); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem; color:white; flex-shrink:0; }
+    .user-name { font-size:0.85rem; font-weight:700; color:white; }
+    .user-role { font-size:0.72rem; color:#64748B; }
+    .sidebar-nav { flex:1; padding:16px 12px; }
+    .nav-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:9px; text-decoration:none; color:#94A3B8; font-size:0.85rem; font-weight:500; transition:all 0.2s; margin-bottom:2px; }
+    .nav-item:hover { background:rgba(255,255,255,0.06); color:white; }
+    .nav-item.active { background:rgba(37,99,235,0.2); color:#60A5FA; font-weight:600; }
+    .nav-item svg { width:16px; height:16px; flex-shrink:0; }
+    .sidebar-footer { padding:16px 12px; border-top:1px solid rgba(255,255,255,0.08); }
+    .logout-btn { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:9px; text-decoration:none; color:#94A3B8; font-size:0.85rem; }
+    .logout-btn:hover { background:rgba(239,68,68,0.1); color:#F87171; }
+    .logout-btn svg { width:16px; height:16px; }
+    .main { margin-left:240px; flex:1; display:flex; flex-direction:column; }
+    .topbar { background:var(--white); border-bottom:1px solid var(--gray); padding:0 32px; height:64px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+    .topbar-title { font-size:1.1rem; font-weight:700; color:var(--navy); }
+    .topbar-badge { background:var(--gray); color:var(--muted); font-size:0.78rem; font-weight:600; padding:5px 12px; border-radius:20px; }
+    .content { padding:32px; }
+    .page-title { font-size:1.7rem; font-weight:800; color:var(--navy); letter-spacing:-0.5px; margin-bottom:6px; }
+    .page-title span { color:var(--blue); }
+    .page-sub { font-size:0.9rem; color:var(--muted); margin-bottom:28px; }
+    .enrollments-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:20px; }
+    .enroll-card { background:var(--white); border-radius:16px; border:1px solid var(--gray); padding:24px; display:flex; gap:18px; transition:box-shadow 0.2s; }
+    .enroll-card:hover { box-shadow:0 8px 28px rgba(15,38,69,0.08); }
+    .enroll-icon { width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; flex-shrink:0; }
+    .enroll-info { flex:1; }
+    .enroll-title { font-size:1rem; font-weight:700; color:var(--navy); margin-bottom:4px; }
+    .enroll-id { font-size:0.72rem; color:var(--muted); font-weight:600; background:var(--gray); padding:2px 8px; border-radius:5px; display:inline-block; margin-bottom:10px; }
+    .enroll-meta { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+    .meta-chip { font-size:0.75rem; color:var(--muted); display:flex; align-items:center; gap:4px; }
+    .enroll-footer { display:flex; align-items:center; justify-content:space-between; }
+    .status-badge { font-size:0.72rem; font-weight:700; padding:4px 10px; border-radius:6px; }
+    .status-active { background:#DCFCE7; color:#15803D; }
+    .status-completed { background:#EEF2FF; color:#4338CA; }
+    .status-dropped { background:#FEE2E2; color:#DC2626; }
+    .view-btn { font-size:0.78rem; color:var(--blue); font-weight:600; text-decoration:none; }
+    .view-btn:hover { text-decoration:underline; }
+    .empty-state { text-align:center; padding:80px 20px; color:var(--muted); }
+    .empty-icon { font-size:3rem; margin-bottom:16px; }
+    .empty-title { font-size:1.1rem; font-weight:700; color:var(--navy); margin-bottom:8px; }
+    .browse-btn { display:inline-block; margin-top:16px; padding:10px 24px; border-radius:9px; background:linear-gradient(135deg,var(--blue),var(--teal)); color:white; font-size:0.88rem; font-weight:700; text-decoration:none; }
+  </style>
 </head>
 <body>
-
-<h1>My Enrollments</h1>
-<a href="/mentee-dashboard">Back to Dashboard</a>
-
-<br><br>
-
-{% for e in enrollments %}
-<div>
-    <h3>{{ e.program.title }}</h3>
-    <p>Status: {{ e.status }}</p>
-    <p>Enrolled on: {{ e.enrollment_date }}</p>
-    <p>Enrollment ID: {{ e.enrollment_id }}</p>
-    <hr>
+<aside class="sidebar">
+  <div class="sidebar-logo"><a class="logo-wrap" href="/"><div class="logo-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><span class="logo-text">Agile<span>Mentor</span></span></a></div>
+  <div class="sidebar-user"><div class="user-avatar">{{ user.full_name[0].upper() }}</div><div><div class="user-name">{{ user.full_name }}</div><div class="user-role">Mentee</div></div></div>
+  <nav class="sidebar-nav">
+    <a class="nav-item" href="/mentee-dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+    <a class="nav-item" href="/programs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Browse Programs</a>
+    <a class="nav-item active" href="/my-enrollments"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>My Enrollments</a>
+    <a class="nav-item" href="/my-sessions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>My Sessions</a>
+    <a class="nav-item" href="/my-attendance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>My Attendance</a>
+  </nav>
+  <div class="sidebar-footer"><a class="logout-btn" href="/logout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Logout</a></div>
+</aside>
+<div class="main">
+  <div class="topbar"><div class="topbar-title">My Enrollments</div><span class="topbar-badge">Mentee</span></div>
+  <div class="content">
+    <div class="page-title">My <span>Enrollments</span></div>
+    <div class="page-sub">Programs you are currently enrolled in.</div>
+    {% if enrollments %}
+    <div class="enrollments-grid">
+      {% set icons = ['🚀','📋','⚡','🎯','💡','🏆'] %}
+      {% set bgs = ['#EEF2FF','#DCFCE7','#FFF7ED','#F0F9FF','#FDF4FF','#FFF1F2'] %}
+      {% for e in enrollments %}
+      <div class="enroll-card">
+        <div class="enroll-icon" style="background:{{ bgs[loop.index0 % 6] }};">{{ icons[loop.index0 % 6] }}</div>
+        <div class="enroll-info">
+          <div class="enroll-title">{{ e.program.title }}</div>
+          <div class="enroll-id">{{ e.enrollment_id }}</div>
+          <div class="enroll-meta">
+            {% if e.program.duration_weeks %}<div class="meta-chip">📅 {{ e.program.duration_weeks }} weeks</div>{% endif %}
+            {% if e.program.category %}<div class="meta-chip">🏷 {{ e.program.category }}</div>{% endif %}
+            <div class="meta-chip">📆 {{ e.enrollment_date.strftime('%d %b %Y') if e.enrollment_date else '—' }}</div>
+          </div>
+          <div class="enroll-footer">
+            <span class="status-badge status-{{ e.status }}">{{ e.status.upper() }}</span>
+            <a class="view-btn" href="/my-sessions">View Sessions →</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">📚</div>
+      <div class="empty-title">No enrollments yet</div>
+      <div>Browse available programs and enroll to get started.</div>
+      <a class="browse-btn" href="/programs">Browse Programs →</a>
+    </div>
+    {% endif %}
+  </div>
 </div>
-{% else %}
-<p>You are not enrolled in any programs yet.</p>
-{% endfor %}
-
 </body>
 </html>

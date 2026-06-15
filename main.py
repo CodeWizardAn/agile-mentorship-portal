@@ -78,9 +78,9 @@ def generate_invite_id(db: Session) -> str:
     else:
         last_serial = 1
     return f"INV{last_serial:04d}"
+
 def generate_enrollment_id(db: Session, user_id: str, program_id: str) -> str:
     year = str(datetime.now().year)[2:]
-    # for now simple format until batches are decided
     last_enrollment = db.query(func.max(Enrollment.enrollment_id)).scalar()
     if last_enrollment:
         last_serial = int(last_enrollment[-4:]) + 1
@@ -111,6 +111,8 @@ def generate_cert_id(db: Session) -> str:
     else:
         last_serial = 1
     return f"CRT{last_serial:04d}"
+
+
 # ── GET CURRENT USER FROM COOKIE ─────────────────────────────────────────────
 
 def get_current_user(access_token: str = Cookie(None), db: Session = Depends(get_db)):
@@ -146,9 +148,7 @@ def mentor_dashboard(request: Request, current_user: User = Depends(get_current_
     if not current_user or current_user.role != "mentor":
         return RedirectResponse(url="/login/mentor", status_code=302)
     return templates.TemplateResponse(
-        request=request,
-        name="mentor_dashboard.html",
-        context={"user": current_user}
+        request=request, name="mentor_dashboard.html", context={"user": current_user}
     )
 
 @app.get("/mentee-dashboard", response_class=HTMLResponse)
@@ -156,9 +156,7 @@ def mentee_dashboard(request: Request, current_user: User = Depends(get_current_
     if not current_user or current_user.role != "mentee":
         return RedirectResponse(url="/login/mentee", status_code=302)
     return templates.TemplateResponse(
-        request=request,
-        name="mentee_dashboard.html",
-        context={"user": current_user}
+        request=request, name="mentee_dashboard.html", context={"user": current_user}
     )
 
 @app.get("/admin-dashboard", response_class=HTMLResponse)
@@ -166,9 +164,8 @@ def admin_dashboard(request: Request, current_user: User = Depends(get_current_u
     if not current_user or current_user.role != "admin":
         return RedirectResponse(url="/login/admin", status_code=302)
     return templates.TemplateResponse(
-        request=request,
-        name="admin_dashboard.html",
-        context={"user": current_user}
+        request=request, name="admin_dashboard.html",
+        context={"user": current_user, "request": request}
     )
 
 
@@ -183,74 +180,58 @@ def create_user(
     invite_code: str = Form(None),
     db: Session = Depends(get_db)
 ):
-    # mentor invite code check
     if role == "mentor":
         if not invite_code:
-            return HTMLResponse(
-                "<h2>Invite code is required for mentor signup</h2>",
-                status_code=400
-            )
+            return templates.TemplateResponse("signup.html", {
+                "request": {}, "role": role,
+                "error": "Invite code is required for mentor signup"
+            }, status_code=400)
         invite = db.query(MentorInvite).filter(
             MentorInvite.invite_code == invite_code.upper(),
             MentorInvite.is_used == False
         ).first()
         if not invite:
-            return HTMLResponse(
-                "<h2>Invalid or already used invite code</h2>",
-                status_code=400
-            )
+            return templates.TemplateResponse("signup.html", {
+                "request": {}, "role": role,
+                "error": "Invalid or already used invite code"
+            }, status_code=400)
 
-    # email validation
     if not validate_email(email):
-        return HTMLResponse(
-            "<h2>Invalid email. Use a valid domain like gmail.com, yahoo.com, ac.in etc.</h2>",
-            status_code=400
-        )
+        return templates.TemplateResponse("signup.html", {
+            "request": {}, "role": role,
+            "error": "Invalid email. Use a valid domain like gmail.com, yahoo.com, ac.in etc."
+        }, status_code=400)
 
-    # password validation
     if not validate_password(password):
-        return HTMLResponse(
-            "<h2>Password must be at least 6 characters and start with a capital letter</h2>",
-            status_code=400
-        )
+        return templates.TemplateResponse("signup.html", {
+            "request": {}, "role": role,
+            "error": "Password must be at least 6 characters and start with a capital letter"
+        }, status_code=400)
 
-    # check if email already registered
     existing_user = db.query(User).filter(User.email == email).first()
     if existing_user:
-        return HTMLResponse("<h2>Email already registered</h2>", status_code=400)
+        return templates.TemplateResponse("signup.html", {
+            "request": {}, "role": role,
+            "error": "Email already registered"
+        }, status_code=400)
 
     user_id = generate_user_id(db)
-
     user = User(
-        user_id=user_id,
-        full_name=full_name,
-        email=email,
-        password_hash=hash_password(password),
-        role=role.lower(),
-        status="active"
+        user_id=user_id, full_name=full_name, email=email,
+        password_hash=hash_password(password), role=role.lower(), status="active"
     )
     db.add(user)
     db.flush()
 
-    # if mentor — create mentor profile and mark invite used
     if role == "mentor":
         mentor_profile_id = generate_mentor_id(db)
-        mentor = Mentor(
-            mentor_profile_id=mentor_profile_id,
-            user_id=user_id,
-        )
+        mentor = Mentor(mentor_profile_id=mentor_profile_id, user_id=user_id)
         db.add(mentor)
         invite.is_used = True
         invite.used_by = user_id
-        db.commit()
-        return {
-            "message": "Mentor account created successfully",
-            "user_id": user_id,
-            "mentor_profile_id": mentor_profile_id
-        }
 
     db.commit()
-    return {"message": "User created successfully", "user_id": user_id}
+    return RedirectResponse(url=f"/login/{role}", status_code=302)
 
 
 # ── LOGIN ─────────────────────────────────────────────────────────────────────
@@ -263,25 +244,29 @@ def login_user(
     db: Session = Depends(get_db)
 ):
     if not validate_email(email):
-        return HTMLResponse(
-            "<h2>Invalid email. Use a valid domain like gmail.com, yahoo.com, ac.in etc.</h2>",
-            status_code=400
-        )
+        return templates.TemplateResponse("login.html", {
+            "request": {}, "role": role,
+            "error": "Invalid email. Use a valid domain like gmail.com, yahoo.com, ac.in etc."
+        }, status_code=400)
 
     user = db.query(User).filter(User.email == email).first()
     if not user:
-        return HTMLResponse("<h2>User not found</h2>", status_code=404)
+        return templates.TemplateResponse("login.html", {
+            "request": {}, "role": role, "error": "User not found"
+        }, status_code=404)
 
     if user.role != role.lower():
-        return HTMLResponse("<h2>Invalid role for this account</h2>", status_code=403)
+        return templates.TemplateResponse("login.html", {
+            "request": {}, "role": role, "error": "Invalid role for this account"
+        }, status_code=403)
 
     if not verify_password(password, user.password_hash):
-        return HTMLResponse("<h2>Invalid password</h2>", status_code=401)
+        return templates.TemplateResponse("login.html", {
+            "request": {}, "role": role, "error": "Invalid password"
+        }, status_code=401)
 
     token = create_access_token(data={
-        "user_id": user.user_id,
-        "role": user.role,
-        "email": user.email
+        "user_id": user.user_id, "role": user.role, "email": user.email
     })
 
     if user.role == "mentor":
@@ -313,22 +298,20 @@ def generate_invite(
 ):
     admin = db.query(User).filter(User.email == admin_email).first()
     if not admin or admin.role != "admin":
-        return HTMLResponse("<h2>Unauthorized. Admins only.</h2>", status_code=403)
+        return RedirectResponse(url="/admin-dashboard", status_code=302)
 
     invite_code = secrets.token_hex(6).upper()
     invite_id = generate_invite_id(db)
 
     invite = MentorInvite(
-        invite_id=invite_id,
-        invite_code=invite_code,
-        created_by=admin.user_id,
-        is_used=False
+        invite_id=invite_id, invite_code=invite_code,
+        created_by=admin.user_id, is_used=False
     )
-
     db.add(invite)
     db.commit()
 
-    return {"invite_code": invite_code, "invite_id": invite_id}
+    # redirect back to admin dashboard with invite code in query param
+    return RedirectResponse(url=f"/admin-dashboard?invite_code={invite_code}", status_code=302)
 
 
 # ── MENTOR PROFILE ────────────────────────────────────────────────────────────
@@ -338,11 +321,8 @@ def mentor_profile_page(request: Request, current_user: User = Depends(get_curre
     if not current_user or current_user.role != "mentor":
         return RedirectResponse(url="/login/mentor", status_code=302)
     return templates.TemplateResponse(
-        request=request,
-        name="mentor_profile.html",
-        context={"user": current_user}
+        request=request, name="mentor_profile.html", context={"user": current_user}
     )
-
 
 @app.post("/mentor-profile/update")
 def update_mentor_profile(
@@ -354,24 +334,19 @@ def update_mentor_profile(
     db: Session = Depends(get_db)
 ):
     if not current_user or current_user.role != "mentor":
-        return HTMLResponse("<h2>Unauthorized</h2>", status_code=403)
+        return RedirectResponse(url="/login/mentor", status_code=302)
 
     mentor = db.query(Mentor).filter(Mentor.user_id == current_user.user_id).first()
     if not mentor:
-        return HTMLResponse("<h2>Mentor profile not found</h2>", status_code=404)
+        return RedirectResponse(url="/mentor-dashboard", status_code=302)
 
-    if expertise:
-        mentor.expertise = expertise
-    if experience_years:
-        mentor.experience_years = experience_years
-    if bio:
-        mentor.bio = bio
-    if linkedin_url:
-        mentor.linkedin_url = linkedin_url
+    if expertise: mentor.expertise = expertise
+    if experience_years: mentor.experience_years = experience_years
+    if bio: mentor.bio = bio
+    if linkedin_url: mentor.linkedin_url = linkedin_url
 
     db.commit()
-
-    return {"message": "Profile updated successfully", "mentor_profile_id": mentor.mentor_profile_id}
+    return RedirectResponse(url="/mentor-profile", status_code=302)
 
 
 # ── PROGRAMS ──────────────────────────────────────────────────────────────────
@@ -382,11 +357,9 @@ def programs_page(request: Request, current_user: User = Depends(get_current_use
         return RedirectResponse(url="/login/admin", status_code=302)
     programs = db.query(Program).all()
     return templates.TemplateResponse(
-        request=request,
-        name="programs.html",
+        request=request, name="programs.html",
         context={"user": current_user, "programs": programs}
     )
-
 
 @app.post("/admin/programs/create")
 def create_program(
@@ -401,28 +374,20 @@ def create_program(
     db: Session = Depends(get_db)
 ):
     if not current_user or current_user.role != "admin":
-        return HTMLResponse("<h2>Unauthorized</h2>", status_code=403)
+        return RedirectResponse(url="/login/admin", status_code=302)
 
     program_id = generate_program_id(db)
-
     program = Program(
-        program_id=program_id,
-        title=title,
-        description=description,
-        category=category,
-        duration_weeks=duration_weeks,
-        start_date=start_date,
-        end_date=end_date,
+        program_id=program_id, title=title, description=description,
+        category=category, duration_weeks=duration_weeks,
+        start_date=start_date, end_date=end_date,
         created_by=current_user.user_id,
         assigned_mentor=assigned_mentor if assigned_mentor else None,
         status="draft"
     )
-
     db.add(program)
     db.commit()
-
-    return {"message": "Program created successfully", "program_id": program_id}
-
+    return RedirectResponse(url="/admin/programs", status_code=302)
 
 @app.post("/admin/programs/update/{program_id}")
 def update_program(
@@ -439,11 +404,11 @@ def update_program(
     db: Session = Depends(get_db)
 ):
     if not current_user or current_user.role != "admin":
-        return HTMLResponse("<h2>Unauthorized</h2>", status_code=403)
+        return RedirectResponse(url="/login/admin", status_code=302)
 
     program = db.query(Program).filter(Program.program_id == program_id).first()
     if not program:
-        return HTMLResponse("<h2>Program not found</h2>", status_code=404)
+        return RedirectResponse(url="/admin/programs", status_code=302)
 
     if title: program.title = title
     if description: program.description = description
@@ -455,9 +420,7 @@ def update_program(
     if status: program.status = status
 
     db.commit()
-
-    return {"message": "Program updated successfully", "program_id": program_id}
-
+    return RedirectResponse(url="/admin/programs", status_code=302)
 
 @app.post("/admin/programs/delete/{program_id}")
 def delete_program(
@@ -466,17 +429,13 @@ def delete_program(
     db: Session = Depends(get_db)
 ):
     if not current_user or current_user.role != "admin":
-        return HTMLResponse("<h2>Unauthorized</h2>", status_code=403)
+        return RedirectResponse(url="/login/admin", status_code=302)
 
     program = db.query(Program).filter(Program.program_id == program_id).first()
-    if not program:
-        return HTMLResponse("<h2>Program not found</h2>", status_code=404)
-
-    db.delete(program)
-    db.commit()
-
-    return {"message": "Program deleted successfully"}
-
+    if program:
+        db.delete(program)
+        db.commit()
+    return RedirectResponse(url="/admin/programs", status_code=302)
 
 @app.get("/programs", response_class=HTMLResponse)
 def view_programs(request: Request, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
@@ -484,11 +443,11 @@ def view_programs(request: Request, current_user: User = Depends(get_current_use
         return RedirectResponse(url="/login/mentee", status_code=302)
     programs = db.query(Program).filter(Program.status == "active").all()
     return templates.TemplateResponse(
-        request=request,
-        name="view_programs.html",
+        request=request, name="view_programs.html",
         context={"programs": programs, "user": current_user}
     )
-    
+
+
 # ── ENROLLMENT ────────────────────────────────────────────────────────────────
 
 @app.post("/enroll/{program_id}")
@@ -498,38 +457,31 @@ def enroll_program(
     db: Session = Depends(get_db)
 ):
     if not current_user or current_user.role != "mentee":
-        return HTMLResponse("<h2>Only mentees can enroll</h2>", status_code=403)
+        return RedirectResponse(url="/login/mentee", status_code=302)
 
-    # check program exists and is active
     program = db.query(Program).filter(
-        Program.program_id == program_id,
-        Program.status == "active"
+        Program.program_id == program_id, Program.status == "active"
     ).first()
     if not program:
-        return HTMLResponse("<h2>Program not found or not active</h2>", status_code=404)
+        return RedirectResponse(url="/programs", status_code=302)
 
-    # check if already enrolled
     existing = db.query(Enrollment).filter(
         Enrollment.user_id == current_user.user_id,
         Enrollment.program_id == program_id
     ).first()
     if existing:
-        return HTMLResponse("<h2>Already enrolled in this program</h2>", status_code=400)
+        return RedirectResponse(url="/my-enrollments", status_code=302)
 
     enrollment_id = generate_enrollment_id(db, current_user.user_id, program_id)
-
     enrollment = Enrollment(
         enrollment_id=enrollment_id,
         user_id=current_user.user_id,
         program_id=program_id,
         status="active"
     )
-
     db.add(enrollment)
     db.commit()
-
-    return {"message": "Enrolled successfully", "enrollment_id": enrollment_id}
-
+    return RedirectResponse(url="/my-enrollments", status_code=302)
 
 @app.get("/my-enrollments", response_class=HTMLResponse)
 def my_enrollments(
@@ -544,7 +496,6 @@ def my_enrollments(
         Enrollment.user_id == current_user.user_id
     ).all()
 
-    # get program details for each enrollment
     programs = []
     for e in enrollments:
         program = db.query(Program).filter(Program.program_id == e.program_id).first()
@@ -556,10 +507,11 @@ def my_enrollments(
         })
 
     return templates.TemplateResponse(
-        request=request,
-        name="my_enrollments.html",
+        request=request, name="my_enrollments.html",
         context={"enrollments": programs, "user": current_user}
     )
+
+
 # ── ADMIN USER MANAGEMENT ─────────────────────────────────────────────────────
 
 @app.get("/admin/users", response_class=HTMLResponse)
@@ -568,11 +520,9 @@ def manage_users(request: Request, current_user: User = Depends(get_current_user
         return RedirectResponse(url="/login/admin", status_code=302)
     users = db.query(User).filter(User.role != "admin").all()
     return templates.TemplateResponse(
-        request=request,
-        name="manage_users.html",
+        request=request, name="manage_users.html",
         context={"users": users, "user": current_user}
     )
-
 
 @app.post("/admin/users/delete/{user_id}")
 def delete_user(
@@ -581,26 +531,21 @@ def delete_user(
     db: Session = Depends(get_db)
 ):
     if not current_user or current_user.role != "admin":
-        return HTMLResponse("<h2>Unauthorized</h2>", status_code=403)
+        return RedirectResponse(url="/login/admin", status_code=302)
 
-    # remove mentor profile if exists
     mentor = db.query(Mentor).filter(Mentor.user_id == user_id).first()
     if mentor:
         db.query(Program).filter(Program.assigned_mentor == mentor.mentor_profile_id).update({"assigned_mentor": None})
         db.delete(mentor)
 
-    # remove enrollments
     db.query(Enrollment).filter(Enrollment.user_id == user_id).delete()
 
-    # delete user
     user = db.query(User).filter(User.user_id == user_id).first()
-    if not user:
-        return HTMLResponse("<h2>User not found</h2>", status_code=404)
-
-    db.delete(user)
+    if user:
+        db.delete(user)
     db.commit()
-
     return RedirectResponse(url="/admin/users", status_code=302)
+
 
 # ── SESSIONS ──────────────────────────────────────────────────────────────────
 
@@ -614,16 +559,11 @@ def admin_sessions_page(
         return RedirectResponse(url="/login/admin", status_code=302)
     sessions = db.query(MentorSession).all()
     programs = db.query(Program).all()
-    
-    # join mentor with user to get name
     mentors = db.query(Mentor, User).join(User, Mentor.user_id == User.user_id).all()
-    
     return templates.TemplateResponse(
-        request=request,
-        name="admin_sessions.html",
+        request=request, name="admin_sessions.html",
         context={"user": current_user, "sessions": sessions, "programs": programs, "mentors": mentors}
     )
-
 
 @app.post("/admin/sessions/create")
 def admin_create_session(
@@ -640,29 +580,20 @@ def admin_create_session(
     db: Session = Depends(get_db)
 ):
     if not current_user or current_user.role != "admin":
-        return HTMLResponse("<h2>Unauthorized</h2>", status_code=403)
+        return RedirectResponse(url="/login/admin", status_code=302)
 
     session_id = generate_session_id(db)
-
     session = MentorSession(
-        session_id=session_id,
-        program_id=program_id,
-        mentor_id=mentor_id,
-        title=title,
-        description=description,
-        session_type=session_type,
+        session_id=session_id, program_id=program_id, mentor_id=mentor_id,
+        title=title, description=description, session_type=session_type,
         scheduled_at=scheduled_at if scheduled_at else None,
         meeting_link=meeting_link if meeting_link else None,
         video_url=video_url if video_url else None,
-        duration_minutes=duration_minutes,
-        status="scheduled"
+        duration_minutes=duration_minutes, status="scheduled"
     )
-
     db.add(session)
     db.commit()
-
-    return {"message": "Session created successfully", "session_id": session_id}
-
+    return RedirectResponse(url="/admin/sessions", status_code=302)
 
 @app.post("/admin/sessions/update/{session_id}")
 def admin_update_session(
@@ -678,11 +609,11 @@ def admin_update_session(
     db: Session = Depends(get_db)
 ):
     if not current_user or current_user.role != "admin":
-        return HTMLResponse("<h2>Unauthorized</h2>", status_code=403)
+        return RedirectResponse(url="/login/admin", status_code=302)
 
     session = db.query(MentorSession).filter(MentorSession.session_id == session_id).first()
     if not session:
-        return HTMLResponse("<h2>Session not found</h2>", status_code=404)
+        return RedirectResponse(url="/admin/sessions", status_code=302)
 
     if title: session.title = title
     if description: session.description = description
@@ -693,8 +624,7 @@ def admin_update_session(
     if status: session.status = status
 
     db.commit()
-    return {"message": "Session updated successfully"}
-
+    return RedirectResponse(url="/admin/sessions", status_code=302)
 
 @app.post("/admin/sessions/delete/{session_id}")
 def admin_delete_session(
@@ -703,15 +633,13 @@ def admin_delete_session(
     db: Session = Depends(get_db)
 ):
     if not current_user or current_user.role != "admin":
-        return HTMLResponse("<h2>Unauthorized</h2>", status_code=403)
+        return RedirectResponse(url="/login/admin", status_code=302)
 
     session = db.query(MentorSession).filter(MentorSession.session_id == session_id).first()
-    if not session:
-        return HTMLResponse("<h2>Session not found</h2>", status_code=404)
-
-    db.delete(session)
-    db.commit()
-    return {"message": "Session deleted successfully"}
+    if session:
+        db.delete(session)
+        db.commit()
+    return RedirectResponse(url="/admin/sessions", status_code=302)
 
 
 # ── MENTOR SESSIONS ───────────────────────────────────────────────────────────
@@ -727,13 +655,11 @@ def mentor_sessions_page(
 
     mentor = db.query(Mentor).filter(Mentor.user_id == current_user.user_id).first()
     if not mentor:
-        return HTMLResponse("<h2>Mentor profile not found. Please contact admin.</h2>", status_code=404)
+        return RedirectResponse(url="/mentor-dashboard", status_code=302)
 
     sessions = db.query(MentorSession).filter(MentorSession.mentor_id == mentor.mentor_profile_id).all()
-
     return templates.TemplateResponse(
-        request=request,
-        name="mentor_sessions.html",
+        request=request, name="mentor_sessions.html",
         context={"user": current_user, "sessions": sessions, "mentor": mentor}
     )
 
@@ -751,39 +677,29 @@ def mentor_create_session(
     db: Session = Depends(get_db)
 ):
     if not current_user or current_user.role != "mentor":
-        return HTMLResponse("<h2>Unauthorized</h2>", status_code=403)
+        return RedirectResponse(url="/login/mentor", status_code=302)
 
     mentor = db.query(Mentor).filter(Mentor.user_id == current_user.user_id).first()
-
-    # check mentor is assigned to this program
     program = db.query(Program).filter(
         Program.program_id == program_id,
         Program.assigned_mentor == mentor.mentor_profile_id
     ).first()
     if not program:
-        return HTMLResponse("<h2>You are not assigned to this program</h2>", status_code=403)
+        return RedirectResponse(url="/mentor/sessions", status_code=302)
 
     session_id = generate_session_id(db)
-
     session = MentorSession(
-        session_id=session_id,
-        program_id=program_id,
-        mentor_id=mentor.mentor_profile_id,
-        title=title,
-        description=description,
+        session_id=session_id, program_id=program_id,
+        mentor_id=mentor.mentor_profile_id, title=title, description=description,
         session_type=session_type,
         scheduled_at=scheduled_at if scheduled_at else None,
         meeting_link=meeting_link if meeting_link else None,
         video_url=video_url if video_url else None,
-        duration_minutes=duration_minutes,
-        status="scheduled"
+        duration_minutes=duration_minutes, status="scheduled"
     )
-
     db.add(session)
     db.commit()
-
-    return {"message": "Session created successfully", "session_id": session_id}
-
+    return RedirectResponse(url="/mentor/sessions", status_code=302)
 
 @app.post("/mentor/sessions/update/{session_id}")
 def mentor_update_session(
@@ -799,7 +715,7 @@ def mentor_update_session(
     db: Session = Depends(get_db)
 ):
     if not current_user or current_user.role != "mentor":
-        return HTMLResponse("<h2>Unauthorized</h2>", status_code=403)
+        return RedirectResponse(url="/login/mentor", status_code=302)
 
     mentor = db.query(Mentor).filter(Mentor.user_id == current_user.user_id).first()
     session = db.query(MentorSession).filter(
@@ -807,7 +723,7 @@ def mentor_update_session(
         MentorSession.mentor_id == mentor.mentor_profile_id
     ).first()
     if not session:
-        return HTMLResponse("<h2>Session not found or unauthorized</h2>", status_code=404)
+        return RedirectResponse(url="/mentor/sessions", status_code=302)
 
     if title: session.title = title
     if description: session.description = description
@@ -818,8 +734,7 @@ def mentor_update_session(
     if status: session.status = status
 
     db.commit()
-    return {"message": "Session updated successfully"}
-
+    return RedirectResponse(url="/mentor/sessions", status_code=302)
 
 @app.post("/mentor/sessions/delete/{session_id}")
 def mentor_delete_session(
@@ -828,19 +743,17 @@ def mentor_delete_session(
     db: Session = Depends(get_db)
 ):
     if not current_user or current_user.role != "mentor":
-        return HTMLResponse("<h2>Unauthorized</h2>", status_code=403)
+        return RedirectResponse(url="/login/mentor", status_code=302)
 
     mentor = db.query(Mentor).filter(Mentor.user_id == current_user.user_id).first()
     session = db.query(MentorSession).filter(
         MentorSession.session_id == session_id,
         MentorSession.mentor_id == mentor.mentor_profile_id
     ).first()
-    if not session:
-        return HTMLResponse("<h2>Session not found or unauthorized</h2>", status_code=404)
-
-    db.delete(session)
-    db.commit()
-    return {"message": "Session deleted successfully"}
+    if session:
+        db.delete(session)
+        db.commit()
+    return RedirectResponse(url="/mentor/sessions", status_code=302)
 
 
 # ── MENTEE SESSIONS ───────────────────────────────────────────────────────────
@@ -854,24 +767,20 @@ def mentee_sessions(
     if not current_user or current_user.role != "mentee":
         return RedirectResponse(url="/login/mentee", status_code=302)
 
-    # get programs mentee is enrolled in
     enrollments = db.query(Enrollment).filter(
         Enrollment.user_id == current_user.user_id
     ).all()
-
     program_ids = [e.program_id for e in enrollments]
-
-    # get all sessions for those programs
     sessions = db.query(MentorSession).filter(
         MentorSession.program_id.in_(program_ids)
     ).all()
 
     return templates.TemplateResponse(
-        request=request,
-        name="my_sessions.html",
+        request=request, name="my_sessions.html",
         context={"user": current_user, "sessions": sessions}
     )
-    
+
+
 # ── ATTENDANCE ────────────────────────────────────────────────────────────────
 
 @app.get("/admin/attendance", response_class=HTMLResponse)
@@ -884,11 +793,9 @@ def admin_attendance_page(
         return RedirectResponse(url="/login/admin", status_code=302)
     sessions = db.query(MentorSession).all()
     return templates.TemplateResponse(
-        request=request,
-        name="admin_attendance.html",
+        request=request, name="admin_attendance.html",
         context={"user": current_user, "sessions": sessions}
     )
-
 
 @app.get("/attendance/{session_id}", response_class=HTMLResponse)
 def view_session_attendance(
@@ -902,9 +809,8 @@ def view_session_attendance(
 
     session = db.query(MentorSession).filter(MentorSession.session_id == session_id).first()
     if not session:
-        return HTMLResponse("<h2>Session not found</h2>", status_code=404)
+        return RedirectResponse(url="/admin/attendance", status_code=302)
 
-    # get all mentees enrolled in this program
     enrollments = db.query(Enrollment).filter(
         Enrollment.program_id == session.program_id
     ).all()
@@ -916,21 +822,12 @@ def view_session_attendance(
             Attendance.session_id == session_id,
             Attendance.user_id == e.user_id
         ).first()
-        mentees.append({
-            "user": user,
-            "attendance": attendance
-        })
+        mentees.append({"user": user, "attendance": attendance})
 
     return templates.TemplateResponse(
-        request=request,
-        name="mark_attendance.html",
-        context={
-            "user": current_user,
-            "session": session,
-            "mentees": mentees
-        }
+        request=request, name="mark_attendance.html",
+        context={"user": current_user, "session": session, "mentees": mentees}
     )
-
 
 @app.post("/attendance/mark/{session_id}")
 def mark_attendance(
@@ -941,34 +838,27 @@ def mark_attendance(
     db: Session = Depends(get_db)
 ):
     if not current_user or current_user.role not in ["admin", "mentor"]:
-        return HTMLResponse("<h2>Unauthorized</h2>", status_code=403)
+        return RedirectResponse(url="/login/admin", status_code=302)
 
-    # check if attendance already marked
     existing = db.query(Attendance).filter(
         Attendance.session_id == session_id,
         Attendance.user_id == user_id
     ).first()
 
     if existing:
-        # update existing
         existing.status = status
-        db.commit()
-        return {"message": "Attendance updated", "attendance_id": existing.attendance_id}
+    else:
+        attendance_id = generate_attendance_id(db)
+        attendance = Attendance(
+            attendance_id=attendance_id,
+            session_id=session_id,
+            user_id=user_id,
+            status=status
+        )
+        db.add(attendance)
 
-    attendance_id = generate_attendance_id(db)
-
-    attendance = Attendance(
-        attendance_id=attendance_id,
-        session_id=session_id,
-        user_id=user_id,
-        status=status
-    )
-
-    db.add(attendance)
     db.commit()
-
-    return {"message": "Attendance marked", "attendance_id": attendance_id}
-
+    return RedirectResponse(url=f"/attendance/{session_id}", status_code=302)
 
 @app.get("/my-attendance", response_class=HTMLResponse)
 def my_attendance(
@@ -988,18 +878,14 @@ def my_attendance(
         session = db.query(MentorSession).filter(
             MentorSession.session_id == a.session_id
         ).first()
-        records.append({
-            "session": session,
-            "status": a.status,
-            "marked_at": a.marked_at
-        })
+        records.append({"session": session, "status": a.status, "marked_at": a.marked_at})
 
     return templates.TemplateResponse(
-        request=request,
-        name="my_attendance.html",
+        request=request, name="my_attendance.html",
         context={"user": current_user, "records": records}
     )
-    
+
+
 # ── PROFILE PHOTO UPLOAD ──────────────────────────────────────────────────────
 
 @app.post("/upload/profile-photo")
@@ -1009,18 +895,16 @@ async def upload_profile_photo(
     db: Session = Depends(get_db)
 ):
     if not current_user:
-        return HTMLResponse("<h2>Unauthorized</h2>", status_code=401)
+        return RedirectResponse(url="/login/mentee", status_code=302)
 
     contents = await file.read()
     url = upload_file(contents, folder="agilementor/profiles", resource_type="image")
-
     current_user.profile_photo = url
     db.commit()
+    return RedirectResponse(url="/mentor-profile", status_code=302)
 
-    return {"message": "Profile photo updated", "url": url}
 
-
-# ── MENTOR CERTIFICATE UPLOAD ─────────────────────────────────────────────────
+# ── MENTOR CERTIFICATE ────────────────────────────────────────────────────────
 
 @app.post("/mentor/upload-certificate")
 async def upload_certificate(
@@ -1030,15 +914,13 @@ async def upload_certificate(
     db: Session = Depends(get_db)
 ):
     if not current_user or current_user.role != "mentor":
-        return HTMLResponse("<h2>Unauthorized</h2>", status_code=403)
+        return RedirectResponse(url="/login/mentor", status_code=302)
 
     mentor = db.query(Mentor).filter(Mentor.user_id == current_user.user_id).first()
     if not mentor:
-        return HTMLResponse("<h2>Mentor profile not found</h2>", status_code=404)
+        return RedirectResponse(url="/mentor-dashboard", status_code=302)
 
     contents = await file.read()
-    
-    # detect file type
     filename = file.filename.lower()
     if filename.endswith(".pdf"):
         file_type = "pdf"
@@ -1048,22 +930,14 @@ async def upload_certificate(
         resource_type = "image"
 
     url = upload_file(contents, folder="agilementor/certificates", resource_type=resource_type)
-
     cert_id = generate_cert_id(db)
-
     cert = MentorCertificate(
-        cert_id=cert_id,
-        mentor_profile_id=mentor.mentor_profile_id,
-        title=title,
-        file_url=url,
-        file_type=file_type
+        cert_id=cert_id, mentor_profile_id=mentor.mentor_profile_id,
+        title=title, file_url=url, file_type=file_type
     )
-
     db.add(cert)
     db.commit()
-
-    return {"message": "Certificate uploaded", "cert_id": cert_id, "url": url}
-
+    return RedirectResponse(url="/mentor/certificates", status_code=302)
 
 @app.get("/mentor/certificates", response_class=HTMLResponse)
 def mentor_certificates_page(
@@ -1080,11 +954,9 @@ def mentor_certificates_page(
     ).all()
 
     return templates.TemplateResponse(
-        request=request,
-        name="mentor_certificates.html",
+        request=request, name="mentor_certificates.html",
         context={"user": current_user, "certs": certs, "mentor": mentor}
     )
-
 
 @app.post("/mentor/delete-certificate/{cert_id}")
 def delete_certificate(
@@ -1093,13 +965,10 @@ def delete_certificate(
     db: Session = Depends(get_db)
 ):
     if not current_user or current_user.role != "mentor":
-        return HTMLResponse("<h2>Unauthorized</h2>", status_code=403)
+        return RedirectResponse(url="/login/mentor", status_code=302)
 
     cert = db.query(MentorCertificate).filter(MentorCertificate.cert_id == cert_id).first()
-    if not cert:
-        return HTMLResponse("<h2>Certificate not found</h2>", status_code=404)
-
-    db.delete(cert)
-    db.commit()
-
+    if cert:
+        db.delete(cert)
+        db.commit()
     return RedirectResponse(url="/mentor/certificates", status_code=302)

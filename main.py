@@ -18,6 +18,7 @@ from models.attendance import Attendance
 from fastapi import UploadFile, File
 from cloudinary_config import upload_file
 from models.mentor_certificate import MentorCertificate
+from fastapi import HTTPException
 
 
 app = FastAPI()
@@ -133,8 +134,14 @@ def home(request: Request):
 
 @app.get("/signup/{role}", response_class=HTMLResponse)
 def signup(request: Request, role: str):
+
+    if role.lower() == "admin":
+        return RedirectResponse(url="/login/admin", status_code=302)
+
     return templates.TemplateResponse(
-        request=request, name="signup.html", context={"role": role}
+        request=request,
+        name="signup.html",
+        context={"role": role}
     )
 
 @app.get("/login/{role}", response_class=HTMLResponse)
@@ -180,6 +187,11 @@ def create_user(
     invite_code: str = Form(None),
     db: Session = Depends(get_db)
 ):
+    if role.lower() == "admin":
+        raise HTTPException(
+            status_code=403,
+            detail="Admin accounts cannot be created publicly."
+        )
     if role == "mentor":
         if not invite_code:
             return templates.TemplateResponse("signup.html", {

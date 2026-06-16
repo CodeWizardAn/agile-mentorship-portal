@@ -8,7 +8,13 @@ pwd_context = CryptContext(
 )
 
 # ── JWT CONFIG ────────────────────────────────────────────────────────────────
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    # python-dotenv not installed: provide a no-op fallback so environments without
+    # the package won't fail (load_dotenv will simply do nothing).
+    def load_dotenv():
+        return False
 import os
 load_dotenv()
 

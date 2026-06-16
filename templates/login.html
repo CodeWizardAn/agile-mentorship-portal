@@ -182,12 +182,17 @@
 
       <div class="divider"><span>or</span></div>
 
+      {% if role != 'admin' %}
       <div class="signup-prompt">
-        Don't have an account?
+         Don't have an account?
         <a href="/signup/{{ role }}">Create one for free</a>
       </div>
-    </div>
-
+      {% else %}
+      <div class="signup-prompt">
+        Admin accounts are created by the system administrator.
+      </div>
+      {% endif %}
+      
   </div>
 </div>
 

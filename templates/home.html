@@ -80,7 +80,7 @@
     .avatar { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); margin-left: -8px; background: linear-gradient(135deg, var(--blue), var(--teal)); display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; color: white; }
     .avatar:first-child { margin-left: 0; }
     .mentor-row { display: flex; gap: 12px; }
-    .mentor-avatar-icon { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #6366F1, #8B5CF6); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; color: white; flex-shrink: 0; }
+    .mentor-avatar-icon { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.3); flex-shrink: 0; }
     .enroll-btn { padding: 7px 16px; border-radius: 8px; border: none; background: var(--blue); color: white; font-size: 0.8rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: opacity 0.2s; display: inline-block; }
     .enroll-btn:hover { opacity: 0.85; }
 
@@ -103,19 +103,77 @@
     .bg-gray { background: var(--gray); }
 
     /* PROGRAMS */
-    .programs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-    .program-card { background: var(--white); border-radius: 16px; border: 1px solid var(--gray); overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; }
-    .program-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(15,38,69,0.1); }
-    .program-card-top { height: 140px; display: flex; align-items: center; justify-content: center; font-size: 3rem; position: relative; }
-    .program-tag { position: absolute; top: 12px; left: 12px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px; padding: 4px 10px; border-radius: 6px; }
-    .tag-live { background: #DCFCE7; color: #15803D; }
-    .tag-popular { background: #EEF2FF; color: #4338CA; }
-    .tag-new { background: #FFF7ED; color: #C2410C; }
-    .program-card-body { padding: 20px; }
-    .program-card-title { font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
-    .program-card-meta { font-size: 0.8rem; color: var(--muted); margin-bottom: 14px; display: flex; gap: 12px; }
-    .program-card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 14px; border-top: 1px solid var(--gray); }
-    .program-level { font-size: 0.78rem; color: var(--muted); font-weight: 500; }
+    .programs-section { background: var(--white); position: relative; overflow: hidden; }
+    .programs-section::before {
+      content: ''; position: absolute; top: -120px; right: -80px; width: 420px; height: 420px;
+      border-radius: 50%; background: radial-gradient(circle, rgba(37,99,235,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .programs-section::after {
+      content: ''; position: absolute; bottom: -100px; left: -60px; width: 320px; height: 320px;
+      border-radius: 50%; background: radial-gradient(circle, rgba(14,165,233,0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .programs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; position: relative; z-index: 1; }
+    .program-card {
+      background: var(--white); border-radius: 20px; border: 1px solid var(--gray);
+      overflow: hidden; transition: transform 0.3s, box-shadow 0.3s;
+      display: flex; flex-direction: column; cursor: pointer;
+    }
+    .program-card:hover { transform: translateY(-8px); box-shadow: 0 24px 56px rgba(15,38,69,0.13); }
+    .program-card:hover .program-img { transform: scale(1.06); }
+    .program-card.featured { border-color: rgba(37,99,235,0.25); box-shadow: 0 8px 32px rgba(37,99,235,0.1); }
+    .program-card-visual { height: 190px; position: relative; overflow: hidden; }
+    .program-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.45s ease; }
+    .program-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(15,38,69,0.05) 0%, rgba(15,38,69,0.55) 100%);
+    }
+    .program-tag {
+      position: absolute; top: 14px; left: 14px; font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 0.6px; padding: 5px 11px; border-radius: 20px; z-index: 2;
+      backdrop-filter: blur(8px);
+    }
+    .tag-live { background: rgba(220,252,231,0.92); color: #15803D; }
+    .tag-popular { background: rgba(238,242,255,0.92); color: #4338CA; }
+    .tag-new { background: rgba(255,247,237,0.92); color: #C2410C; }
+    .program-icon-badge {
+      position: absolute; bottom: 14px; right: 14px; width: 42px; height: 42px;
+      border-radius: 12px; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center; z-index: 2;
+      box-shadow: 0 4px 12px rgba(15,38,69,0.15);
+    }
+    .program-icon-badge svg { width: 22px; height: 22px; stroke: var(--blue); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .program-card-body { padding: 22px 22px 20px; flex: 1; display: flex; flex-direction: column; }
+    .program-card-title { font-size: 1.08rem; font-weight: 800; color: var(--navy); margin-bottom: 8px; letter-spacing: -0.3px; line-height: 1.3; }
+    .program-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.6; margin-bottom: 14px; flex: 1; }
+    .program-learn { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+    .learn-chip { font-size: 0.68rem; font-weight: 600; padding: 4px 10px; border-radius: 6px; background: #F1F5F9; color: #475569; }
+    .program-meta { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+    .program-meta-item { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--muted); font-weight: 500; }
+    .program-meta-item svg { width: 15px; height: 15px; stroke: var(--blue); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+    .program-meta-item strong { color: var(--navy); font-weight: 700; }
+    .program-card-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 16px; border-top: 1px solid var(--gray);
+    }
+    .program-level {
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .program-level-label { font-size: 0.65rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+    .program-level-value { font-size: 0.82rem; color: var(--navy); font-weight: 700; }
+    .program-rating { display: flex; align-items: center; gap: 4px; font-size: 0.78rem; font-weight: 700; color: var(--navy); }
+    .program-rating .star { color: #F59E0B; }
+    .program-rating span { font-weight: 500; color: var(--muted); font-size: 0.72rem; }
+    .program-enroll-btn {
+      padding: 9px 20px; border-radius: 10px; border: none;
+      background: linear-gradient(135deg, var(--blue), var(--teal));
+      color: white; font-size: 0.82rem; font-weight: 600; cursor: pointer;
+      text-decoration: none; transition: opacity 0.2s, transform 0.2s; display: inline-block;
+    }
+    .program-enroll-btn:hover { opacity: 0.92; transform: scale(1.03); }
+    .program-cert { display: inline-flex; align-items: center; gap: 5px; font-size: 0.72rem; font-weight: 600; color: #15803D; margin-bottom: 12px; }
+    .program-cert svg { width: 14px; height: 14px; stroke: #15803D; fill: none; stroke-width: 2; }
 
     /* STEPS */
     .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
@@ -125,16 +183,71 @@
     .step-desc { font-size: 0.83rem; color: var(--muted); line-height: 1.6; }
 
     /* MENTORS */
-    .mentors-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-    .mentor-card { background: var(--white); border-radius: 16px; padding: 28px 20px; text-align: center; border: 1px solid var(--gray); transition: transform 0.2s, box-shadow 0.2s; }
-    .mentor-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(15,38,69,0.09); }
-    .mentor-card-avatar { width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 14px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 800; color: white; }
-    .mentor-card-name { font-size: 0.98rem; font-weight: 700; color: var(--navy); }
-    .mentor-card-role { font-size: 0.8rem; color: var(--muted); margin-top: 4px; margin-bottom: 14px; }
-    .mentor-card-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 16px; }
-    .tag-skill { font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 20px; background: var(--gray); color: var(--navy); }
-    .mentor-card-btn { width: 100%; padding: 9px; border-radius: 9px; border: 1.5px solid var(--blue); background: transparent; color: var(--blue); font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-    .mentor-card-btn:hover { background: var(--blue); color: white; }
+    .mentors-section { background: linear-gradient(180deg, var(--offwhite) 0%, #EEF4FF 100%); }
+    .mentors-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+    .mentor-card {
+      background: var(--white); border-radius: 20px; overflow: hidden;
+      border: 1px solid var(--gray); transition: transform 0.25s, box-shadow 0.25s;
+      display: flex; flex-direction: column; position: relative;
+    }
+    .mentor-card:hover { transform: translateY(-6px); box-shadow: 0 20px 48px rgba(15,38,69,0.12); }
+    .mentor-card-accent { height: 4px; background: linear-gradient(90deg, var(--blue), var(--teal)); }
+    .mentor-card-accent.purple { background: linear-gradient(90deg, #6366F1, #8B5CF6); }
+    .mentor-card-accent.orange { background: linear-gradient(90deg, #F59E0B, #EF4444); }
+    .mentor-card-accent.green { background: linear-gradient(90deg, #10B981, #059669); }
+    .mentor-card-accent.pink { background: linear-gradient(90deg, #EC4899, #BE185D); }
+    .mentor-card-body { padding: 24px 20px 20px; flex: 1; display: flex; flex-direction: column; }
+    .mentor-photo-wrap { position: relative; width: 88px; height: 88px; margin: 0 auto 12px; }
+    .mentor-photo {
+      width: 88px; height: 88px; border-radius: 50%; object-fit: cover;
+      border: 3px solid var(--white); box-shadow: 0 4px 16px rgba(15,38,69,0.12);
+    }
+    .mentor-exp-badge {
+      position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%);
+      background: var(--navy); color: white; font-size: 0.62rem; font-weight: 700;
+      padding: 3px 8px; border-radius: 10px; white-space: nowrap; letter-spacing: 0.3px;
+    }
+    .mentor-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+    .mentor-rating { display: flex; align-items: center; gap: 4px; font-size: 0.78rem; font-weight: 700; color: var(--navy); margin: 0 auto 14px; }
+    .mentor-rating .star { color: #F59E0B; }
+    .mentor-rating span { font-weight: 500; color: var(--muted); font-size: 0.72rem; }
+    .mentor-card-name { font-size: 1.02rem; font-weight: 800; color: var(--navy); text-align: center; letter-spacing: -0.3px; }
+    .mentor-card-role { font-size: 0.8rem; color: var(--muted); margin-top: 4px; margin-bottom: 10px; text-align: center; }
+    .mentor-card-role .company { font-weight: 600; color: var(--blue); }
+    .mentor-bio {
+      font-size: 0.78rem; color: var(--muted); line-height: 1.55; text-align: center;
+      margin-bottom: 14px; flex: 1;
+    }
+    .mentor-stats {
+      display: flex; justify-content: center; gap: 20px; margin-bottom: 14px;
+      padding: 10px 0; border-top: 1px solid var(--gray); border-bottom: 1px solid var(--gray);
+    }
+    .mentor-stat { text-align: center; }
+    .mentor-stat strong { display: block; font-size: 0.95rem; font-weight: 800; color: var(--navy); }
+    .mentor-stat span { font-size: 0.68rem; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; }
+    .mentor-card-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 12px; }
+    .tag-skill { font-size: 0.7rem; font-weight: 600; padding: 4px 10px; border-radius: 20px; background: #EEF2FF; color: #4338CA; }
+    .mentor-certs { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 16px; }
+    .cert-badge { font-size: 0.68rem; font-weight: 600; padding: 3px 9px; border-radius: 6px; background: #F0FDF4; color: #15803D; border: 1px solid #BBF7D0; }
+    .mentor-card-footer { display: flex; gap: 8px; align-items: center; }
+    .mentor-card-btn {
+      flex: 1; padding: 10px; border-radius: 10px; border: none;
+      background: linear-gradient(135deg, var(--blue), var(--teal));
+      color: white; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s, transform 0.2s;
+    }
+    .mentor-card-btn:hover { opacity: 0.92; transform: scale(1.02); }
+    .mentor-linkedin {
+      width: 38px; height: 38px; border-radius: 10px; border: 1.5px solid var(--gray);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      color: var(--muted); text-decoration: none; transition: all 0.2s;
+    }
+    .mentor-linkedin:hover { border-color: #0A66C2; color: #0A66C2; background: #EFF6FF; }
+    .mentor-linkedin svg { width: 16px; height: 16px; fill: currentColor; }
+    .mentor-available {
+      display: inline-flex; align-items: center; gap: 5px; font-size: 0.7rem; font-weight: 600;
+      color: #15803D; background: #DCFCE7; padding: 3px 10px; border-radius: 20px; margin: 0 auto 10px;
+    }
+    .mentor-available .avail-dot { width: 6px; height: 6px; border-radius: 50%; background: #22C55E; }
 
     /* CTA BANNER */
     .cta-banner { margin: 0 6% 72px; background: linear-gradient(135deg, var(--navy), #1a3a6b); border-radius: 24px; padding: 60px; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden; }
@@ -190,101 +303,215 @@
       <a class="cta-outline" href="/signup/mentor">Become a Mentor</a>
     </div>
   </div>
+
   <div class="hero-right">
-    <div class="hero-card">
-      <div class="hero-card-row">
-        <div>
-          <div class="hero-card-label">Next Live Session</div>
-          <div class="hero-card-title">Agile Sprint Planning Masterclass</div>
-          <div class="hero-card-sub">Today · 6:00 PM IST · 45 min</div>
+  <!-- Stats Row -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+    <div class="hero-card" style="padding: 18px 14px; text-align: center;">
+      <div style="font-size: 1.8rem; font-weight: 800; color: white; line-height: 1;">--</div>
+      <div style="font-size: 0.7rem; color: #94A3B8; margin-top: 4px; line-height: 1.3;">Expert Mentors</div>
+    </div>
+    <div class="hero-card" style="padding: 18px 14px; text-align: center;">
+      <div style="font-size: 1.8rem; font-weight: 800; color: white; line-height: 1;">--</div>
+      <div style="font-size: 0.7rem; color: #94A3B8; margin-top: 4px; line-height: 1.3;">Learners Placed</div>
+    </div>
+    <div class="hero-card" style="padding: 18px 14px; text-align: center;">
+      <div style="font-size: 1.8rem; font-weight: 800; color: white; line-height: 1;">--</div>
+      <div style="font-size: 0.7rem; color: #94A3B8; margin-top: 4px; line-height: 1.3;">Avg Rating</div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <div class="hero-card" style="padding: 20px;">
+    <div class="hero-card-label">How it works</div>
+    <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 14px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="width: 28px; height: 28px; border-radius: 50%; background: rgba(96,165,250,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <svg width="13" height="13" fill="none" stroke="#60A5FA" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         </div>
-        <div class="live-badge"><span class="live-dot"></span>LIVE</div>
+        <div style="font-size: 0.82rem; color: #CBD5E1;"><span style="color: white; font-weight: 600;">Get Matched</span> with an Agile mentor from top companies</div>
       </div>
-      <div style="margin-top:14px;display:flex;align-items:center;justify-content:space-between;">
-        <div class="avatar-stack">
-          <div class="avatar">A</div>
-          <div class="avatar" style="background:linear-gradient(135deg,#6366F1,#8B5CF6)">R</div>
-          <div class="avatar" style="background:linear-gradient(135deg,#F59E0B,#EF4444)">S</div>
-          <div class="avatar" style="background:linear-gradient(135deg,#10B981,#059669);font-size:0.6rem">+12</div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="width: 28px; height: 28px; border-radius: 50%; background: rgba(52,211,153,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <svg width="13" height="13" fill="none" stroke="#34D399" stroke-width="2" viewBox="0 0 24 24"><path d="m15 10-4 4L9 12"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
         </div>
-        <a class="enroll-btn" href="/signup/mentee">Join Now</a>
+        <div style="font-size: 0.82rem; color: #CBD5E1;"><span style="color: white; font-weight: 600;">Attend Live Sessions</span> and get hands-on with real sprints</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="width: 28px; height: 28px; border-radius: 50%; background: rgba(167,139,250,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <svg width="13" height="13" fill="none" stroke="#A78BFA" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15l-2 5-5-5 5-5 2 5zm0 0l2-5 5 5-5 5-2-5z"/><circle cx="12" cy="8" r="3"/></svg>
+        </div>
+        <div style="font-size: 0.82rem; color: #CBD5E1;"><span style="color: white; font-weight: 600;">Earn Certificates</span> and land roles at top product companies</div>
       </div>
     </div>
-    <div class="mentor-row">
-      <div class="hero-card" style="flex:1;padding:16px 18px;">
-        <div class="hero-card-label">Featured Mentor</div>
-        <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
-          <div class="mentor-avatar-icon">R</div>
-          <div>
-            <div style="font-size:0.85rem;font-weight:700;color:white;">Rahul Verma</div>
-            <div style="font-size:0.72rem;color:#94A3B8;">Scrum Master · TCS</div>
-          </div>
-        </div>
-      </div>
-      <div class="hero-card" style="flex:1;padding:16px 18px;">
-        <div class="hero-card-label">This Week</div>
-        <div style="font-size:2rem;font-weight:900;color:white;line-height:1;">8</div>
-        <div style="font-size:0.78rem;color:#94A3B8;margin-top:4px;">Live sessions scheduled</div>
-      </div>
-    </div>
-    <div class="hero-card">
-      <div class="hero-card-row">
-        <div>
-          <div class="hero-card-label">Program Spotlight</div>
-          <div class="hero-card-title">Certified Scrum Master Track</div>
-          <div class="hero-card-sub">8 weeks · Beginner to Advanced · Certificate</div>
-        </div>
-        <div style="font-size:0.85rem;font-weight:700;color:#60A5FA;">PRG0001</div>
-      </div>
+  </div>
+
+  <!-- Social Proof -->
+  <div class="hero-card" style="padding: 14px 18px; display: flex; align-items: center; gap: 12px; border-color: rgba(99,102,241,0.3); background: rgba(99,102,241,0.12);">
+    <svg width="20" height="20" fill="none" stroke="#A78BFA" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink: 0;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    <div style="font-size: 0.78rem; color: #C4B5FD; line-height: 1.4;">
+      Trusted by learners from <span style="color: white; font-weight: 600;">--</span>
     </div>
   </div>
 </section>
 
 <div class="stats">
-  <div class="stat"><div class="stat-num">500<span>+</span></div><div class="stat-label">Expert Mentors</div></div>
+  <div class="stat"><div class="stat-num">--<span></span></div><div class="stat-label">Expert Mentors</div></div>
   <div class="stat-divider"></div>
-  <div class="stat"><div class="stat-num">1,200<span>+</span></div><div class="stat-label">Programs Completed</div></div>
+  <div class="stat"><div class="stat-num">--<span></span></div><div class="stat-label">Programs Completed</div></div>
   <div class="stat-divider"></div>
-  <div class="stat"><div class="stat-num">18K<span>+</span></div><div class="stat-label">Active Mentees</div></div>
+  <div class="stat"><div class="stat-num">--<span></span></div><div class="stat-label">Active Mentees</div></div>
   <div class="stat-divider"></div>
-  <div class="stat"><div class="stat-num">96<span>%</span></div><div class="stat-label">Satisfaction Rate</div></div>
+  <div class="stat"><div class="stat-num">--<span></span></div><div class="stat-label">Satisfaction Rate</div></div>
   <div class="stat-divider"></div>
-  <div class="stat"><div class="stat-num">200<span>+</span></div><div class="stat-label">Live Sessions / Month</div></div>
+  <div class="stat"><div class="stat-num">--<span></span></div><div class="stat-label">Live Sessions / Month</div></div>
 </div>
 
-<section class="section">
+<section class="section programs-section">
   <div class="section-header">
     <div>
       <div class="section-title">Explore Top <span>Programs</span></div>
-      <div class="section-sub">Structured tracks designed by industry practitioners</div>
+      <div class="section-sub">Structured learning paths built by practitioners — from fundamentals to job-ready skills</div>
     </div>
     <a class="view-all" href="/programs">View all programs →</a>
   </div>
   <div class="programs-grid">
-    <div class="program-card">
-      <div class="program-card-top" style="background:linear-gradient(135deg,#EEF2FF,#C7D2FE);">🚀<span class="program-tag tag-popular">POPULAR</span></div>
+
+    <div class="program-card featured">
+      <div class="program-card-visual">
+        <img class="program-img" src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=400&fit=crop" alt="Agile team sprint planning"/>
+        <div class="program-overlay"></div>
+        <span class="program-tag tag-popular">POPULAR</span>
+        <div class="program-icon-badge">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+      </div>
       <div class="program-card-body">
-        <div class="program-card-title">Agile & Scrum Mastery</div>
-        <div class="program-card-meta"><span>📅 8 Weeks</span><span>👥 240 enrolled</span></div>
-        <div class="program-card-footer"><span class="program-level">Beginner → Advanced</span><a class="enroll-btn" href="/signup/mentee">Enroll</a></div>
+        <div class="program-card-title">Agile &amp; Scrum Mastery</div>
+        <p class="program-desc">Master sprint planning, retrospectives, and team facilitation. Go from Agile basics to leading high-performing Scrum teams.</p>
+        <div class="program-cert">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+          Certificate on completion
+        </div>
+        <div class="program-learn">
+          <span class="learn-chip">Sprint Planning</span>
+          <span class="learn-chip">User Stories</span>
+          <span class="learn-chip">Retrospectives</span>
+        </div>
+        <div class="program-meta">
+          <div class="program-meta-item">
+            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <strong>8</strong> Weeks
+          </div>
+          <div class="program-meta-item">
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+            <strong>240</strong> enrolled
+          </div>
+          <div class="program-meta-item">
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span class="program-rating"><span class="star">★</span> 4.9</span>
+          </div>
+        </div>
+        <div class="program-card-footer">
+          <div class="program-level">
+            <span class="program-level-label">Level</span>
+            <span class="program-level-value">Beginner → Advanced</span>
+          </div>
+          <a class="program-enroll-btn" href="/signup/mentee">Enroll Now</a>
+        </div>
       </div>
     </div>
+
     <div class="program-card">
-      <div class="program-card-top" style="background:linear-gradient(135deg,#DCFCE7,#BBF7D0);">📋<span class="program-tag tag-live">LIVE</span></div>
+      <div class="program-card-visual">
+        <img class="program-img" src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=600&h=400&fit=crop" alt="Product manager planning roadmap"/>
+        <div class="program-overlay"></div>
+        <span class="program-tag tag-live">LIVE SESSIONS</span>
+        <div class="program-icon-badge">
+          <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+      </div>
       <div class="program-card-body">
         <div class="program-card-title">Product Management Fundamentals</div>
-        <div class="program-card-meta"><span>📅 6 Weeks</span><span>👥 180 enrolled</span></div>
-        <div class="program-card-footer"><span class="program-level">Intermediate</span><a class="enroll-btn" href="/signup/mentee">Enroll</a></div>
+        <p class="program-desc">Learn to define product vision, prioritize backlogs, and ship features users love. Includes live case studies from real PMs.</p>
+        <div class="program-cert">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+          Certificate on completion
+        </div>
+        <div class="program-learn">
+          <span class="learn-chip">Roadmaps</span>
+          <span class="learn-chip">OKRs</span>
+          <span class="learn-chip">Stakeholder Mgmt</span>
+        </div>
+        <div class="program-meta">
+          <div class="program-meta-item">
+            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <strong>6</strong> Weeks
+          </div>
+          <div class="program-meta-item">
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+            <strong>180</strong> enrolled
+          </div>
+          <div class="program-meta-item">
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span class="program-rating"><span class="star">★</span> 4.8</span>
+          </div>
+        </div>
+        <div class="program-card-footer">
+          <div class="program-level">
+            <span class="program-level-label">Level</span>
+            <span class="program-level-value">Intermediate</span>
+          </div>
+          <a class="program-enroll-btn" href="/signup/mentee">Enroll Now</a>
+        </div>
       </div>
     </div>
+
     <div class="program-card">
-      <div class="program-card-top" style="background:linear-gradient(135deg,#FFF7ED,#FED7AA);">⚡<span class="program-tag tag-new">NEW</span></div>
+      <div class="program-card-visual">
+        <img class="program-img" src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&h=400&fit=crop" alt="DevOps engineer at work"/>
+        <div class="program-overlay"></div>
+        <span class="program-tag tag-new">NEW</span>
+        <div class="program-icon-badge">
+          <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </div>
+      </div>
       <div class="program-card-body">
         <div class="program-card-title">DevOps for Agile Teams</div>
-        <div class="program-card-meta"><span>📅 10 Weeks</span><span>👥 95 enrolled</span></div>
-        <div class="program-card-footer"><span class="program-level">Intermediate</span><a class="enroll-btn" href="/signup/mentee">Enroll</a></div>
+        <p class="program-desc">Bridge development and operations with CI/CD pipelines, containerization, and automated deployments in Agile environments.</p>
+        <div class="program-cert">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+          Certificate on completion
+        </div>
+        <div class="program-learn">
+          <span class="learn-chip">CI/CD</span>
+          <span class="learn-chip">Docker</span>
+          <span class="learn-chip">Kubernetes</span>
+        </div>
+        <div class="program-meta">
+          <div class="program-meta-item">
+            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <strong>10</strong> Weeks
+          </div>
+          <div class="program-meta-item">
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+            <strong>95</strong> enrolled
+          </div>
+          <div class="program-meta-item">
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span class="program-rating"><span class="star">★</span> 4.9</span>
+          </div>
+        </div>
+        <div class="program-card-footer">
+          <div class="program-level">
+            <span class="program-level-label">Level</span>
+            <span class="program-level-value">Intermediate</span>
+          </div>
+          <a class="program-enroll-btn" href="/signup/mentee">Enroll Now</a>
+        </div>
       </div>
     </div>
+
   </div>
 </section>
 
@@ -303,50 +530,139 @@
   </div>
 </section>
 
-<section class="section">
+<section class="section mentors-section">
   <div class="section-header">
     <div>
       <div class="section-title">Meet Our <span>Mentors</span></div>
-      <div class="section-sub">Hand-picked professionals from top companies</div>
+      <div class="section-sub">Hand-picked professionals from top companies — real experience, real results</div>
     </div>
     <a class="view-all" href="#">View all mentors →</a>
   </div>
   <div class="mentors-grid">
+
     <div class="mentor-card">
-      <div class="mentor-card-avatar" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);">R</div>
-      <div class="mentor-card-name">Rahul Verma</div>
-      <div class="mentor-card-role">Scrum Master · TCS</div>
-      <div class="mentor-card-tags"><span class="tag-skill">Scrum</span><span class="tag-skill">SAFe</span><span class="tag-skill">Jira</span></div>
-      <button class="mentor-card-btn">View Profile</button>
+      <div class="mentor-card-accent purple"></div>
+      <div class="mentor-card-body">
+        <div class="mentor-photo-wrap">
+          <img class="mentor-photo" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face" alt="Rahul Verma"/>
+          <span class="mentor-exp-badge">12+ yrs</span>
+        </div>
+        <div class="mentor-rating"><span class="star">★</span> 4.9 <span>(128 reviews)</span></div>
+        <div class="mentor-available"><span class="avail-dot"></span> Available this week</div>
+        <div class="mentor-card-name">Rahul Verma</div>
+        <div class="mentor-card-role">Scrum Master · <span class="company">TCS</span></div>
+        <p class="mentor-bio">Certified CSM &amp; SAFe Agilist. Led Agile transformations for 50+ enterprise teams across banking and telecom.</p>
+        <div class="mentor-stats">
+          <div class="mentor-stat"><strong>340</strong><span>Mentees</span></div>
+          <div class="mentor-stat"><strong>52</strong><span>Sessions</span></div>
+        </div>
+        <div class="mentor-card-tags">
+          <span class="tag-skill">Scrum</span><span class="tag-skill">SAFe</span><span class="tag-skill">Jira</span>
+        </div>
+        <div class="mentor-certs">
+          <span class="cert-badge">CSM</span><span class="cert-badge">SAFe SA</span>
+        </div>
+        <div class="mentor-card-footer">
+          <button class="mentor-card-btn">View Profile</button>
+          <a class="mentor-linkedin" href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>
+        </div>
+      </div>
     </div>
+
     <div class="mentor-card">
-      <div class="mentor-card-avatar" style="background:linear-gradient(135deg,#F59E0B,#EF4444);">P</div>
-      <div class="mentor-card-name">Priya Sharma</div>
-      <div class="mentor-card-role">Product Manager · Infosys</div>
-      <div class="mentor-card-tags"><span class="tag-skill">Product</span><span class="tag-skill">Roadmaps</span><span class="tag-skill">OKRs</span></div>
-      <button class="mentor-card-btn">View Profile</button>
+      <div class="mentor-card-accent orange"></div>
+      <div class="mentor-card-body">
+        <div class="mentor-photo-wrap">
+          <img class="mentor-photo" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=face" alt="Priya Sharma"/>
+          <span class="mentor-exp-badge">9+ yrs</span>
+        </div>
+        <div class="mentor-rating"><span class="star">★</span> 4.8 <span>(96 reviews)</span></div>
+        <div class="mentor-available"><span class="avail-dot"></span> Available this week</div>
+        <div class="mentor-card-name">Priya Sharma</div>
+        <div class="mentor-card-role">Product Manager · <span class="company">Infosys</span></div>
+        <p class="mentor-bio">Former PM at a Series B startup. Specializes in product roadmaps, stakeholder alignment, and OKR frameworks.</p>
+        <div class="mentor-stats">
+          <div class="mentor-stat"><strong>215</strong><span>Mentees</span></div>
+          <div class="mentor-stat"><strong>38</strong><span>Sessions</span></div>
+        </div>
+        <div class="mentor-card-tags">
+          <span class="tag-skill">Product</span><span class="tag-skill">Roadmaps</span><span class="tag-skill">OKRs</span>
+        </div>
+        <div class="mentor-certs">
+          <span class="cert-badge">CSPO</span><span class="cert-badge">PMP</span>
+        </div>
+        <div class="mentor-card-footer">
+          <button class="mentor-card-btn">View Profile</button>
+          <a class="mentor-linkedin" href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>
+        </div>
+      </div>
     </div>
+
     <div class="mentor-card">
-      <div class="mentor-card-avatar" style="background:linear-gradient(135deg,#10B981,#059669);">A</div>
-      <div class="mentor-card-name">Arjun Mehta</div>
-      <div class="mentor-card-role">DevOps Engineer · Wipro</div>
-      <div class="mentor-card-tags"><span class="tag-skill">CI/CD</span><span class="tag-skill">Docker</span><span class="tag-skill">Agile</span></div>
-      <button class="mentor-card-btn">View Profile</button>
+      <div class="mentor-card-accent green"></div>
+      <div class="mentor-card-body">
+        <div class="mentor-photo-wrap">
+          <img class="mentor-photo" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=face" alt="Arjun Mehta"/>
+          <span class="mentor-exp-badge">7+ yrs</span>
+        </div>
+        <div class="mentor-rating"><span class="star">★</span> 4.9 <span>(74 reviews)</span></div>
+        <div class="mentor-available"><span class="avail-dot"></span> Available this week</div>
+        <div class="mentor-card-name">Arjun Mehta</div>
+        <div class="mentor-card-role">DevOps Engineer · <span class="company">Wipro</span></div>
+        <p class="mentor-bio">Built CI/CD pipelines for Fortune 500 clients. Passionate about bridging DevOps practices with Agile delivery.</p>
+        <div class="mentor-stats">
+          <div class="mentor-stat"><strong>180</strong><span>Mentees</span></div>
+          <div class="mentor-stat"><strong>41</strong><span>Sessions</span></div>
+        </div>
+        <div class="mentor-card-tags">
+          <span class="tag-skill">CI/CD</span><span class="tag-skill">Docker</span><span class="tag-skill">Agile</span>
+        </div>
+        <div class="mentor-certs">
+          <span class="cert-badge">AWS SA</span><span class="cert-badge">CKA</span>
+        </div>
+        <div class="mentor-card-footer">
+          <button class="mentor-card-btn">View Profile</button>
+          <a class="mentor-linkedin" href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>
+        </div>
+      </div>
     </div>
+
     <div class="mentor-card">
-      <div class="mentor-card-avatar" style="background:linear-gradient(135deg,#EC4899,#BE185D);">N</div>
-      <div class="mentor-card-name">Neha Kulkarni</div>
-      <div class="mentor-card-role">Agile Coach · Accenture</div>
-      <div class="mentor-card-tags"><span class="tag-skill">Coaching</span><span class="tag-skill">Kanban</span><span class="tag-skill">Lean</span></div>
-      <button class="mentor-card-btn">View Profile</button>
+      <div class="mentor-card-accent pink"></div>
+      <div class="mentor-card-body">
+        <div class="mentor-photo-wrap">
+          <img class="mentor-photo" src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=face" alt="Neha Kulkarni"/>
+          <span class="mentor-exp-badge">15+ yrs</span>
+        </div>
+        <div class="mentor-rating"><span class="star">★</span> 5.0 <span>(112 reviews)</span></div>
+        <div class="mentor-available"><span class="avail-dot"></span> Available this week</div>
+        <div class="mentor-card-name">Neha Kulkarni</div>
+        <div class="mentor-card-role">Agile Coach · <span class="company">Accenture</span></div>
+        <p class="mentor-bio">Enterprise Agile coach who has trained 200+ professionals. Expert in Kanban, Lean, and team coaching at scale.</p>
+        <div class="mentor-stats">
+          <div class="mentor-stat"><strong>420</strong><span>Mentees</span></div>
+          <div class="mentor-stat"><strong>67</strong><span>Sessions</span></div>
+        </div>
+        <div class="mentor-card-tags">
+          <span class="tag-skill">Coaching</span><span class="tag-skill">Kanban</span><span class="tag-skill">Lean</span>
+        </div>
+        <div class="mentor-certs">
+          <span class="cert-badge">ICP-ACC</span><span class="cert-badge">Kanban</span>
+        </div>
+        <div class="mentor-card-footer">
+          <button class="mentor-card-btn">View Profile</button>
+          <a class="mentor-linkedin" href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>
+        </div>
+      </div>
     </div>
+
   </div>
 </section>
 
 <div class="cta-banner">
   <div>
     <div class="cta-banner-title">Ready to accelerate your Agile career?</div>
-    <div class="cta-banner-sub">Join 18,000+ mentees already learning on AgileMentor.</div>
+    <div class="cta-banner-sub">Company tagline</div>
   </div>
   <div class="cta-banner-actions">
     <a class="cta-main" href="/signup/mentee">Start Learning Free</a>

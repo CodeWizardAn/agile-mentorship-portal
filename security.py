@@ -8,7 +8,11 @@ pwd_context = CryptContext(
 )
 
 # ── JWT CONFIG ────────────────────────────────────────────────────────────────
-SECRET_KEY = "your_super_secret_key_change_this"  # change this to something random
+from dotenv import load_dotenv
+import os
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY")  # change this to something random
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
 

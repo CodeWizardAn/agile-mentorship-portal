@@ -329,11 +329,14 @@ def generate_invite(
 # ── MENTOR PROFILE ────────────────────────────────────────────────────────────
 
 @app.get("/mentor-profile", response_class=HTMLResponse)
-def mentor_profile_page(request: Request, current_user: User = Depends(get_current_user)):
+def mentor_profile_page(request: Request, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     if not current_user or current_user.role != "mentor":
         return RedirectResponse(url="/login/mentor", status_code=302)
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.user_id).first()
     return templates.TemplateResponse(
-        request=request, name="mentor_profile.html", context={"user": current_user}
+        request=request,
+        name="mentor_profile.html",
+        context={"user": current_user, "mentor": mentor}
     )
 
 @app.post("/mentor-profile/update")

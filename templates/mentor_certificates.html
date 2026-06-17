@@ -1,43 +1,274 @@
 <!DOCTYPE html>
-<html>
-<head><title>My Certificates</title></head>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Certificates — AgileMentor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+    :root {
+      --navy:#0F2645;
+      --blue:#2563EB;
+      --teal:#0EA5E9;
+      --white:#FFFFFF;
+      --offwhite:#F8FAFF;
+      --gray:#E8EFF8;
+      --muted:#64748B;
+      --text:#1E293B;
+    }
+
+    body {
+      font-family:'Inter',sans-serif;
+      background:var(--offwhite);
+      min-height:100vh;
+      display:flex;
+    }
+
+    .sidebar {
+      width:240px;
+      background:var(--navy);
+      min-height:100vh;
+      position:fixed;
+      left:0;
+      top:0;
+      padding:20px;
+    }
+
+    .logo-text {
+      font-size:1.2rem;
+      font-weight:800;
+      color:white;
+      margin-bottom:30px;
+    }
+
+    .logo-text span { color:#60A5FA; }
+
+    .nav-item {
+      display:block;
+      padding:12px;
+      border-radius:10px;
+      color:#94A3B8;
+      text-decoration:none;
+      margin-bottom:8px;
+      font-size:0.9rem;
+      font-weight:500;
+    }
+
+    .nav-item:hover { background:rgba(255,255,255,0.06); color:white; }
+    .nav-item.active { background:rgba(99,102,241,0.2); color:#A5B4FC; }
+
+    .main {
+      margin-left:240px;
+      flex:1;
+    }
+
+    .topbar {
+      background:var(--white);
+      border-bottom:1px solid var(--gray);
+      padding:20px 32px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+
+    .topbar-title {
+      font-size:1.1rem;
+      font-weight:700;
+      color:var(--navy);
+    }
+
+    .content {
+      padding:32px;
+      max-width:900px;
+    }
+
+    .page-title {
+      font-size:1.8rem;
+      font-weight:800;
+      color:var(--navy);
+      margin-bottom:6px;
+    }
+
+    .page-title span { color:var(--blue); }
+
+    .page-sub {
+      font-size:0.9rem;
+      color:var(--muted);
+      margin-bottom:28px;
+    }
+
+    .card {
+      background:var(--white);
+      border:1px solid var(--gray);
+      border-radius:16px;
+      padding:24px;
+      margin-bottom:24px;
+    }
+
+    .section-title {
+      font-size:1rem;
+      font-weight:700;
+      color:var(--navy);
+      margin-bottom:18px;
+    }
+
+    .form-group {
+      margin-bottom:16px;
+    }
+
+    .form-input {
+      width:100%;
+      padding:12px 14px;
+      border-radius:10px;
+      border:1.5px solid var(--gray);
+      background:var(--offwhite);
+      font-size:0.9rem;
+      outline:none;
+    }
+
+    .form-input:focus {
+      border-color:#6366F1;
+      background:var(--white);
+    }
+
+    .submit-btn {
+      padding:12px 24px;
+      border:none;
+      border-radius:10px;
+      background:linear-gradient(135deg,#6366F1,#8B5CF6);
+      color:white;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .submit-btn:hover { opacity:0.9; }
+
+    .cert-card {
+      border:1px solid var(--gray);
+      border-radius:14px;
+      padding:20px;
+      margin-bottom:18px;
+      background:var(--white);
+    }
+
+    .cert-title {
+      font-size:1rem;
+      font-weight:700;
+      color:var(--navy);
+      margin-bottom:6px;
+    }
+
+    .cert-meta {
+      font-size:0.82rem;
+      color:var(--muted);
+      margin-bottom:14px;
+    }
+
+    .cert-preview img {
+      width:220px;
+      border-radius:10px;
+      border:1px solid var(--gray);
+    }
+
+    .view-link {
+      display:inline-block;
+      margin-bottom:14px;
+      color:var(--blue);
+      font-weight:600;
+      text-decoration:none;
+    }
+
+    .delete-btn {
+      padding:10px 18px;
+      border:none;
+      border-radius:8px;
+      background:#FEE2E2;
+      color:#DC2626;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .empty-state {
+      text-align:center;
+      padding:30px;
+      color:var(--muted);
+    }
+  </style>
+</head>
 <body>
 
-<h1>My Certificates</h1>
-<a href="/mentor-dashboard">Back to Dashboard</a>
+  <aside class="sidebar">
+    <div class="logo-text">Agile<span>Mentor</span></div>
 
-<br><br>
+    <a class="nav-item" href="/mentor-dashboard">Dashboard</a>
+    <a class="nav-item" href="/mentor-profile">My Profile</a>
+    <a class="nav-item" href="/mentor/sessions">My Sessions</a>
+    <a class="nav-item active" href="/mentor/certificates">My Certificates</a>
+  </aside>
 
-<h2>Upload New Certificate</h2>
-<form action="/mentor/upload-certificate" method="post" enctype="multipart/form-data">
-    <input type="text" name="title" placeholder="Certificate Title" required>
-    <br><br>
-    <input type="file" name="file" accept=".jpg,.jpeg,.png,.pdf" required>
-    <br><br>
-    <button type="submit">Upload</button>
-</form>
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title">My Certificates</div>
+    </div>
 
-<hr>
+    <div class="content">
+      <div class="page-title">My <span>Certificates</span></div>
+      <div class="page-sub">Upload and manage your professional certifications.</div>
 
-<h2>My Uploaded Certificates</h2>
-{% for cert in certs %}
-<div>
-    <p><b>{{ cert.title }}</b> ({{ cert.file_type }})</p>
-    <p>Uploaded: {{ cert.uploaded_at }}</p>
-    {% if cert.file_type == 'pdf' %}
-        <a href="{{ cert.file_url }}" target="_blank">View PDF</a>
-    {% else %}
-        <img src="{{ cert.file_url }}" width="200" style="border-radius:8px;">
-    {% endif %}
-    <br><br>
-    <form action="/mentor/delete-certificate/{{ cert.cert_id }}" method="post">
-        <button type="submit" onclick="return confirm('Delete this certificate?')">Delete</button>
-    </form>
-    <hr>
-</div>
-{% else %}
-<p>No certificates uploaded yet.</p>
-{% endfor %}
+      <!-- Upload Card -->
+      <div class="card">
+        <div class="section-title">Upload New Certificate</div>
+
+        <form action="/mentor/upload-certificate" method="post" enctype="multipart/form-data">
+          <div class="form-group">
+            <input class="form-input" type="text" name="title" placeholder="Certificate Title" required>
+          </div>
+
+          <div class="form-group">
+            <input class="form-input" type="file" name="file" accept=".jpg,.jpeg,.png,.pdf" required>
+          </div>
+
+          <button class="submit-btn" type="submit">Upload Certificate</button>
+        </form>
+      </div>
+
+      <!-- Certificates List -->
+      <div class="card">
+        <div class="section-title">My Uploaded Certificates</div>
+
+        {% for cert in certs %}
+        <div class="cert-card">
+          <div class="cert-title">{{ cert.title }}</div>
+          <div class="cert-meta">
+            {{ cert.file_type|upper }} • Uploaded on {{ cert.uploaded_at }}
+          </div>
+
+          <div class="cert-preview">
+            {% if cert.file_type == 'pdf' %}
+              <a class="view-link" href="{{ cert.file_url }}" target="_blank">View PDF</a>
+            {% else %}
+              <img src="{{ cert.file_url }}" alt="Certificate Preview">
+            {% endif %}
+          </div>
+
+          <form action="/mentor/delete-certificate/{{ cert.cert_id }}" method="post">
+            <button class="delete-btn" type="submit"
+              onclick="return confirm('Delete this certificate?')">
+              Delete Certificate
+            </button>
+          </form>
+        </div>
+        {% else %}
+        <div class="empty-state">
+          No certificates uploaded yet.
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
 
 </body>
 </html>

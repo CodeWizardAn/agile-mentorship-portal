@@ -14,3 +14,4 @@ class User(Base):
     status = Column(String(10), default="active")
     created_at = Column(DateTime, server_default=func.now())
     profile_photo = Column(String(255))
+    

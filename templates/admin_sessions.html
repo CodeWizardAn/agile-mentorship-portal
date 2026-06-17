@@ -1,88 +1,325 @@
 <!DOCTYPE html>
-<html>
-<head><title>Manage Sessions</title></head>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Manage Sessions — AgileMentor</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+
+<style>
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+:root {
+  --navy:#0F2645;
+  --blue:#2563EB;
+  --teal:#0EA5E9;
+  --white:#FFFFFF;
+  --offwhite:#F8FAFF;
+  --gray:#E8EFF8;
+  --muted:#64748B;
+  --text:#1E293B;
+}
+
+body {
+  font-family:'Inter',sans-serif;
+  background:var(--offwhite);
+  display:flex;
+}
+
+.sidebar {
+  width:240px;
+  background:var(--navy);
+  min-height:100vh;
+  position:fixed;
+  padding:20px;
+}
+
+.logo-text {
+  font-size:1.15rem;
+  font-weight:800;
+  color:white;
+  margin-bottom:30px;
+}
+
+.logo-text span { color:#60A5FA; }
+
+.nav-item {
+  display:block;
+  padding:12px;
+  border-radius:10px;
+  text-decoration:none;
+  color:#94A3B8;
+  margin-bottom:8px;
+  font-size:0.9rem;
+}
+
+.nav-item:hover {
+  background:rgba(255,255,255,0.06);
+  color:white;
+}
+
+.nav-item.active {
+  background:rgba(99,102,241,0.2);
+  color:#A5B4FC;
+}
+
+.main {
+  margin-left:240px;
+  flex:1;
+}
+
+.topbar {
+  background:white;
+  border-bottom:1px solid var(--gray);
+  padding:20px 32px;
+}
+
+.topbar-title {
+  font-size:1.1rem;
+  font-weight:700;
+  color:var(--navy);
+}
+
+.content {
+  padding:32px;
+  max-width:1100px;
+}
+
+.page-title {
+  font-size:1.8rem;
+  font-weight:800;
+  color:var(--navy);
+  margin-bottom:6px;
+}
+
+.page-title span { color:var(--blue); }
+
+.page-sub {
+  font-size:0.9rem;
+  color:var(--muted);
+  margin-bottom:28px;
+}
+
+.card {
+  background:white;
+  border:1px solid var(--gray);
+  border-radius:16px;
+  padding:24px;
+  margin-bottom:24px;
+}
+
+.section-title {
+  font-size:1rem;
+  font-weight:700;
+  color:var(--navy);
+  margin-bottom:18px;
+}
+
+.form-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+
+.full {
+  grid-column:1/-1;
+}
+
+.form-input, .form-select, textarea {
+  width:100%;
+  padding:12px 14px;
+  border-radius:10px;
+  border:1.5px solid var(--gray);
+  background:var(--offwhite);
+  font-size:0.9rem;
+  outline:none;
+}
+
+.form-input:focus,
+.form-select:focus,
+textarea:focus {
+  border-color:#6366F1;
+  background:white;
+}
+
+textarea {
+  resize:vertical;
+  min-height:90px;
+}
+
+.submit-btn {
+  padding:12px 24px;
+  border:none;
+  border-radius:10px;
+  background:linear-gradient(135deg,#6366F1,#8B5CF6);
+  color:white;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.submit-btn:hover { opacity:0.9; }
+
+.session-card {
+  border:1px solid var(--gray);
+  border-radius:14px;
+  padding:20px;
+  margin-bottom:18px;
+}
+
+.session-title {
+  font-size:1rem;
+  font-weight:700;
+  color:var(--navy);
+  margin-bottom:6px;
+}
+
+.session-meta {
+  font-size:0.82rem;
+  color:var(--muted);
+  margin-bottom:16px;
+}
+
+.action-row {
+  display:flex;
+  gap:10px;
+  margin-top:12px;
+}
+
+.delete-btn {
+  padding:10px 18px;
+  border:none;
+  border-radius:8px;
+  background:#FEE2E2;
+  color:#DC2626;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.empty-state {
+  text-align:center;
+  color:var(--muted);
+  padding:30px;
+}
+</style>
+</head>
 <body>
 
-<h1>Manage Sessions</h1>
-<a href="/admin-dashboard">Back to Dashboard</a>
+<aside class="sidebar">
+  <div class="logo-text">Agile<span>Mentor</span></div>
 
-<br><br>
+  <a class="nav-item" href="/admin-dashboard">Dashboard</a>
+  <a class="nav-item active" href="/admin/sessions">Manage Sessions</a>
+</aside>
 
-<h2>Create Session</h2>
-<form action="/admin/sessions/create" method="post">
+<div class="main">
 
-    <select name="program_id" required>
-        <option value="">Select Program</option>
-        {% for p in programs %}
-        <option value="{{ p.program_id }}">{{ p.program_id }} - {{ p.title }}</option>
-        {% endfor %}
-    </select>
-    <br><br>
+  <div class="topbar">
+    <div class="topbar-title">Manage Sessions</div>
+  </div>
 
-    <select name="mentor_id" required>
-        <option value="">Select Mentor</option>
-        {% for mentor, mentor_user in mentors %}
-        <option value="{{ mentor.mentor_profile_id }}">{{ mentor.mentor_profile_id }} - {{ mentor_user.full_name }}</option>
-        {% endfor %}
-    </select>
-    <br><br>
+  <div class="content">
 
-    <input type="text" name="title" placeholder="Session Title" required>
-    <br><br>
+    <div class="page-title">Manage <span>Sessions</span></div>
+    <div class="page-sub">Create, update and manage mentorship sessions.</div>
 
-    <textarea name="description" placeholder="Description" rows="3" cols="40"></textarea>
-    <br><br>
+    <!-- Create Session -->
+    <div class="card">
+      <div class="section-title">Create Session</div>
 
-    <select name="session_type" required>
-        <option value="">Session Type</option>
-        <option value="live">Live</option>
-        <option value="recorded">Recorded</option>
-    </select>
-    <br><br>
+      <form action="/admin/sessions/create" method="post">
+        <div class="form-grid">
 
-    <label>Scheduled At (for live)</label>
-    <input type="datetime-local" name="scheduled_at">
-    <br><br>
+          <select class="form-select" name="program_id" required>
+            <option value="">Select Program</option>
+            {% for p in programs %}
+            <option value="{{ p.program_id }}">{{ p.program_id }} - {{ p.title }}</option>
+            {% endfor %}
+          </select>
 
-    <input type="url" name="meeting_link" placeholder="Meeting Link (for live)">
-    <br><br>
+          <select class="form-select" name="mentor_id" required>
+            <option value="">Select Mentor</option>
+            {% for mentor, mentor_user in mentors %}
+            <option value="{{ mentor.mentor_profile_id }}">
+              {{ mentor.mentor_profile_id }} - {{ mentor_user.full_name }}
+            </option>
+            {% endfor %}
+          </select>
 
-    <input type="url" name="video_url" placeholder="Video URL (for recorded)">
-    <br><br>
+          <input class="form-input full" type="text" name="title" placeholder="Session Title" required>
 
-    <input type="number" name="duration_minutes" placeholder="Duration (minutes)">
-    <br><br>
+          <textarea class="full" name="description" placeholder="Description"></textarea>
 
-    <button type="submit">Create Session</button>
-</form>
+          <select class="form-select" name="session_type" required>
+            <option value="">Session Type</option>
+            <option value="live">Live</option>
+            <option value="recorded">Recorded</option>
+          </select>
 
-<hr>
+          <input class="form-input" type="datetime-local" name="scheduled_at">
 
-<h2>All Sessions</h2>
-{% for s in sessions %}
-<div>
-    <p><b>{{ s.session_id }}</b> | {{ s.title }} | {{ s.session_type }} | {{ s.status }}</p>
+          <input class="form-input" type="url" name="meeting_link" placeholder="Meeting Link">
 
-    <form action="/admin/sessions/update/{{ s.session_id }}" method="post">
-        <input type="text" name="title" value="{{ s.title }}">
-        <select name="status">
-            <option value="scheduled" {% if s.status == 'scheduled' %}selected{% endif %}>Scheduled</option>
-            <option value="completed" {% if s.status == 'completed' %}selected{% endif %}>Completed</option>
-            <option value="cancelled" {% if s.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
-        </select>
-        <input type="url" name="meeting_link" value="{{ s.meeting_link }}">
-        <input type="url" name="video_url" value="{{ s.video_url }}">
-        <button type="submit">Update</button>
-    </form>
+          <input class="form-input" type="url" name="video_url" placeholder="Video URL">
 
-    <form action="/admin/sessions/delete/{{ s.session_id }}" method="post">
-        <button type="submit" onclick="return confirm('Delete this session?')">Delete</button>
-    </form>
-    <hr>
+          <input class="form-input" type="number" name="duration_minutes" placeholder="Duration (minutes)">
+        </div>
+
+        <br>
+        <button class="submit-btn" type="submit">Create Session</button>
+      </form>
+    </div>
+
+    <!-- All Sessions -->
+    <div class="card">
+      <div class="section-title">All Sessions</div>
+
+      {% for s in sessions %}
+      <div class="session-card">
+
+        <div class="session-title">{{ s.title }}</div>
+        <div class="session-meta">
+          ID: {{ s.session_id }} • {{ s.session_type|capitalize }} • {{ s.status|capitalize }}
+        </div>
+
+        <form action="/admin/sessions/update/{{ s.session_id }}" method="post">
+          <div class="form-grid">
+            <input class="form-input" type="text" name="title" value="{{ s.title }}">
+
+            <select class="form-select" name="status">
+              <option value="scheduled" {% if s.status == 'scheduled' %}selected{% endif %}>Scheduled</option>
+              <option value="completed" {% if s.status == 'completed' %}selected{% endif %}>Completed</option>
+              <option value="cancelled" {% if s.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+            </select>
+
+            <input class="form-input" type="url" name="meeting_link" value="{{ s.meeting_link }}">
+
+            <input class="form-input" type="url" name="video_url" value="{{ s.video_url }}">
+          </div>
+
+          <div class="action-row">
+            <button class="submit-btn" type="submit">Update</button>
+          </div>
+        </form>
+
+        <form action="/admin/sessions/delete/{{ s.session_id }}" method="post" style="margin-top:10px;">
+          <button class="delete-btn" type="submit"
+            onclick="return confirm('Delete this session?')">
+            Delete
+          </button>
+        </form>
+
+      </div>
+      {% else %}
+      <div class="empty-state">
+        No sessions created yet.
+      </div>
+      {% endfor %}
+
+    </div>
+
+  </div>
 </div>
-{% else %}
-<p>No sessions yet.</p>
-{% endfor %}
 
 </body>
 </html>

@@ -1,23 +1,227 @@
 <!DOCTYPE html>
-<html>
-<head><title>Attendance</title></head>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Attendance Management — AgileMentor</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+
+<style>
+*, *::before, *::after {
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+:root {
+  --navy:#0F2645;
+  --blue:#2563EB;
+  --teal:#0EA5E9;
+  --white:#FFFFFF;
+  --offwhite:#F8FAFF;
+  --gray:#E8EFF8;
+  --muted:#64748B;
+  --text:#1E293B;
+}
+
+body {
+  font-family:'Inter',sans-serif;
+  background:var(--offwhite);
+  display:flex;
+}
+
+.sidebar {
+  width:240px;
+  background:var(--navy);
+  min-height:100vh;
+  position:fixed;
+  padding:20px;
+}
+
+.logo-text {
+  font-size:1.15rem;
+  font-weight:800;
+  color:white;
+  margin-bottom:30px;
+}
+
+.logo-text span {
+  color:#60A5FA;
+}
+
+.nav-item {
+  display:block;
+  padding:12px;
+  border-radius:10px;
+  text-decoration:none;
+  color:#94A3B8;
+  margin-bottom:8px;
+  font-size:0.9rem;
+}
+
+.nav-item:hover {
+  background:rgba(255,255,255,0.06);
+  color:white;
+}
+
+.nav-item.active {
+  background:rgba(99,102,241,0.2);
+  color:#A5B4FC;
+}
+
+.main {
+  margin-left:240px;
+  flex:1;
+}
+
+.topbar {
+  background:white;
+  border-bottom:1px solid var(--gray);
+  padding:20px 32px;
+}
+
+.topbar-title {
+  font-size:1.1rem;
+  font-weight:700;
+  color:var(--navy);
+}
+
+.content {
+  padding:32px;
+  max-width:1000px;
+}
+
+.page-title {
+  font-size:1.8rem;
+  font-weight:800;
+  color:var(--navy);
+  margin-bottom:6px;
+}
+
+.page-title span {
+  color:var(--blue);
+}
+
+.page-sub {
+  font-size:0.9rem;
+  color:var(--muted);
+  margin-bottom:28px;
+}
+
+.card {
+  background:white;
+  border:1px solid var(--gray);
+  border-radius:16px;
+  padding:24px;
+}
+
+.section-title {
+  font-size:1rem;
+  font-weight:700;
+  color:var(--navy);
+  margin-bottom:20px;
+}
+
+.session-card {
+  border:1px solid var(--gray);
+  border-radius:14px;
+  padding:20px;
+  margin-bottom:18px;
+  transition:0.2s;
+}
+
+.session-card:hover {
+  border-color:#CBD5E1;
+}
+
+.session-title {
+  font-size:1rem;
+  font-weight:700;
+  color:var(--navy);
+  margin-bottom:8px;
+}
+
+.session-meta {
+  font-size:0.82rem;
+  color:var(--muted);
+  margin-bottom:14px;
+}
+
+.attendance-btn {
+  display:inline-block;
+  padding:10px 18px;
+  border-radius:10px;
+  text-decoration:none;
+  background:linear-gradient(135deg,#6366F1,#8B5CF6);
+  color:white;
+  font-size:0.85rem;
+  font-weight:700;
+}
+
+.attendance-btn:hover {
+  opacity:0.9;
+}
+
+.empty-state {
+  text-align:center;
+  padding:30px;
+  color:var(--muted);
+}
+</style>
+</head>
 <body>
 
-<h1>Attendance Management</h1>
-<a href="/admin-dashboard">Back to Dashboard</a>
+<aside class="sidebar">
+  <div class="logo-text">Agile<span>Mentor</span></div>
 
-<br><br>
+  <a class="nav-item" href="/admin-dashboard">Dashboard</a>
+  <a class="nav-item active" href="/attendance">Attendance</a>
+</aside>
 
-<h2>Select Session to Mark Attendance</h2>
-{% for s in sessions %}
-<div>
-    <p><b>{{ s.session_id }}</b> - {{ s.title }} | {{ s.session_type }} | {{ s.status }}</p>
-    <a href="/attendance/{{ s.session_id }}">Mark / View Attendance</a>
-    <hr>
+<div class="main">
+
+  <div class="topbar">
+    <div class="topbar-title">Attendance Management</div>
+  </div>
+
+  <div class="content">
+
+    <div class="page-title">Attendance <span>Management</span></div>
+    <div class="page-sub">
+      View sessions and manage attendance records.
+    </div>
+
+    <div class="card">
+      <div class="section-title">Select Session to Mark Attendance</div>
+
+      {% for s in sessions %}
+      <div class="session-card">
+
+        <div class="session-title">
+          {{ s.title }}
+        </div>
+
+        <div class="session-meta">
+          Session ID: {{ s.session_id }} •
+          {{ s.session_type|capitalize }} •
+          {{ s.status|capitalize }}
+        </div>
+
+        <a class="attendance-btn" href="/attendance/{{ s.session_id }}">
+          Mark / View Attendance
+        </a>
+
+      </div>
+      {% else %}
+      <div class="empty-state">
+        No sessions found.
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
 </div>
-{% else %}
-<p>No sessions found.</p>
-{% endfor %}
 
 </body>
 </html>

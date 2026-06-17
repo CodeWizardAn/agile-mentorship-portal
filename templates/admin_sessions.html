@@ -292,9 +292,9 @@ textarea {
               <option value="cancelled" {% if s.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
             </select>
 
-            <input class="form-input" type="url" name="meeting_link" value="{{ s.meeting_link }}">
+            <input class="form-input" type="url" name="meeting_link" value="{{ s.meeting_link or '' }}">
 
-            <input class="form-input" type="url" name="video_url" value="{{ s.video_url }}">
+<input class="form-input" type="url" name="video_url" value="{{ s.video_url or '' }}">
           </div>
 
           <div class="action-row">

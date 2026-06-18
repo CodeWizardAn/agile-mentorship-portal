@@ -83,6 +83,7 @@
 </head>
 <body>
 
+{% set avatar_initial = ((((user.full_name or '') | trim)[:1]) or 'M') | upper %}
 <aside class="sidebar">
   <div class="sidebar-logo"><a class="logo-wrap" href="/"><div class="logo-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><span class="logo-text">Agile<span>Mentor</span></span></a></div>
   <div class="sidebar-user"><div class="user-avatar">{{ avatar_initial }}</div><div><div class="user-name">{{ user.full_name or 'Mentor' }}</div><div class="user-role">Mentor</div></div></div>

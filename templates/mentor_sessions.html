@@ -207,12 +207,12 @@
             <span class="type-badge {{ 'badge-live' if s.session_type == 'live' else 'badge-recorded' }}">{{ s.session_type.upper() }}</span>
             <span class="status-badge status-{{ s.status }}">{{ s.status.upper() }}</span>
             {% if s.session_type == 'live' and s.meeting_link %}
-  <a class="btn-attend" href="{{ s.meeting_link }}" target="_blank" style="background:linear-gradient(135deg,#22C55E,#16A34A);">Join →</a>
+            <a class="btn-attend" href="{{ s.meeting_link }}" target="_blank" rel="noopener noreferrer" style="background:linear-gradient(135deg,`#22C55E`,`#16A34A`);">Join →</a>
 {% elif s.session_type == 'recorded' and s.video_url %}
-  <a class="btn-attend" href="{{ s.video_url }}" target="_blank" style="background:linear-gradient(135deg,#8B5CF6,#6366F1);">Watch →</a>
+<a class="btn-attend" href="{{ s.video_url }}" target="_blank" rel="noopener noreferrer" style="background:linear-gradient(135deg,`#8B5CF6`,`#6366F1`);">Watch →</a>
 {% endif %}
             <a class="btn-attend" href="/attendance/{{ s.session_id }}">Attendance</a>
-            <button class="btn-edit" onclick="openEdit('{{ s.session_id }}','{{ s.title }}','{{ s.status }}','{{ s.meeting_link or '' }}','{{ s.video_url or '' }}','{{ s.duration_minutes or '' }}')">Edit</button>
+            <button class="btn-edit" onclick="openEdit({{ s.session_id|tojson }}, {{ s.title|tojson }}, {{ s.status|tojson }}, {{ (s.meeting_link or '')|tojson }}, {{ (s.video_url or '')|tojson }}, {{ (s.duration_minutes or '')|tojson }})">Edit</button>
             <form action="/mentor/sessions/delete/{{ s.session_id }}" method="post" style="display:inline;" onsubmit="return confirm('Delete this session?')">
               <button class="btn-delete" type="submit">Delete</button>
             </form>

@@ -247,8 +247,8 @@
           </div>
 
           <div class="cert-preview">
-            {% if cert.file_type == 'pdf' %}
-              <a class="view-link" href="{{ cert.file_url }}" target="_blank">View PDF</a>
+            {% if cert.file_type and cert.file_type|lower|replace('.', '') == 'pdf' %}
+            <a class="view-link" href="{{ cert.file_url }}" target="_blank" rel="noopener noreferrer">View PDF</a>
             {% else %}
               <img src="{{ cert.file_url }}" alt="Certificate Preview">
             {% endif %}

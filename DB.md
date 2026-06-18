@@ -145,3 +145,12 @@ CREATE TABLE "Certificate" (
 -- ============================================================
 -- INSERT INTO "User" (user_id, full_name, email, password_hash, role, status)
 -- VALUES ('26001', 'Admin', 'admin@gmail.com', '<BCRYPT_HASH>', 'admin', 'active');
+
+
+ALTER TABLE "MentorInvite" DROP CONSTRAINT "MentorInvite_used_by_fkey";
+ALTER TABLE "MentorInvite" ADD CONSTRAINT "MentorInvite_used_by_fkey" 
+    FOREIGN KEY (used_by) REFERENCES "User"(user_id) ON DELETE SET NULL;
+
+ALTER TABLE "MentorInvite" DROP CONSTRAINT "MentorInvite_created_by_fkey";
+ALTER TABLE "MentorInvite" ADD CONSTRAINT "MentorInvite_created_by_fkey" 
+    FOREIGN KEY (created_by) REFERENCES "User"(user_id) ON DELETE SET NULL;

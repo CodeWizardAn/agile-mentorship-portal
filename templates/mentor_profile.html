@@ -62,7 +62,9 @@
     .upload-icon { font-size:2rem; margin-bottom:8px; }
     .upload-text { font-size:0.85rem; color:var(--muted); margin-bottom:12px; }
     .upload-input { display:none; }
-    .upload-label { padding:8px 20px; border-radius:8px; background:linear-gradient(135deg,#6366F1,#8B5CF6); color:white; font-size:0.82rem; font-weight:700; cursor:pointer; display:inline-block; }
+    .upload-label { padding:8px 20px; border-radius:8px; border:none; background:linear-gradient(135deg,`#6366F1`,`#8B5CF6`); color:white; font-size:0.82rem; font-weight:700; cursor:pointer; display:inline-block; }
++   .upload-label:focus-visible { outline:2px solid `#6366F1`; outline-offset:2px; }
+    
 
     /* PROFILE FORM */
     .profile-form-card { background:var(--white); border-radius:16px; border:1px solid var(--gray); padding:24px; }
@@ -81,9 +83,10 @@
 </head>
 <body>
 
+{% set avatar_initial = ((((user.full_name or '') | trim)[:1]) or 'M') | upper %}
 <aside class="sidebar">
   <div class="sidebar-logo"><a class="logo-wrap" href="/"><div class="logo-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><span class="logo-text">Agile<span>Mentor</span></span></a></div>
-  <div class="sidebar-user"><div class="user-avatar">{{ user.full_name[0].upper() }}</div><div><div class="user-name">{{ user.full_name }}</div><div class="user-role">Mentor</div></div></div>
+  <div class="sidebar-user"><div class="user-avatar">{{ avatar_initial }}</div><div><div class="user-name">{{ user.full_name or 'Mentor' }}</div><div class="user-role">Mentor</div></div></div>
   <nav class="sidebar-nav">
     <a class="nav-item" href="/mentor-dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
     <a class="nav-item active" href="/mentor-profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>My Profile</a>
@@ -109,7 +112,7 @@
           {% if user.profile_photo %}
             <img src="{{ user.profile_photo }}" alt="Profile Photo"/>
           {% else %}
-            {{ user.full_name[0].upper() }}
+          {{ avatar_initial }}
           {% endif %}
         </div>
       </div>
@@ -127,11 +130,10 @@
     <div class="photo-upload-card">
       <div class="card-section-title">Profile Photo</div>
       <form action="/upload/profile-photo" method="post" enctype="multipart/form-data">
-        <div class="upload-area" onclick="document.getElementById('photoInput').click()">
-          <div class="upload-icon">📷</div>
+        <div class="upload-area">
           <div class="upload-text">Click to upload a new profile photo<br/><small>JPG, PNG supported</small></div>
           <input class="upload-input" type="file" id="photoInput" name="file" accept=".jpg,.jpeg,.png" onchange="this.form.submit()"/>
-          <label class="upload-label" for="photoInput">Choose Photo</label>
+          <button class="upload-label" type="button" onclick="document.getElementById('photoInput').click()">Choose Photo</button>
         </div>
       </form>
     </div>
@@ -147,7 +149,7 @@
           </div>
           <div class="form-group">
             <label class="form-label">Years of Experience</label>
-            <input class="form-input" type="number" name="experience_years" placeholder="e.g. 5" value="{{ mentor.experience_years or '' if mentor else '' }}"/>
+            <input class="form-input" type="number" name="experience_years" placeholder="e.g. 5" value="{{ mentor.experience_years if mentor and mentor.experience_years is not none else '' }}"/>
           </div>
           <div class="form-group">
             <label class="form-label">LinkedIn URL</label>

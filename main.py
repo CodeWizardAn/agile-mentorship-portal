@@ -548,19 +548,59 @@ def delete_user(
     if not current_user or current_user.role != "admin":
         return RedirectResponse(url="/login/admin", status_code=302)
 
+    # get mentor profile if exists
     mentor = db.query(Mentor).filter(Mentor.user_id == user_id).first()
+    
     if mentor:
-        db.query(Program).filter(Program.assigned_mentor == mentor.mentor_profile_id).update({"assigned_mentor": None})
+        # delete mentor certificates
+        db.query(MentorCertificate).filter(
+            MentorCertificate.mentor_profile_id == mentor.mentor_profile_id
+        ).delete()
+
+        # remove mentor from programs
+        db.query(Program).filter(
+            Program.assigned_mentor == mentor.mentor_profile_id
+        ).update({"assigned_mentor": None})
+
+        # delete mentor sessions
+        sessions = db.query(MentorSession).filter(
+            MentorSession.mentor_id == mentor.mentor_profile_id
+        ).all()
+        for session in sessions:
+            # delete attendance for each session
+            db.query(Attendance).filter(
+                Attendance.session_id == session.session_id
+            ).delete()
+        db.query(MentorSession).filter(
+            MentorSession.mentor_id == mentor.mentor_profile_id
+        ).delete()
+
+        # delete mentor invite records
+        db.query(MentorInvite).filter(
+            MentorInvite.used_by == user_id
+        ).update({"used_by": None})
+
         db.delete(mentor)
 
+    # delete enrollments
     db.query(Enrollment).filter(Enrollment.user_id == user_id).delete()
+    
+    # clear mentor invite references
+    db.query(MentorInvite).filter(
+    MentorInvite.used_by == user_id).update({"used_by": None})
 
+    db.query(MentorInvite).filter(MentorInvite.created_by == user_id).update({"created_by": None})
+
+    # delete attendance records
+    db.query(Attendance).filter(Attendance.user_id == user_id).delete()
+
+    # delete user
     user = db.query(User).filter(User.user_id == user_id).first()
     if user:
         db.delete(user)
+
     db.commit()
     return RedirectResponse(url="/admin/users", status_code=302)
-
 
 # ── SESSIONS ──────────────────────────────────────────────────────────────────
 

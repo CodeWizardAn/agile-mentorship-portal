@@ -19,6 +19,10 @@ from fastapi import UploadFile, File
 from cloudinary_config import upload_file
 from models.mentor_certificate import MentorCertificate
 from fastapi import HTTPException
+from models.video_progress import VideoProgress
+from models.session_completion import SessionCompletion
+from pydantic import BaseModel
+import json
 
 
 app = FastAPI()
@@ -154,7 +158,7 @@ def login(request: Request, role: str):
 def mentor_dashboard(request: Request, current_user: User = Depends(get_current_user)):
     if not current_user or current_user.role != "mentor":
         return RedirectResponse(url="/login/mentor", status_code=302)
-    return templates.TemplateResponse(
+    return templates.TemplateResponse(  
         request=request, name="mentor_dashboard.html", context={"user": current_user}
     )
 
@@ -446,10 +450,36 @@ def delete_program(
     if not current_user or current_user.role != "admin":
         return RedirectResponse(url="/login/admin", status_code=302)
 
+    # Delete attendance for all sessions in this program
+    program_sessions = db.query(MentorSession).filter(
+        MentorSession.program_id == program_id
+    ).all()
+    for session in program_sessions:
+        db.query(Attendance).filter(
+            Attendance.session_id == session.session_id
+        ).delete()
+        db.query(VideoProgress).filter(
+            VideoProgress.session_id == session.session_id
+        ).delete()
+        db.query(SessionCompletion).filter(
+            SessionCompletion.session_id == session.session_id
+        ).delete()
+
+    # Delete sessions
+    db.query(MentorSession).filter(
+        MentorSession.program_id == program_id
+    ).delete()
+
+    # Delete enrollments
+    db.query(Enrollment).filter(
+        Enrollment.program_id == program_id
+    ).delete()
+
+    # Now delete the program
     program = db.query(Program).filter(Program.program_id == program_id).first()
     if program:
         db.delete(program)
-        db.commit()
+    db.commit()
     return RedirectResponse(url="/admin/programs", status_code=302)
 
 @app.get("/programs", response_class=HTMLResponse)
@@ -550,7 +580,25 @@ def delete_user(
 
     mentor = db.query(Mentor).filter(Mentor.user_id == user_id).first()
     if mentor:
-        db.query(Program).filter(Program.assigned_mentor == mentor.mentor_profile_id).update({"assigned_mentor": None})
+        # Delete attendance records for mentor's sessions first
+        mentor_sessions = db.query(MentorSession).filter(
+            MentorSession.mentor_id == mentor.mentor_profile_id
+        ).all()
+        for session in mentor_sessions:
+            db.query(Attendance).filter(
+                Attendance.session_id == session.session_id
+            ).delete()
+
+        # Now delete the sessions
+        db.query(MentorSession).filter(
+            MentorSession.mentor_id == mentor.mentor_profile_id
+        ).delete()
+
+        # Nullify program assignments
+        db.query(Program).filter(
+            Program.assigned_mentor == mentor.mentor_profile_id
+        ).update({"assigned_mentor": None})
+
         db.delete(mentor)
 
     db.query(Enrollment).filter(Enrollment.user_id == user_id).delete()
@@ -558,6 +606,7 @@ def delete_user(
     user = db.query(User).filter(User.user_id == user_id).first()
     if user:
         db.delete(user)
+
     db.commit()
     return RedirectResponse(url="/admin/users", status_code=302)
 
@@ -987,3 +1036,183 @@ def delete_certificate(
         db.delete(cert)
         db.commit()
     return RedirectResponse(url="/mentor/certificates", status_code=302)
+
+# ── VIDEO PROGRESS TRACKING ───────────────────────────────────────────────────
+
+
+class SegmentPayload(BaseModel):
+    session_id: str
+    start: float
+    end: float
+
+def generate_progress_id(db):
+    from models.video_progress import VideoProgress
+    last = db.query(func.max(VideoProgress.progress_id)).scalar()
+    if last:
+        last_serial = int(last[2:]) + 1
+    else:
+        last_serial = 1
+    return f"VP{last_serial:04d}"
+
+def generate_completion_id(db):
+    from models.session_completion import SessionCompletion
+    last = db.query(func.max(SessionCompletion.completion_id)).scalar()
+    if last:
+        last_serial = int(last[2:]) + 1
+    else:
+        last_serial = 1
+    return f"SC{last_serial:04d}"
+
+def merge_segments(segments: list) -> int:
+    """Merge overlapping [start, end] segments and return total unique seconds watched."""
+    if not segments:
+        return 0
+    segments.sort(key=lambda x: x[0])
+    merged = [segments[0]]
+    for start, end in segments[1:]:
+        if start <= merged[-1][1]:
+            merged[-1][1] = max(merged[-1][1], end)
+        else:
+            merged.append([start, end])
+    return int(sum(end - start for start, end in merged))
+
+
+@app.post("/api/video/progress")
+def update_video_progress(
+    payload: SegmentPayload,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Called every 5 seconds from frontend with the current watched segment.
+    Merges segments and checks if 95% of video is watched.
+    """
+    if not current_user or current_user.role != "mentee":
+        raise HTTPException(status_code=403, detail="Mentees only")
+
+    session = db.query(MentorSession).filter(
+        MentorSession.session_id == payload.session_id
+    ).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # Verify mentee is enrolled in this program
+    enrollment = db.query(Enrollment).filter(
+        Enrollment.user_id == current_user.user_id,
+        Enrollment.program_id == session.program_id
+    ).first()
+    if not enrollment:
+        raise HTTPException(status_code=403, detail="Not enrolled in this program")
+
+    # Get or create progress record
+    progress = db.query(VideoProgress).filter(
+        VideoProgress.user_id == current_user.user_id,
+        VideoProgress.session_id == payload.session_id
+    ).first()
+
+    if not progress:
+        progress_id = generate_progress_id(db)
+        progress = VideoProgress(
+            progress_id=progress_id,
+            user_id=current_user.user_id,
+            session_id=payload.session_id,
+            watched_segments="[]",
+            total_watched=0
+        )
+        db.add(progress)
+        db.flush()
+
+    # Merge new segment with existing ones
+    existing = json.loads(progress.watched_segments or "[]")
+    existing.append([round(payload.start, 2), round(payload.end, 2)])
+    merged_unique_seconds = merge_segments(existing)
+
+    progress.watched_segments = json.dumps(existing)
+    progress.total_watched = merged_unique_seconds
+
+    # Check if 95% of video watched (anti-skip: based on unique segments, not seek position)
+    duration_seconds = (session.duration_minutes or 0) * 60
+    is_complete = duration_seconds > 0 and merged_unique_seconds >= duration_seconds * 0.95
+
+    db.commit()
+
+    # If complete, mark session as completed for this mentee
+    if is_complete:
+        existing_completion = db.query(SessionCompletion).filter(
+            SessionCompletion.user_id == current_user.user_id,
+            SessionCompletion.session_id == payload.session_id
+        ).first()
+
+        if not existing_completion:
+            completion_id = generate_completion_id(db)
+            completion = SessionCompletion(
+                completion_id=completion_id,
+                user_id=current_user.user_id,
+                session_id=payload.session_id,
+                program_id=session.program_id,
+                completed=True
+            )
+            db.add(completion)
+            db.commit()
+
+            # Check if ALL recorded sessions in this program are now complete
+            all_recorded_sessions = db.query(MentorSession).filter(
+                MentorSession.program_id == session.program_id,
+                MentorSession.session_type == "recorded"
+            ).all()
+
+            completed_session_ids = [
+                c.session_id for c in db.query(SessionCompletion).filter(
+                    SessionCompletion.user_id == current_user.user_id,
+                    SessionCompletion.program_id == session.program_id,
+                    SessionCompletion.completed == True
+                ).all()
+            ]
+
+            all_done = all(s.session_id in completed_session_ids for s in all_recorded_sessions)
+
+            if all_done:
+                enrollment.status = "certificate_eligible"
+                db.commit()
+
+    return {
+        "total_watched": merged_unique_seconds,
+        "duration_seconds": duration_seconds,
+        "percent": round((merged_unique_seconds / duration_seconds * 100) if duration_seconds else 0, 1),
+        "is_complete": is_complete
+    }
+
+
+@app.get("/api/video/progress/{session_id}")
+def get_video_progress(
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Returns current watch progress for a session — used on page load to restore state."""
+    if not current_user:
+        raise HTTPException(status_code=403, detail="Not authenticated")
+
+    progress = db.query(VideoProgress).filter(
+        VideoProgress.user_id == current_user.user_id,
+        VideoProgress.session_id == session_id
+    ).first()
+
+    completion = db.query(SessionCompletion).filter(
+        SessionCompletion.user_id == current_user.user_id,
+        SessionCompletion.session_id == session_id
+    ).first()
+
+    session = db.query(MentorSession).filter(
+        MentorSession.session_id == session_id
+    ).first()
+
+    duration_seconds = (session.duration_minutes or 0) * 60 if session else 0
+    total_watched = progress.total_watched if progress else 0
+
+    return {
+        "total_watched": total_watched,
+        "duration_seconds": duration_seconds,
+        "percent": round((total_watched / duration_seconds * 100) if duration_seconds else 0, 1),
+        "is_complete": completion.completed if completion else False
+    }

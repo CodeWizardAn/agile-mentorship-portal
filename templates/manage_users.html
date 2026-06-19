@@ -1,39 +1,263 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Manage Users</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Manage Users — AgileMentor</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+
+<style>
+*, *::before, *::after {
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+:root {
+  --navy:#0F2645;
+  --blue:#2563EB;
+  --teal:#0EA5E9;
+  --white:#FFFFFF;
+  --offwhite:#F8FAFF;
+  --gray:#E8EFF8;
+  --muted:#64748B;
+  --text:#1E293B;
+}
+
+body {
+  font-family:'Inter',sans-serif;
+  background:var(--offwhite);
+  display:flex;
+}
+
+.sidebar {
+  width:240px;
+  background:var(--navy);
+  min-height:100vh;
+  position:fixed;
+  padding:20px;
+}
+
+.logo-text {
+  font-size:1.15rem;
+  font-weight:800;
+  color:white;
+  margin-bottom:30px;
+}
+
+.logo-text span {
+  color:#60A5FA;
+}
+
+.nav-item {
+  display:block;
+  padding:12px;
+  border-radius:10px;
+  text-decoration:none;
+  color:#94A3B8;
+  margin-bottom:8px;
+  font-size:0.9rem;
+}
+
+.nav-item:hover {
+  background:rgba(255,255,255,0.06);
+  color:white;
+}
+
+.nav-item.active {
+  background:rgba(99,102,241,0.2);
+  color:#A5B4FC;
+}
+
+.main {
+  margin-left:240px;
+  flex:1;
+}
+
+.topbar {
+  background:white;
+  border-bottom:1px solid var(--gray);
+  padding:20px 32px;
+}
+
+.topbar-title {
+  font-size:1.1rem;
+  font-weight:700;
+  color:var(--navy);
+}
+
+.content {
+  padding:32px;
+}
+
+.page-title {
+  font-size:1.8rem;
+  font-weight:800;
+  color:var(--navy);
+  margin-bottom:6px;
+}
+
+.page-title span {
+  color:var(--blue);
+}
+
+.page-sub {
+  font-size:0.9rem;
+  color:var(--muted);
+  margin-bottom:28px;
+}
+
+.card {
+  background:white;
+  border:1px solid var(--gray);
+  border-radius:16px;
+  padding:24px;
+}
+
+.table-wrap {
+  overflow-x:auto;
+}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+}
+
+th {
+  text-align:left;
+  padding:14px;
+  font-size:0.82rem;
+  color:var(--muted);
+  border-bottom:1px solid var(--gray);
+}
+
+td {
+  padding:16px 14px;
+  font-size:0.88rem;
+  color:var(--text);
+  border-bottom:1px solid var(--gray);
+}
+
+.role-badge {
+  display:inline-block;
+  padding:5px 10px;
+  border-radius:20px;
+  background:#EEF2FF;
+  color:#4338CA;
+  font-size:0.75rem;
+  font-weight:700;
+}
+
+.status-badge {
+  display:inline-block;
+  padding:5px 10px;
+  border-radius:20px;
+  background:#ECFDF5;
+  color:#059669;
+  font-size:0.75rem;
+  font-weight:700;
+}
+
+.delete-btn {
+  padding:8px 14px;
+  border:none;
+  border-radius:8px;
+  background:#FEE2E2;
+  color:#DC2626;
+  font-size:0.82rem;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.delete-btn:hover {
+  opacity:0.9;
+}
+
+.empty-state {
+  text-align:center;
+  color:var(--muted);
+  padding:30px;
+}
+</style>
 </head>
 <body>
 
-<h1>Manage Users</h1>
-<a href="/admin-dashboard">Back to Dashboard</a>
+<aside class="sidebar">
+  <div class="logo-text">Agile<span>Mentor</span></div>
 
-<br><br>
+  <a class="nav-item" href="/admin-dashboard">Dashboard</a>
+  <a class="nav-item active" href="/admin/users">Manage Users</a>
+</aside>
 
-<table border="1" cellpadding="8">
-    <tr>
-        <th>User ID</th>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Role</th>
-        <th>Status</th>
-        <th>Action</th>
-    </tr>
-    {% for u in users %}
-    <tr>
-        <td>{{ u.user_id }}</td>
-        <td>{{ u.full_name }}</td>
-        <td>{{ u.email }}</td>
-        <td>{{ u.role }}</td>
-        <td>{{ u.status }}</td>
-        <td>
-            <form action="/admin/users/delete/{{ u.user_id }}" method="post">
-                <button type="submit" onclick="return confirm('Delete this user?')">Delete</button>
-            </form>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+<div class="main">
+
+  <div class="topbar">
+    <div class="topbar-title">Manage Users</div>
+  </div>
+
+  <div class="content">
+
+    <div class="page-title">Manage <span>Users</span></div>
+    <div class="page-sub">View and manage all registered users in the system.</div>
+
+    <div class="card">
+      {% if users %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>User ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for u in users %}
+            <tr>
+              <td>{{ u.user_id }}</td>
+              <td>{{ u.full_name }}</td>
+              <td>{{ u.email }}</td>
+
+              <td>
+                <span class="role-badge">
+                  {{ u.role }}
+                </span>
+              </td>
+
+              <td>
+                <span class="status-badge">
+                  {{ u.status }}
+                </span>
+              </td>
+
+              <td>
+                <form action="/admin/users/delete/{{ u.user_id }}" method="post">
+                  <button class="delete-btn" type="submit"
+                    onclick="return confirm('Delete this user?')">
+                    Delete
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% else %}
+      <div class="empty-state">
+        No users found.
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
 
 </body>
 </html>

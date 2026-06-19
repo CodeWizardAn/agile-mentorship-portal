@@ -1,10 +1,15 @@
 from database import engine, Base
 
-# IMPORTANT: import all models so SQLAlchemy registers them
-from models.mentor import MentorAssignment
+from models.user import User
+from models.mentor import Mentor
+from models.mentor_invite import MentorInvite
 from models.program import Program
-from models.session import Session
 from models.enrollment import Enrollment
+from models.session import Session
+from models.attendance import Attendance
+from models.mentor_certificate import MentorCertificate
+from models.video_progress import VideoProgress
+from models.session_completion import SessionCompletion
 
 Base.metadata.create_all(bind=engine)
 

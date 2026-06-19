@@ -23,6 +23,7 @@ from models.video_progress import VideoProgress
 from models.session_completion import SessionCompletion
 from pydantic import BaseModel
 import json
+from datetime import datetime, timezone
 
 
 app = FastAPI()
@@ -169,14 +170,28 @@ def mentee_dashboard(request: Request, current_user: User = Depends(get_current_
     return templates.TemplateResponse(
         request=request, name="mentee_dashboard.html", context={"user": current_user}
     )
+# Replace the existing admin_dashboard route in main.py with this:
 
 @app.get("/admin-dashboard", response_class=HTMLResponse)
-def admin_dashboard(request: Request, current_user: User = Depends(get_current_user)):
+def admin_dashboard(request: Request, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     if not current_user or current_user.role != "admin":
         return RedirectResponse(url="/login/admin", status_code=302)
+
+    stats = {
+        "total_programs":       db.query(Program).count(),
+        "active_programs":      db.query(Program).filter(Program.status == "active").count(),
+        "total_sessions":       db.query(MentorSession).count(),
+        "live_sessions":        db.query(MentorSession).filter(MentorSession.session_type == "live").count(),
+        "total_users":          db.query(User).filter(User.role != "admin").count(),
+        "total_mentors":        db.query(User).filter(User.role == "mentor").count(),
+        "total_enrollments":    db.query(Enrollment).count(),
+        "certificate_eligible": db.query(Enrollment).filter(Enrollment.status == "certificate_eligible").count(),
+    }
+
     return templates.TemplateResponse(
-        request=request, name="admin_dashboard.html",
-        context={"user": current_user, "request": request}
+        request=request,
+        name="admin_dashboard.html",
+        context={"user": current_user, "request": request, "stats": stats}
     )
 
 
@@ -1216,3 +1231,156 @@ def get_video_progress(
         "percent": round((total_watched / duration_seconds * 100) if duration_seconds else 0, 1),
         "is_complete": completion.completed if completion else False
     }
+
+@app.post("/session/join/{session_id}")
+def join_session(
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Logs join time and redirects mentee to the meeting link."""
+    if not current_user or current_user.role != "mentee":
+        return RedirectResponse(url="/login/mentee", status_code=302)
+ 
+    session = db.query(MentorSession).filter(
+        MentorSession.session_id == session_id
+    ).first()
+    if not session or not session.meeting_link:
+        return RedirectResponse(url="/my-sessions", status_code=302)
+ 
+    # Verify enrollment
+    enrollment = db.query(Enrollment).filter(
+        Enrollment.user_id == current_user.user_id,
+        Enrollment.program_id == session.program_id
+    ).first()
+    if not enrollment:
+        return RedirectResponse(url="/my-sessions", status_code=302)
+ 
+    # Get or create attendance record
+    attendance = db.query(Attendance).filter(
+        Attendance.session_id == session_id,
+        Attendance.user_id == current_user.user_id
+    ).first()
+ 
+    if not attendance:
+        attendance_id = generate_attendance_id(db)
+        attendance = Attendance(
+            attendance_id=attendance_id,
+            session_id=session_id,
+            user_id=current_user.user_id,
+            status="absent",
+            join_intervals="[]",
+            total_minutes_present=0,
+            is_auto_marked="false"
+        )
+        db.add(attendance)
+        db.flush()
+ 
+    # Load existing intervals and add new join entry (leave = None for now)
+    intervals = json.loads(attendance.join_intervals or "[]")
+    intervals.append({
+        "join": datetime.now(timezone.utc).isoformat(),
+        "leave": None
+    })
+    attendance.join_intervals = json.dumps(intervals)
+    db.commit()
+ 
+    # Redirect to actual meeting
+    return RedirectResponse(url=f"/session/live/{session_id}", status_code=302)
+ 
+ 
+@app.get("/session/live/{session_id}", response_class=HTMLResponse)
+def live_session_page(
+    request: Request,
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Intermediate page shown while mentee is in session — has Leave button."""
+    if not current_user or current_user.role != "mentee":
+        return RedirectResponse(url="/login/mentee", status_code=302)
+ 
+    session = db.query(MentorSession).filter(
+        MentorSession.session_id == session_id
+    ).first()
+    if not session:
+        return RedirectResponse(url="/my-sessions", status_code=302)
+ 
+    attendance = db.query(Attendance).filter(
+        Attendance.session_id == session_id,
+        Attendance.user_id == current_user.user_id
+    ).first()
+ 
+    return templates.TemplateResponse(
+        request=request,
+        name="live_session.html",
+        context={
+            "user": current_user,
+            "session": session,
+            "attendance": attendance
+        }
+    )
+ 
+ 
+@app.post("/session/leave/{session_id}")
+def leave_session(
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Logs leave time, calculates total minutes present, auto marks attendance."""
+    if not current_user or current_user.role != "mentee":
+        return RedirectResponse(url="/login/mentee", status_code=302)
+ 
+    session = db.query(MentorSession).filter(
+        MentorSession.session_id == session_id
+    ).first()
+    if not session:
+        return RedirectResponse(url="/my-sessions", status_code=302)
+ 
+    attendance = db.query(Attendance).filter(
+        Attendance.session_id == session_id,
+        Attendance.user_id == current_user.user_id
+    ).first()
+    if not attendance:
+        return RedirectResponse(url="/my-sessions", status_code=302)
+ 
+    # Update the last open interval with leave time
+    intervals = json.loads(attendance.join_intervals or "[]")
+    leave_time = datetime.now(timezone.utc)
+ 
+    for interval in reversed(intervals):
+        if interval["leave"] is None:
+            interval["leave"] = leave_time.isoformat()
+            break
+ 
+    # Calculate total unique minutes present across all intervals
+    total_seconds = 0
+    for interval in intervals:
+        if interval["join"] and interval["leave"]:
+            try:
+                join_dt  = datetime.fromisoformat(interval["join"])
+                leave_dt = datetime.fromisoformat(interval["leave"])
+                diff = (leave_dt - join_dt).total_seconds()
+                if diff > 0:
+                    total_seconds += diff
+            except Exception:
+                pass
+ 
+    total_minutes = int(total_seconds / 60)
+    duration_minutes = session.duration_minutes or 0
+ 
+    # Auto mark present if >= 90% of session duration attended
+    if duration_minutes > 0 and total_minutes >= duration_minutes * 0.90:
+        attendance.status = "present"
+        attendance.is_auto_marked = "true"
+    # Don't override to absent if admin already manually marked present
+    elif attendance.is_auto_marked == "false" and attendance.status != "present":
+        attendance.status = "absent"
+ 
+    attendance.join_intervals = json.dumps(intervals)
+    attendance.total_minutes_present = total_minutes
+    db.commit()
+ 
+    return RedirectResponse(url="/my-sessions", status_code=302)
+ 

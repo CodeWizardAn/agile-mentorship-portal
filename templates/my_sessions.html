@@ -125,7 +125,9 @@
             <span class="type-badge {{ 'badge-live' if s.session_type == 'live' else 'badge-recorded' }}">{{ s.session_type.upper() }}</span>
             <span class="status-badge status-{{ s.status }}">{{ s.status.upper() }}</span>
             {% if s.session_type == 'live' and s.meeting_link %}
-              <a class="join-btn" href="{{ s.meeting_link }}" target="_blank">Join →</a>
+              <form action="/session/join/{{ s.session_id }}" method="post" style="display:inline;">
+                <button class="join-btn" type="submit">Join →</button>
+              </form>
             {% elif s.session_type == 'recorded' and s.video_url %}
               <button
                 class="watch-btn"

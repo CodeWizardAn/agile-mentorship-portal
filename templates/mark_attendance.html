@@ -4,262 +4,149 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Mark Attendance — AgileMentor</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-
 <style>
-*, *::before, *::after {
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
-}
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+:root { --navy:#0F2645;--blue:#2563EB;--teal:#0EA5E9;--white:#FFFFFF;--offwhite:#F8FAFF;--gray:#E8EFF8;--muted:#64748B;--text:#1E293B; }
+body { font-family:'Inter',sans-serif; background:var(--offwhite); display:flex; }
+.sidebar { width:240px; background:var(--navy); min-height:100vh; position:fixed; padding:20px; }
+.logo-text { font-size:1.15rem; font-weight:800; color:white; margin-bottom:30px; }
+.logo-text span { color:#60A5FA; }
+.nav-item { display:block; padding:12px; border-radius:10px; text-decoration:none; color:#94A3B8; margin-bottom:8px; font-size:0.9rem; }
+.nav-item:hover { background:rgba(255,255,255,0.06); color:white; }
+.nav-item.active { background:rgba(99,102,241,0.2); color:#A5B4FC; }
+.main { margin-left:240px; flex:1; }
+.topbar { background:white; border-bottom:1px solid var(--gray); padding:20px 32px; }
+.topbar-title { font-size:1.1rem; font-weight:700; color:var(--navy); }
+.content { padding:32px; max-width:950px; }
+.page-title { font-size:1.8rem; font-weight:800; color:var(--navy); margin-bottom:6px; }
+.page-title span { color:var(--blue); }
+.page-sub { font-size:0.9rem; color:var(--muted); margin-bottom:28px; }
+.card { background:white; border:1px solid var(--gray); border-radius:16px; padding:24px; }
 
-:root {
-  --navy:#0F2645;
-  --blue:#2563EB;
-  --teal:#0EA5E9;
-  --white:#FFFFFF;
-  --offwhite:#F8FAFF;
-  --gray:#E8EFF8;
-  --muted:#64748B;
-  --text:#1E293B;
-}
+.mentee-card { border:1px solid var(--gray); border-radius:14px; padding:18px; margin-bottom:18px; }
+.mentee-card:hover { border-color:#CBD5E1; }
+.mentee-name { font-size:1rem; font-weight:700; color:var(--navy); margin-bottom:4px; }
+.mentee-meta { font-size:0.82rem; color:var(--muted); margin-bottom:12px; }
 
-body {
-  font-family:'Inter',sans-serif;
-  background:var(--offwhite);
-  display:flex;
+.auto-info {
+  background:var(--offwhite); border:1px solid var(--gray);
+  border-radius:10px; padding:12px 16px; margin-bottom:14px;
+  display:flex; gap:20px; flex-wrap:wrap; align-items:center;
 }
+.auto-stat { font-size:0.8rem; color:var(--muted); }
+.auto-stat strong { color:var(--navy); font-size:0.88rem; }
+.auto-badge {
+  font-size:0.72rem; font-weight:700; padding:4px 10px; border-radius:6px;
+  background:#EEF2FF; color:#4338CA;
+}
+.auto-badge.auto { background:#DCFCE7; color:#15803D; }
 
-.sidebar {
-  width:240px;
-  background:var(--navy);
-  min-height:100vh;
-  position:fixed;
-  padding:20px;
-}
+.status-row { display:flex; gap:10px; align-items:center; margin-bottom:10px; }
+.status-badge { display:inline-block; padding:5px 10px; border-radius:20px; background:#EEF2FF; color:#4338CA; font-size:0.75rem; font-weight:700; }
+.status-badge.present { background:#DCFCE7; color:#15803D; }
+.status-badge.absent { background:#FEE2E2; color:#DC2626; }
 
-.logo-text {
-  font-size:1.15rem;
-  font-weight:800;
-  color:white;
-  margin-bottom:30px;
-}
+.form-row { display:flex; gap:12px; align-items:center; }
+.form-select { padding:10px 14px; border-radius:10px; border:1.5px solid var(--gray); background:var(--offwhite); outline:none; min-width:160px; }
+.form-select:focus { border-color:#6366F1; }
+.submit-btn { padding:10px 18px; border:none; border-radius:10px; background:linear-gradient(135deg,#6366F1,#8B5CF6); color:white; font-weight:700; cursor:pointer; }
+.submit-btn:hover { opacity:0.9; }
+.override-note { font-size:0.75rem; color:var(--muted); margin-top:8px; }
 
-.logo-text span {
-  color:#60A5FA;
-}
+.empty-state { text-align:center; color:var(--muted); padding:30px; }
 
-.nav-item {
-  display:block;
-  padding:12px;
-  border-radius:10px;
-  text-decoration:none;
-  color:#94A3B8;
-  margin-bottom:8px;
-  font-size:0.9rem;
-}
-
-.nav-item:hover {
-  background:rgba(255,255,255,0.06);
-  color:white;
-}
-
-.nav-item.active {
-  background:rgba(99,102,241,0.2);
-  color:#A5B4FC;
-}
-
-.main {
-  margin-left:240px;
-  flex:1;
-}
-
-.topbar {
-  background:white;
-  border-bottom:1px solid var(--gray);
-  padding:20px 32px;
-}
-
-.topbar-title {
-  font-size:1.1rem;
-  font-weight:700;
-  color:var(--navy);
-}
-
-.content {
-  padding:32px;
-  max-width:950px;
-}
-
-.page-title {
-  font-size:1.8rem;
-  font-weight:800;
-  color:var(--navy);
-  margin-bottom:6px;
-}
-
-.page-title span {
-  color:var(--blue);
-}
-
-.page-sub {
-  font-size:0.9rem;
-  color:var(--muted);
-  margin-bottom:28px;
-}
-
-.card {
-  background:white;
-  border:1px solid var(--gray);
-  border-radius:16px;
-  padding:24px;
-}
-
-.mentee-card {
-  border:1px solid var(--gray);
-  border-radius:14px;
-  padding:18px;
-  margin-bottom:18px;
-}
-
-.mentee-name {
-  font-size:1rem;
-  font-weight:700;
-  color:var(--navy);
-  margin-bottom:8px;
-}
-
-.mentee-meta {
-  font-size:0.82rem;
-  color:var(--muted);
-  margin-bottom:14px;
-}
-
-.form-row {
-  display:flex;
-  gap:12px;
-  align-items:center;
-}
-
-.form-select {
-  padding:10px 14px;
-  border-radius:10px;
-  border:1.5px solid var(--gray);
-  background:var(--offwhite);
-  outline:none;
-  min-width:160px;
-}
-
-.form-select:focus {
-  border-color:#6366F1;
-}
-
-.submit-btn {
-  padding:10px 18px;
-  border:none;
-  border-radius:10px;
-  background:linear-gradient(135deg,#6366F1,#8B5CF6);
-  color:white;
-  font-weight:700;
-  cursor:pointer;
-}
-
-.submit-btn:hover {
-  opacity:0.9;
-}
-
-.status-badge {
-  display:inline-block;
-  padding:5px 10px;
-  border-radius:20px;
-  background:#EEF2FF;
-  color:#4338CA;
-  font-size:0.75rem;
-  font-weight:700;
-}
-
-.empty-state {
-  text-align:center;
-  color:var(--muted);
-  padding:30px;
-}
+.progress-bar-bg { width:100%; height:6px; background:var(--gray); border-radius:99px; overflow:hidden; margin-top:8px; }
+.progress-bar-fill { height:6px; background:linear-gradient(90deg,var(--blue),var(--teal)); border-radius:99px; }
+.progress-bar-fill.full { background:#22C55E; }
 </style>
 </head>
 <body>
 
 <aside class="sidebar">
   <div class="logo-text">Agile<span>Mentor</span></div>
-
   <a class="nav-item" href="/admin-dashboard">Dashboard</a>
   <a class="nav-item active" href="/admin/attendance">Attendance</a>
 </aside>
 
 <div class="main">
-
   <div class="topbar">
     <div class="topbar-title">Attendance Management</div>
   </div>
 
   <div class="content">
-
-    <div class="page-title">
-      Attendance — <span>{{ session.title }}</span>
-    </div>
-
+    <div class="page-title">Attendance — <span>{{ session.title }}</span></div>
     <div class="page-sub">
-      Mark attendance for enrolled mentees in this session.
+      Auto-attendance is calculated from mentee join/leave times. You can override manually if needed.
     </div>
 
     <div class="card">
-
       {% for m in mentees %}
       <div class="mentee-card">
 
-        <div class="mentee-name">
-          {{ m.user.full_name }}
+        <div class="mentee-name">{{ m.user.full_name }}</div>
+        <div class="mentee-meta">User ID: {{ m.user.user_id }}</div>
+
+        <!-- Auto attendance info -->
+        {% if m.attendance %}
+        <div class="auto-info">
+          <div class="auto-stat">
+            Time Present<br>
+            <strong>{{ m.attendance.total_minutes_present or 0 }} min</strong>
+          </div>
+          <div class="auto-stat">
+            Session Duration<br>
+            <strong>{{ session.duration_minutes or '—' }} min</strong>
+          </div>
+          <div class="auto-stat">
+            Attendance<br>
+            <strong>
+              {% if session.duration_minutes and session.duration_minutes > 0 %}
+                {{ ((m.attendance.total_minutes_present or 0) / session.duration_minutes * 100) | int }}%
+              {% else %}—{% endif %}
+            </strong>
+          </div>
+          {% if m.attendance.is_auto_marked == 'true' %}
+            <span class="auto-badge auto">🤖 Auto-marked</span>
+          {% else %}
+            <span class="auto-badge">Manual</span>
+          {% endif %}
         </div>
 
-        <div class="mentee-meta">
-          User ID: {{ m.user.user_id }}
+        <!-- Progress bar -->
+        {% if session.duration_minutes and session.duration_minutes > 0 %}
+        {% set pct = ((m.attendance.total_minutes_present or 0) / session.duration_minutes * 100) | int %}
+        <div class="progress-bar-bg" style="margin-bottom:14px;">
+          <div class="progress-bar-fill {{ 'full' if pct >= 90 else '' }}" style="width:{{ [pct, 100] | min }}%"></div>
         </div>
+        {% endif %}
+        {% endif %}
 
-        <div style="margin-bottom:14px;">
+        <!-- Current status -->
+        <div class="status-row" style="margin-bottom:12px;">
           Current Status:
-          <span class="status-badge">
+          <span class="status-badge {{ m.attendance.status if m.attendance else '' }}">
             {{ m.attendance.status if m.attendance else 'Not marked' }}
           </span>
         </div>
 
+        <!-- Manual override -->
         <form action="/attendance/mark/{{ session.session_id }}" method="post">
           <input type="hidden" name="user_id" value="{{ m.user.user_id }}">
-
           <div class="form-row">
             <select class="form-select" name="status">
-              <option value="present"
-                {% if m.attendance and m.attendance.status == 'present' %}selected{% endif %}>
-                Present
-              </option>
-
-              <option value="absent"
-                {% if m.attendance and m.attendance.status == 'absent' %}selected{% endif %}>
-                Absent
-              </option>
+              <option value="present" {% if m.attendance and m.attendance.status == 'present' %}selected{% endif %}>Present</option>
+              <option value="absent"  {% if m.attendance and m.attendance.status == 'absent'  %}selected{% endif %}>Absent</option>
             </select>
-
-            <button class="submit-btn" type="submit">
-              Mark Attendance
-            </button>
+            <button class="submit-btn" type="submit">Override</button>
           </div>
+          <div class="override-note">⚠️ Manually overriding will replace the auto-calculated status.</div>
         </form>
 
       </div>
       {% else %}
-      <div class="empty-state">
-        No mentees enrolled in this program.
-      </div>
+      <div class="empty-state">No mentees enrolled in this program.</div>
       {% endfor %}
-
     </div>
 
   </div>

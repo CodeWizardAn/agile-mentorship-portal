@@ -4,140 +4,553 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Dashboard — AgileMentor</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --navy:#0F2645;--blue:#2563EB;--teal:#0EA5E9;--white:#FFFFFF;
-      --offwhite:#F8FAFF;--gray:#E8EFF8;--muted:#64748B;--text:#1E293B;
-    }
-    body { font-family:'Inter',sans-serif; background:var(--offwhite); min-height:100vh; display:flex; }
-    .sidebar { width:240px; background:var(--navy); min-height:100vh; display:flex; flex-direction:column; position:fixed; left:0; top:0; bottom:0; z-index:100; }
-    .sidebar-logo { padding:24px 20px; border-bottom:1px solid rgba(255,255,255,0.08); }
-    .logo-wrap { display:flex; align-items:center; gap:10px; text-decoration:none; }
-    .logo-icon { width:32px; height:32px; border-radius:8px; background:linear-gradient(135deg,var(--blue),var(--teal)); display:flex; align-items:center; justify-content:center; }
-    .logo-icon svg { width:16px; height:16px; fill:none; stroke:white; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
-    .logo-text { font-size:1.05rem; font-weight:800; color:white; letter-spacing:-0.3px; }
-    .logo-text span { color:#60A5FA; }
-    .sidebar-user { padding:20px; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; gap:12px; }
-    .user-avatar { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,#F59E0B,#EF4444); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem; color:white; flex-shrink:0; }
-    .user-name { font-size:0.85rem; font-weight:700; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .user-role { font-size:0.72rem; color:#64748B; font-weight:500; margin-top:1px; }
-    .sidebar-nav { flex:1; padding:16px 12px; }
-    .nav-section-label { font-size:0.68rem; font-weight:700; color:#475569; letter-spacing:0.8px; text-transform:uppercase; padding:0 8px; margin:16px 0 8px; }
-    .nav-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:9px; text-decoration:none; color:#94A3B8; font-size:0.85rem; font-weight:500; transition:all 0.2s; margin-bottom:2px; }
-    .nav-item:hover { background:rgba(255,255,255,0.06); color:white; }
-    .nav-item.active { background:rgba(245,158,11,0.15); color:#FCD34D; font-weight:600; }
-    .nav-item svg { width:16px; height:16px; flex-shrink:0; }
-    .sidebar-footer { padding:16px 12px; border-top:1px solid rgba(255,255,255,0.08); }
-    .logout-btn { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:9px; text-decoration:none; color:#94A3B8; font-size:0.85rem; font-weight:500; transition:all 0.2s; }
-    .logout-btn:hover { background:rgba(239,68,68,0.1); color:#F87171; }
-    .logout-btn svg { width:16px; height:16px; }
-    .main { margin-left:240px; flex:1; display:flex; flex-direction:column; }
-    .topbar { background:var(--white); border-bottom:1px solid var(--gray); padding:0 32px; height:64px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
-    .topbar-title { font-size:1.1rem; font-weight:700; color:var(--navy); }
-    .topbar-badge { background:#FEF3C7; color:#92400E; font-size:0.78rem; font-weight:600; padding:5px 12px; border-radius:20px; }
-    .content { padding:32px; }
-    .welcome-banner { background:linear-gradient(135deg,#1c1917,#292524); border-radius:16px; padding:28px 32px; display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; position:relative; overflow:hidden; }
-    .welcome-banner::before { content:''; position:absolute; right:-40px; top:-40px; width:200px; height:200px; border-radius:50%; background:radial-gradient(circle,rgba(245,158,11,0.15) 0%,transparent 70%); }
-    .welcome-text h2 { font-size:1.4rem; font-weight:800; color:white; margin-bottom:6px; }
-    .welcome-text p { font-size:0.88rem; color:#A8A29E; }
-    .quick-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; }
-    .stat-card { background:var(--white); border-radius:14px; padding:20px; border:1px solid var(--gray); display:flex; align-items:center; gap:16px; }
-    .stat-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; }
-    .stat-val { font-size:1.4rem; font-weight:800; color:var(--navy); line-height:1; }
-    .stat-lbl { font-size:0.78rem; color:var(--muted); margin-top:3px; font-weight:500; }
-    .dashboard-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
-    .card { background:var(--white); border-radius:14px; border:1px solid var(--gray); overflow:hidden; }
-    .card-header { padding:18px 20px; border-bottom:1px solid var(--gray); display:flex; align-items:center; justify-content:space-between; }
-    .card-title { font-size:0.95rem; font-weight:700; color:var(--navy); }
-    .card-link { font-size:0.78rem; color:var(--blue); text-decoration:none; font-weight:600; }
-    .card-link:hover { text-decoration:underline; }
-    .card-body { padding:16px 20px; }
-    .list-item { display:flex; align-items:center; gap:14px; padding:12px 0; border-bottom:1px solid var(--gray); }
-    .list-item:last-child { border-bottom:none; }
-    .list-icon { width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
-    .list-info { flex:1; overflow:hidden; }
-    .list-title { font-size:0.88rem; font-weight:600; color:var(--text); }
-    .list-sub { font-size:0.75rem; color:var(--muted); margin-top:2px; }
 
-    /* INVITE FORM */
-    .invite-form { background:var(--offwhite); border-radius:10px; padding:16px; margin-top:4px; }
-    .invite-input { width:100%; padding:10px 14px; border-radius:8px; border:1.5px solid var(--gray); background:var(--white); font-size:0.88rem; font-family:'Inter',sans-serif; color:var(--text); outline:none; margin-bottom:10px; }
-    .invite-input:focus { border-color:var(--blue); }
-    .invite-btn { width:100%; padding:10px; border-radius:8px; border:none; background:linear-gradient(135deg,var(--blue),var(--teal)); color:white; font-size:0.85rem; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; }
-    .invite-btn:hover { opacity:0.9; }
+    :root {
+      --navy:     #0A1628;
+      --navy-2:   #111E35;
+      --blue:     #2563EB;
+      --blue-lt:  #3B82F6;
+      --teal:     #0EA5E9;
+      --amber:    #F59E0B;
+      --white:    #FFFFFF;
+      --surface:  #F4F7FF;
+      --border:   #E2E8F4;
+      --muted:    #64748B;
+      --text:     #0F172A;
+      --green:    #10B981;
+      --red:      #EF4444;
+      --purple:   #8B5CF6;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--surface);
+      min-height: 100vh;
+      display: flex;
+      color: var(--text);
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 256px;
+      background: var(--navy);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      z-index: 100;
+    }
+
+    .sidebar-logo {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .logo-wrap {
+      display: flex; align-items: center; gap: 10px; text-decoration: none;
+    }
+
+    .logo-mark {
+      width: 34px; height: 34px; border-radius: 9px;
+      background: linear-gradient(135deg, var(--blue), var(--teal));
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .logo-mark svg { width: 16px; height: 16px; fill: none; stroke: white; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .logo-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.05rem; font-weight: 700; color: white; letter-spacing: -0.2px;
+    }
+
+    .logo-name em { color: var(--teal); font-style: normal; }
+
+    .sidebar-user {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex; align-items: center; gap: 12px;
+    }
+
+    .u-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--amber), #EF4444);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700; font-size: 0.9rem; color: white; flex-shrink: 0;
+    }
+
+    .u-name { font-size: 0.83rem; font-weight: 600; color: white; }
+    .u-role { font-size: 0.7rem; color: #475569; margin-top: 1px; font-weight: 500; letter-spacing: 0.3px; }
+
+    .sidebar-nav { flex: 1; padding: 12px 10px; }
+
+    .nav-label {
+      font-size: 0.64rem; font-weight: 700; color: #334155;
+      letter-spacing: 1px; text-transform: uppercase;
+      padding: 0 10px; margin: 16px 0 6px;
+    }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 9px 10px; border-radius: 8px;
+      text-decoration: none; color: #64748B;
+      font-size: 0.83rem; font-weight: 500;
+      transition: all 0.15s; margin-bottom: 1px;
+    }
+
+    .nav-item:hover { background: rgba(255,255,255,0.05); color: #CBD5E1; }
+
+    .nav-item.active {
+      background: rgba(37,99,235,0.18);
+      color: #93C5FD; font-weight: 600;
+    }
+
+    .nav-item svg { width: 15px; height: 15px; flex-shrink: 0; opacity: 0.8; }
+    .nav-item.active svg { opacity: 1; }
+
+    .sidebar-footer {
+      padding: 12px 10px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .logout-btn {
+      display: flex; align-items: center; gap: 9px;
+      padding: 9px 10px; border-radius: 8px;
+      text-decoration: none; color: #475569;
+      font-size: 0.83rem; font-weight: 500; transition: all 0.15s;
+    }
+
+    .logout-btn:hover { background: rgba(239,68,68,0.1); color: #FCA5A5; }
+    .logout-btn svg { width: 15px; height: 15px; }
+
+    /* ── MAIN ── */
+    .main { margin-left: 256px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+    .topbar {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+    }
+
+    .topbar-left { display: flex; align-items: center; gap: 10px; }
+    .topbar-title { font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 700; color: var(--navy); }
+    .breadcrumb { font-size: 0.78rem; color: var(--muted); }
+
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+    .role-chip {
+      background: #FEF3C7; color: #92400E;
+      font-size: 0.72rem; font-weight: 700;
+      padding: 4px 12px; border-radius: 20px; letter-spacing: 0.3px;
+    }
+
+    /* ── CONTENT ── */
+    .content { padding: 28px 32px; flex: 1; }
+
+    /* ── BANNER ── */
+    .banner {
+      border-radius: 16px;
+      background: var(--navy-2);
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: relative; overflow: hidden;
+    }
+
+    .banner::before {
+      content: '';
+      position: absolute; right: -60px; top: -60px;
+      width: 220px; height: 220px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(14,165,233,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .banner::after {
+      content: '';
+      position: absolute; left: 180px; bottom: -40px;
+      width: 160px; height: 160px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(37,99,235,0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .banner-text h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.45rem; font-weight: 700; color: white; margin-bottom: 5px;
+    }
+
+    .banner-text p { font-size: 0.85rem; color: #64748B; }
+
+    .banner-actions { display: flex; gap: 10px; flex-shrink: 0; }
+
+    .banner-btn {
+      padding: 9px 18px; border-radius: 9px; font-size: 0.82rem;
+      font-weight: 600; cursor: pointer; text-decoration: none;
+      display: flex; align-items: center; gap: 6px; transition: 0.15s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .banner-btn.primary {
+      background: linear-gradient(135deg, var(--blue), var(--teal));
+      color: white; border: none;
+    }
+
+    .banner-btn.primary:hover { opacity: 0.9; }
+
+    .banner-btn.secondary {
+      background: rgba(255,255,255,0.06);
+      color: #94A3B8; border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .banner-btn.secondary:hover { background: rgba(255,255,255,0.1); color: white; }
+
+    /* ── STATS ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      display: flex; align-items: flex-start; gap: 14px;
+      transition: box-shadow 0.2s;
+    }
+
+    .stat-card:hover { box-shadow: 0 4px 20px rgba(10,22,40,0.07); }
+
+    .stat-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-size: 1.1rem;
+    }
+
+    .stat-body { flex: 1; min-width: 0; }
+
+    .stat-val {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.6rem; font-weight: 700; color: var(--navy); line-height: 1;
+    }
+
+    .stat-lbl { font-size: 0.75rem; color: var(--muted); margin-top: 4px; font-weight: 500; }
+
+    .stat-delta {
+      font-size: 0.7rem; font-weight: 600; margin-top: 6px;
+      display: inline-flex; align-items: center; gap: 3px;
+      padding: 2px 7px; border-radius: 99px;
+    }
+
+    /* ── GRID ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .grid-3 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; margin-top: 18px; }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden;
+    }
+
+    .card-hd {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .card-hd-left { display: flex; align-items: center; gap: 8px; }
+    .card-hd-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    .card-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.9rem; font-weight: 700; color: var(--navy);
+    }
+
+    .card-link {
+      font-size: 0.75rem; color: var(--blue); text-decoration: none; font-weight: 600;
+    }
+
+    .card-link:hover { text-decoration: underline; }
+    .card-body { padding: 4px 0; }
+
+    /* ── ACTION LIST ── */
+    .action-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 13px 20px;
+      border-bottom: 1px solid var(--border);
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+
+    .action-item:last-child { border-bottom: none; }
+    .action-item:hover { background: var(--surface); }
+
+    .action-icon {
+      width: 36px; height: 36px; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.95rem; flex-shrink: 0;
+    }
+
+    .action-info { flex: 1; }
+    .action-title { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+    .action-sub { font-size: 0.73rem; color: var(--muted); margin-top: 2px; }
+
+    .action-arrow {
+      font-size: 0.75rem; color: var(--blue); font-weight: 700;
+      opacity: 0; transition: opacity 0.15s;
+    }
+
+    .action-item:hover .action-arrow { opacity: 1; }
+
+    /* ── INVITE CARD ── */
+    .invite-body { padding: 20px; }
+
+    .invite-success {
+      background: #F0FDF4; border: 1.5px solid #86EFAC;
+      border-radius: 10px; padding: 14px 16px; margin-bottom: 16px;
+    }
+
+    .invite-success-label { font-size: 0.68rem; font-weight: 700; color: #15803D; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 4px; }
+    .invite-code-display { font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 700; color: #15803D; letter-spacing: 3px; }
+    .invite-code-note { font-size: 0.72rem; color: #166534; margin-top: 5px; }
+
+    .invite-desc { font-size: 0.8rem; color: var(--muted); margin-bottom: 14px; line-height: 1.5; }
+
+    .invite-form { display: flex; flex-direction: column; gap: 10px; }
+
+    .invite-input {
+      width: 100%; padding: 10px 14px;
+      border-radius: 9px; border: 1.5px solid var(--border);
+      background: var(--surface); font-size: 0.85rem;
+      font-family: 'Inter', sans-serif; color: var(--text);
+      outline: none; transition: border-color 0.15s;
+    }
+
+    .invite-input:focus { border-color: var(--blue); background: white; }
+
+    .invite-btn {
+      width: 100%; padding: 11px;
+      border-radius: 9px; border: none;
+      background: linear-gradient(135deg, var(--blue), var(--teal));
+      color: white; font-size: 0.85rem; font-weight: 700;
+      cursor: pointer; font-family: 'Inter', sans-serif;
+      transition: opacity 0.15s;
+    }
+
+    .invite-btn:hover { opacity: 0.9; }
+
+    /* ── ACTIVITY / RECENT ── */
+    .activity-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 12px 20px; border-bottom: 1px solid var(--border);
+    }
+
+    .activity-item:last-child { border-bottom: none; }
+
+    .activity-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      margin-top: 5px; flex-shrink: 0;
+    }
+
+    .activity-text { font-size: 0.82rem; color: var(--text); line-height: 1.45; }
+    .activity-time { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
   </style>
 </head>
 <body>
+
+<!-- ── SIDEBAR ─────────────────────────────────────────────── -->
 <aside class="sidebar">
   <div class="sidebar-logo">
-    <a class="logo-wrap" href="/"><div class="logo-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><span class="logo-text">Agile<span>Mentor</span></span></a>
+    <a class="logo-wrap" href="/">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <span class="logo-name">Agile<em>Mentor</em></span>
+    </a>
   </div>
+
   <div class="sidebar-user">
-    <div class="user-avatar">{{ user.full_name[0].upper() }}</div>
-    <div><div class="user-name">{{ user.full_name }}</div><div class="user-role">Administrator</div></div>
+    <div class="u-avatar">{{ user.full_name[0].upper() }}</div>
+    <div>
+      <div class="u-name">{{ user.full_name }}</div>
+      <div class="u-role">ADMINISTRATOR</div>
+    </div>
   </div>
+
   <nav class="sidebar-nav">
-    <div class="nav-section-label">Main</div>
-    <a class="nav-item active" href="/admin-dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
-    <div class="nav-section-label">Manage</div>
-    <a class="nav-item" href="/admin/programs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Programs</a>
-    <a class="nav-item" href="/admin/sessions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Sessions</a>
-    <a class="nav-item" href="/admin/users"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Users</a>
-    <a class="nav-item" href="/admin/attendance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Attendance</a>
+    <div class="nav-label">Overview</div>
+    <a class="nav-item active" href="/admin-dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+
+    <div class="nav-label">Manage</div>
+    <a class="nav-item" href="/admin/programs">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      Programs
+    </a>
+    <a class="nav-item" href="/admin/sessions">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Sessions
+    </a>
+    <a class="nav-item" href="/admin/users">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Users
+    </a>
+    <a class="nav-item" href="/admin/attendance">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Attendance
+    </a>
   </nav>
+
   <div class="sidebar-footer">
-    <a class="logout-btn" href="/logout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Logout</a>
+    <a class="logout-btn" href="/logout">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign out
+    </a>
   </div>
 </aside>
 
+<!-- ── MAIN ─────────────────────────────────────────────────── -->
 <div class="main">
+
   <div class="topbar">
-    <div class="topbar-title">Admin Dashboard</div>
-    <span class="topbar-badge">Administrator</span>
+    <div class="topbar-left">
+      <div class="topbar-title">Dashboard</div>
+      <span class="breadcrumb">/ Overview</span>
+    </div>
+    <div class="topbar-right">
+      <span class="role-chip">Admin</span>
+    </div>
   </div>
+
   <div class="content">
 
-    <div class="welcome-banner">
-      <div class="welcome-text">
-        <h2>Welcome, {{ user.full_name.split()[0] }}! 👋</h2>
-        <p>Manage programs, sessions, users and more from here.</p>
+    <!-- Banner -->
+    <div class="banner">
+      <div class="banner-text">
+        <h2>Good to see you, {{ user.full_name.split()[0] }} 👋</h2>
+        <p>Here's what's happening across your mentorship programs today.</p>
+      </div>
+      <div class="banner-actions">
+        <a class="banner-btn secondary" href="/admin/sessions">View Sessions</a>
+        <a class="banner-btn primary" href="/admin/programs">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Program
+        </a>
       </div>
     </div>
 
-    <div class="quick-stats">
-      <div class="stat-card"><div class="stat-icon" style="background:#EEF2FF;">📚</div><div><div class="stat-val">—</div><div class="stat-lbl">Total Programs</div></div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:#DCFCE7;">🎯</div><div><div class="stat-val">—</div><div class="stat-lbl">Total Sessions</div></div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:#FFF7ED;">👥</div><div><div class="stat-val">—</div><div class="stat-lbl">Total Users</div></div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:#FEF2F2;">✅</div><div><div class="stat-val">—</div><div class="stat-lbl">Enrollments</div></div></div>
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#EEF2FF;">📚</div>
+        <div class="stat-body">
+          <div class="stat-val">{{ stats.total_programs }}</div>
+          <div class="stat-lbl">Total Programs</div>
+          <div class="stat-delta" style="background:#EEF2FF;color:#4338CA;">{{ stats.active_programs }} active</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#ECFDF5;">🎯</div>
+        <div class="stat-body">
+          <div class="stat-val">{{ stats.total_sessions }}</div>
+          <div class="stat-lbl">Total Sessions</div>
+          <div class="stat-delta" style="background:#ECFDF5;color:#065F46;">{{ stats.live_sessions }} live</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#FFF7ED;">👥</div>
+        <div class="stat-body">
+          <div class="stat-val">{{ stats.total_users }}</div>
+          <div class="stat-lbl">Total Users</div>
+          <div class="stat-delta" style="background:#FFF7ED;color:#92400E;">{{ stats.total_mentors }} mentors</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#FDF4FF;">✅</div>
+        <div class="stat-body">
+          <div class="stat-val">{{ stats.total_enrollments }}</div>
+          <div class="stat-lbl">Enrollments</div>
+          <div class="stat-delta" style="background:#FDF4FF;color:#6B21A8;">{{ stats.certificate_eligible }} eligible</div>
+        </div>
+      </div>
     </div>
 
-    <div class="dashboard-grid">
+    <!-- Grid -->
+    <div class="grid-2">
 
-      <!-- QUICK ACTIONS -->
+      <!-- Quick Actions -->
       <div class="card">
-        <div class="card-header"><div class="card-title">Quick Actions</div></div>
+        <div class="card-hd">
+          <div class="card-hd-left">
+            <div class="card-hd-dot" style="background:var(--blue);"></div>
+            <div class="card-title">Quick Actions</div>
+          </div>
+        </div>
         <div class="card-body">
-          <div class="list-item"><div class="list-icon" style="background:#EEF2FF;">📚</div><div class="list-info"><div class="list-title">Manage Programs</div><div class="list-sub">Create, edit, delete programs</div></div><a href="/admin/programs" class="card-link">Go →</a></div>
-          <div class="list-item"><div class="list-icon" style="background:#DCFCE7;">🎯</div><div class="list-info"><div class="list-title">Manage Sessions</div><div class="list-sub">Create live and recorded sessions</div></div><a href="/admin/sessions" class="card-link">Go →</a></div>
-          <div class="list-item"><div class="list-icon" style="background:#FFF7ED;">👥</div><div class="list-info"><div class="list-title">Manage Users</div><div class="list-sub">View and remove users</div></div><a href="/admin/users" class="card-link">Go →</a></div>
-          <div class="list-item"><div class="list-icon" style="background:#F0FDF4;">✅</div><div class="list-info"><div class="list-title">Attendance</div><div class="list-sub">Mark and view attendance</div></div><a href="/admin/attendance" class="card-link">Go →</a></div>
+          <a class="action-item" href="/admin/programs">
+            <div class="action-icon" style="background:#EEF2FF;">📚</div>
+            <div class="action-info">
+              <div class="action-title">Programs</div>
+              <div class="action-sub">Create, edit, and manage programs</div>
+            </div>
+            <span class="action-arrow">→</span>
+          </a>
+          <a class="action-item" href="/admin/sessions">
+            <div class="action-icon" style="background:#ECFDF5;">🎯</div>
+            <div class="action-info">
+              <div class="action-title">Sessions</div>
+              <div class="action-sub">Schedule live and recorded sessions</div>
+            </div>
+            <span class="action-arrow">→</span>
+          </a>
+          <a class="action-item" href="/admin/users">
+            <div class="action-icon" style="background:#FFF7ED;">👥</div>
+            <div class="action-info">
+              <div class="action-title">Users</div>
+              <div class="action-sub">View mentors, mentees and activity</div>
+            </div>
+            <span class="action-arrow">→</span>
+          </a>
+          <a class="action-item" href="/admin/attendance">
+            <div class="action-icon" style="background:#F0FDF4;">✅</div>
+            <div class="action-info">
+              <div class="action-title">Attendance</div>
+              <div class="action-sub">Review auto-marked and manual records</div>
+            </div>
+            <span class="action-arrow">→</span>
+          </a>
         </div>
       </div>
 
-      <!-- GENERATE INVITE -->
+      <!-- Generate Invite -->
       <div class="card">
-        <div class="card-header"><div class="card-title">Generate Mentor Invite</div></div>
-        <div class="card-body">
+        <div class="card-hd">
+          <div class="card-hd-left">
+            <div class="card-hd-dot" style="background:var(--amber);"></div>
+            <div class="card-title">Invite a Mentor</div>
+          </div>
+        </div>
+        <div class="invite-body">
           {% if request.query_params.get('invite_code') %}
-<div style="background:#DCFCE7;border:1.5px solid #86EFAC;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
-  <div style="font-size:0.75rem;font-weight:700;color:#15803D;margin-bottom:4px;">INVITE CODE GENERATED</div>
-  <div style="font-size:1.2rem;font-weight:900;color:#15803D;letter-spacing:2px;">{{ request.query_params.get('invite_code') }}</div>
-  <div style="font-size:0.75rem;color:#166534;margin-top:4px;">Share this code with the mentor. It can only be used once.</div>
-</div>
-{% endif %}
-          <p style="font-size:0.83rem;color:var(--muted);margin-bottom:16px;">Generate a one-time invite code to onboard a new mentor.</p>
+          <div class="invite-success">
+            <div class="invite-success-label">Code Generated</div>
+            <div class="invite-code-display">{{ request.query_params.get('invite_code') }}</div>
+            <div class="invite-code-note">Share this with the mentor. Single use only.</div>
+          </div>
+          {% endif %}
+          <div class="invite-desc">
+            Generate a one-time code to onboard a new mentor. The code expires once used.
+          </div>
           <form class="invite-form" action="/admin/generate-invite" method="post">
             <input class="invite-input" type="email" name="admin_email" placeholder="Your admin email" required/>
             <button class="invite-btn" type="submit">Generate Invite Code</button>
@@ -146,7 +559,9 @@
       </div>
 
     </div>
+
   </div>
 </div>
+
 </body>
 </html>

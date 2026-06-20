@@ -235,8 +235,17 @@ CREATE TABLE "Certificate" (
     certificate_url VARCHAR(255),
     issued_at       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
 );
-```
 
+
+```
+-- ── 15. PASSWORDRESETTOKEN ───────────────────────────────────────────────────
+CREATE TABLE "PasswordResetToken" (
+    token       VARCHAR(64)     PRIMARY KEY,
+    user_id     VARCHAR(10)     NOT NULL REFERENCES "User"(user_id) ON DELETE CASCADE,
+    is_used     BOOLEAN         DEFAULT FALSE,
+    created_at  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    expires_at  TIMESTAMP       NOT NULL
+);
 ---
 
 ## Admin Seed User
@@ -263,3 +272,4 @@ print(pwd_context.hash("YourPasswordHere"))
 |---------|--------|
 | 1.0 | Initial schema |
 | 1.1 | Added `join_intervals`, `total_minutes_present`, `is_auto_marked` to `Attendence`; added `VideoProgress` and `SessionCompletion` tables; updated `Enrollment.status` to support `certificate_eligible`; fixed `MentorInvite` FK constraints to `ON DELETE SET NULL` |
+| 1.2 | Added `PasswordResetToken` table for forgot password flow |

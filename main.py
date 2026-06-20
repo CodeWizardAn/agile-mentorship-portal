@@ -24,6 +24,16 @@ from models.session_completion import SessionCompletion
 from pydantic import BaseModel
 import json
 from datetime import datetime, timezone
+import threading
+import time
+from datetime import datetime, timezone, timedelta
+from email_service import send_email, forgot_password_email, session_created_email, session_reminder_email
+from models.password_reset_token import PasswordResetToken
+from email_service import send_email, forgot_password_email, session_created_email, session_reminder_email, enrollment_confirmation_email
+from models.feedback import Feedback
+from models.password_reset_token import PasswordResetToken
+
+BASE_URL = "http://localhost:8000"
 
 
 app = FastAPI()
@@ -86,13 +96,10 @@ def generate_invite_id(db: Session) -> str:
     return f"INV{last_serial:04d}"
 
 def generate_enrollment_id(db: Session, user_id: str, program_id: str) -> str:
+    count = db.query(func.count(Enrollment.enrollment_id)).scalar() or 0
+    serial = count + 1
     year = str(datetime.now().year)[2:]
-    last_enrollment = db.query(func.max(Enrollment.enrollment_id)).scalar()
-    if last_enrollment:
-        last_serial = int(last_enrollment[-4:]) + 1
-    else:
-        last_serial = 1
-    return f"{year}{program_id[3:]}{last_serial:04d}"
+    return f"ENR{year}{serial:05d}"
 
 def generate_session_id(db: Session) -> str:
     last_session = db.query(func.max(MentorSession.session_id)).scalar()
@@ -510,6 +517,7 @@ def view_programs(request: Request, current_user: User = Depends(get_current_use
 
 # ── ENROLLMENT ────────────────────────────────────────────────────────────────
 
+
 @app.post("/enroll/{program_id}")
 def enroll_program(
     program_id: str,
@@ -531,6 +539,30 @@ def enroll_program(
     ).first()
     if existing:
         return RedirectResponse(url="/my-enrollments", status_code=302)
+
+    enrollment_id = generate_enrollment_id(db, current_user.user_id, program_id)
+    enrollment = Enrollment(
+        enrollment_id=enrollment_id,
+        user_id=current_user.user_id,
+        program_id=program_id,
+        status="active"
+    )
+    db.add(enrollment)
+    db.commit()
+
+    # Send enrollment confirmation email
+    html = enrollment_confirmation_email(
+        full_name=current_user.full_name,
+        program_title=program.title,
+        program_description=program.description,
+        start_date=str(program.start_date) if program.start_date else None
+    )
+    threading.Thread(
+        target=send_email,
+        args=(current_user.email, f"Enrolled: {program.title}", html)
+    ).start()
+
+    return RedirectResponse(url="/my-enrollments", status_code=302)
 
     enrollment_id = generate_enrollment_id(db, current_user.user_id, program_id)
     enrollment = Enrollment(
@@ -595,33 +627,37 @@ def delete_user(
 
     mentor = db.query(Mentor).filter(Mentor.user_id == user_id).first()
     if mentor:
-        # Delete attendance records for mentor's sessions first
         mentor_sessions = db.query(MentorSession).filter(
             MentorSession.mentor_id == mentor.mentor_profile_id
         ).all()
-        for session in mentor_sessions:
-            db.query(Attendance).filter(
-                Attendance.session_id == session.session_id
-            ).delete()
-
-        # Now delete the sessions
+        for s in mentor_sessions:
+            db.query(Attendance).filter(Attendance.session_id == s.session_id).delete()
+            db.query(VideoProgress).filter(VideoProgress.session_id == s.session_id).delete()
+            db.query(SessionCompletion).filter(SessionCompletion.session_id == s.session_id).delete()
+            db.query(Feedback).filter(Feedback.session_id == s.session_id).update(
+                {"session_id": None}, synchronize_session=False
+            )
         db.query(MentorSession).filter(
             MentorSession.mentor_id == mentor.mentor_profile_id
         ).delete()
-
-        # Nullify program assignments
         db.query(Program).filter(
             Program.assigned_mentor == mentor.mentor_profile_id
-        ).update({"assigned_mentor": None})
-
+        ).update({"assigned_mentor": None}, synchronize_session=False)
         db.delete(mentor)
 
+    # Mentee cleanup
+    db.query(Attendance).filter(Attendance.user_id == user_id).delete()
+    db.query(VideoProgress).filter(VideoProgress.user_id == user_id).delete()
+    db.query(SessionCompletion).filter(SessionCompletion.user_id == user_id).delete()
+    db.query(Feedback).filter(Feedback.user_id == user_id).update(
+        {"user_id": None}, synchronize_session=False
+    )
     db.query(Enrollment).filter(Enrollment.user_id == user_id).delete()
+    db.query(PasswordResetToken).filter(PasswordResetToken.user_id == user_id).delete()
 
     user = db.query(User).filter(User.user_id == user_id).first()
     if user:
         db.delete(user)
-
     db.commit()
     return RedirectResponse(url="/admin/users", status_code=302)
 
@@ -660,7 +696,7 @@ def admin_create_session(
 ):
     if not current_user or current_user.role != "admin":
         return RedirectResponse(url="/login/admin", status_code=302)
-
+ 
     session_id = generate_session_id(db)
     session = MentorSession(
         session_id=session_id, program_id=program_id, mentor_id=mentor_id,
@@ -672,7 +708,56 @@ def admin_create_session(
     )
     db.add(session)
     db.commit()
+ 
+    # ── Notify enrolled mentees ───────────────────────────────────────────────
+    enrollments = db.query(Enrollment).filter(Enrollment.program_id == program_id).all()
+    program = db.query(Program).filter(Program.program_id == program_id).first()
+    program_title = program.title if program else program_id
+ 
+    mentee_list = []
+    for e in enrollments:
+        mentee = db.query(User).filter(User.user_id == e.user_id).first()
+        if mentee:
+            mentee_list.append((mentee.full_name, mentee.email))
+            html = session_created_email(
+                full_name=mentee.full_name,
+                session_title=title,
+                session_type=session_type,
+                program_title=program_title,
+                scheduled_at=scheduled_at if scheduled_at else None,
+                meeting_link=meeting_link,
+                video_url=video_url
+            )
+            threading.Thread(
+                target=send_email,
+                args=(mentee.email, f"New Session Added: {title}", html)
+            ).start()
+ 
+    # ── Schedule reminder for live sessions ───────────────────────────────────
+    if session_type == "live" and scheduled_at and meeting_link and mentee_list:
+        try:
+            # Parse the datetime — FastAPI form sends it as "YYYY-MM-DDTHH:MM"
+            scheduled_dt = datetime.fromisoformat(scheduled_at)
+            if scheduled_dt.tzinfo is None:
+                scheduled_dt = scheduled_dt.replace(tzinfo=timezone.utc)
+ 
+            schedule_session_reminder(
+                session_id=session_id,
+                session_title=title,
+                program_title=program_title,
+                scheduled_at_dt=scheduled_dt,
+                meeting_link=meeting_link,
+                mentee_list=mentee_list,
+                minutes_before=30
+            )
+        except Exception as e:
+            print(f"[REMINDER] Failed to schedule reminder: {e}")
+ 
     return RedirectResponse(url="/admin/sessions", status_code=302)
+ 
+
+ 
+
 
 @app.post("/admin/sessions/update/{session_id}")
 def admin_update_session(
@@ -714,10 +799,18 @@ def admin_delete_session(
     if not current_user or current_user.role != "admin":
         return RedirectResponse(url="/login/admin", status_code=302)
 
+    db.query(Attendance).filter(Attendance.session_id == session_id).delete()
+    db.query(VideoProgress).filter(VideoProgress.session_id == session_id).delete()
+    db.query(SessionCompletion).filter(SessionCompletion.session_id == session_id).delete()
+    # Feedback uses nullable FK so just nullify
+    db.query(Feedback).filter(Feedback.session_id == session_id).update(
+        {"session_id": None}, synchronize_session=False
+    )
+
     session = db.query(MentorSession).filter(MentorSession.session_id == session_id).first()
     if session:
         db.delete(session)
-        db.commit()
+    db.commit()
     return RedirectResponse(url="/admin/sessions", status_code=302)
 
 
@@ -757,7 +850,7 @@ def mentor_create_session(
 ):
     if not current_user or current_user.role != "mentor":
         return RedirectResponse(url="/login/mentor", status_code=302)
-
+ 
     mentor = db.query(Mentor).filter(Mentor.user_id == current_user.user_id).first()
     program = db.query(Program).filter(
         Program.program_id == program_id,
@@ -765,7 +858,7 @@ def mentor_create_session(
     ).first()
     if not program:
         return RedirectResponse(url="/mentor/sessions", status_code=302)
-
+ 
     session_id = generate_session_id(db)
     session = MentorSession(
         session_id=session_id, program_id=program_id,
@@ -778,6 +871,48 @@ def mentor_create_session(
     )
     db.add(session)
     db.commit()
+ 
+    # ── Notify enrolled mentees ───────────────────────────────────────────────
+    enrollments = db.query(Enrollment).filter(Enrollment.program_id == program_id).all()
+ 
+    mentee_list = []
+    for e in enrollments:
+        mentee = db.query(User).filter(User.user_id == e.user_id).first()
+        if mentee:
+            mentee_list.append((mentee.full_name, mentee.email))
+            html = session_created_email(
+                full_name=mentee.full_name,
+                session_title=title,
+                session_type=session_type,
+                program_title=program.title,
+                scheduled_at=scheduled_at if scheduled_at else None,
+                meeting_link=meeting_link,
+                video_url=video_url
+            )
+            threading.Thread(
+                target=send_email,
+                args=(mentee.email, f"New Session Added: {title}", html)
+            ).start()
+ 
+    # ── Schedule reminder for live sessions ───────────────────────────────────
+    if session_type == "live" and scheduled_at and meeting_link and mentee_list:
+        try:
+            scheduled_dt = datetime.fromisoformat(scheduled_at)
+            if scheduled_dt.tzinfo is None:
+                scheduled_dt = scheduled_dt.replace(tzinfo=timezone.utc)
+ 
+            schedule_session_reminder(
+                session_id=session_id,
+                session_title=title,
+                program_title=program.title,
+                scheduled_at_dt=scheduled_dt,
+                meeting_link=meeting_link,
+                mentee_list=mentee_list,
+                minutes_before=30
+            )
+        except Exception as e:
+            print(f"[REMINDER] Failed to schedule reminder: {e}")
+ 
     return RedirectResponse(url="/mentor/sessions", status_code=302)
 
 @app.post("/mentor/sessions/update/{session_id}")
@@ -1383,4 +1518,153 @@ def leave_session(
     db.commit()
  
     return RedirectResponse(url="/my-sessions", status_code=302)
+@app.get("/forgot-password", response_class=HTMLResponse)
+def forgot_password_page(request: Request):
+    return templates.TemplateResponse(
+        request=request, name="forgot_password.html", context={}
+    )
+ 
+ 
+@app.post("/forgot-password", response_class=HTMLResponse)
+def forgot_password_submit(
+    request: Request,
+    email: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.email == email).first()
+ 
+    # Always show success (don't reveal if email exists — security best practice)
+    success_msg = "If that email is registered, you'll receive a reset link shortly."
+ 
+    if user:
+        # Invalidate old tokens for this user
+        db.query(PasswordResetToken).filter(
+    PasswordResetToken.user_id == user.user_id,
+    PasswordResetToken.is_used == False).update({"is_used": True}, synchronize_session=False)
+ 
+        token = secrets.token_urlsafe(32)
+        expires = datetime.now(timezone.utc) + timedelta(minutes=30)
+ 
+        reset_token = PasswordResetToken(
+            token=token,
+            user_id=user.user_id,
+            is_used=False,
+            expires_at=expires
+        )
+        db.add(reset_token)
+        db.commit()
+ 
+        reset_link = f"{BASE_URL}/reset-password?token={token}"
+        html = forgot_password_email(user.full_name, reset_link)
+ 
+        # Send in background so page doesn't hang
+        threading.Thread(
+            target=send_email,
+            args=(user.email, "Reset your AgileMentor password", html)
+        ).start()
+ 
+    return templates.TemplateResponse(
+        request=request,
+        name="forgot_password.html",
+        context={"success": success_msg}
+    )
+ 
+ 
+@app.get("/reset-password", response_class=HTMLResponse)
+def reset_password_page(request: Request, token: str, db: Session = Depends(get_db)):
+    reset = db.query(PasswordResetToken).filter(
+        PasswordResetToken.token == token,
+        PasswordResetToken.is_used == False
+    ).first()
+ 
+    expired = False
+    if not reset:
+        expired = True
+    elif reset.expires_at.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
+        expired = True
+ 
+    return templates.TemplateResponse(
+        request=request,
+        name="reset_password.html",
+        context={"token": token, "expired": expired}
+    )
+ 
+ 
+@app.post("/reset-password", response_class=HTMLResponse)
+def reset_password_submit(
+    request: Request,
+    token: str = Form(...),
+    password: str = Form(...),
+    confirm_password: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    reset = db.query(PasswordResetToken).filter(
+        PasswordResetToken.token == token,
+        PasswordResetToken.is_used == False
+    ).first()
+ 
+    if not reset or reset.expires_at.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
+        return templates.TemplateResponse(
+            request=request,
+            name="reset_password.html",
+            context={"token": token, "expired": True}
+        )
+ 
+    if password != confirm_password:
+        return templates.TemplateResponse(
+            request=request,
+            name="reset_password.html",
+            context={"token": token, "expired": False, "error": "Passwords do not match."}
+        )
+ 
+    if not validate_password(password):
+        return templates.TemplateResponse(
+            request=request,
+            name="reset_password.html",
+            context={"token": token, "expired": False, "error": "Password must be at least 6 characters and start with a capital letter."}
+        )
+ 
+    user = db.query(User).filter(User.user_id == reset.user_id).first()
+    user.password_hash = hash_password(password)
+    reset.is_used = True
+    db.commit()
+ 
+    return RedirectResponse(url=f"/login/{user.role}?reset=success", status_code=302)
+ 
+ 
+# ── SESSION REMINDER SCHEDULER ────────────────────────────────────────────────
+ 
+def schedule_session_reminder(session_id: str, session_title: str, program_title: str,
+                                scheduled_at_dt: datetime, meeting_link: str,
+                                mentee_list: list, minutes_before: int = 30):
+    """
+    Runs in a background thread. Sleeps until 30 min before session, then sends reminder emails.
+    mentee_list: list of (full_name, email) tuples
+    """
+    def run():
+        reminder_time = scheduled_at_dt - timedelta(minutes=minutes_before)
+        now = datetime.now(timezone.utc)
+        sleep_seconds = (reminder_time - now).total_seconds()
+ 
+        if sleep_seconds <= 0:
+            return  # Already past reminder time
+ 
+        time.sleep(sleep_seconds)
+ 
+        scheduled_str = scheduled_at_dt.strftime("%d %b %Y, %I:%M %p")
+        for full_name, email in mentee_list:
+            html = session_reminder_email(
+                full_name=full_name,
+                session_title=session_title,
+                program_title=program_title,
+                scheduled_at=scheduled_str,
+                meeting_link=meeting_link,
+                minutes_before=minutes_before
+            )
+            send_email(email, f"⏰ Reminder: '{session_title}' starts in {minutes_before} mins", html)
+ 
+    threading.Thread(target=run, daemon=True).start()
+ 
+ 
+# ── REPLACE admin_create_session WITH THIS ────────────────────────────────────
  

@@ -10,6 +10,7 @@ from models.attendance import Attendance
 from models.mentor_certificate import MentorCertificate
 from models.video_progress import VideoProgress
 from models.session_completion import SessionCompletion
+from models.password_reset_token import PasswordResetToken
 
 Base.metadata.create_all(bind=engine)
 

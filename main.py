@@ -163,19 +163,86 @@ def login(request: Request, role: str):
     )
 
 @app.get("/mentor-dashboard", response_class=HTMLResponse)
-def mentor_dashboard(request: Request, current_user: User = Depends(get_current_user)):
+def mentor_dashboard(request: Request, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     if not current_user or current_user.role != "mentor":
         return RedirectResponse(url="/login/mentor", status_code=302)
-    return templates.TemplateResponse(  
-        request=request, name="mentor_dashboard.html", context={"user": current_user}
-    )
 
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.user_id).first()
+    sessions = []
+    total_mentees = 0
+    if mentor:
+        sessions = db.query(MentorSession).filter(
+            MentorSession.mentor_id == mentor.mentor_profile_id
+        ).order_by(MentorSession.created_at.desc()).limit(4).all()
+
+        programs = db.query(Program).filter(
+            Program.assigned_mentor == mentor.mentor_profile_id
+        ).all()
+        program_ids = [p.program_id for p in programs]
+        if program_ids:
+            total_mentees = db.query(Enrollment).filter(
+                Enrollment.program_id.in_(program_ids)
+            ).count()
+
+    from models.mentor_certificate import MentorCertificate
+    stats = {
+        "total_sessions": db.query(MentorSession).filter(
+            MentorSession.mentor_id == mentor.mentor_profile_id
+        ).count() if mentor else 0,
+        "live_sessions": db.query(MentorSession).filter(
+            MentorSession.mentor_id == mentor.mentor_profile_id,
+            MentorSession.session_type == "live"
+        ).count() if mentor else 0,
+        "total_mentees": total_mentees,
+        "total_certs": db.query(MentorCertificate).filter(
+            MentorCertificate.mentor_profile_id == mentor.mentor_profile_id
+        ).count() if mentor else 0,
+    }
+
+    return templates.TemplateResponse(
+        request=request, name="mentor_dashboard.html",
+        context={"user": current_user, "stats": stats, "sessions": sessions}
+    )
 @app.get("/mentee-dashboard", response_class=HTMLResponse)
-def mentee_dashboard(request: Request, current_user: User = Depends(get_current_user)):
+def mentee_dashboard(request: Request, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     if not current_user or current_user.role != "mentee":
         return RedirectResponse(url="/login/mentee", status_code=302)
+
+    enrollments = db.query(Enrollment).filter(Enrollment.user_id == current_user.user_id).all()
+    enrollment_data = []
+    program_ids = []
+    for e in enrollments:
+        program = db.query(Program).filter(Program.program_id == e.program_id).first()
+        enrollment_data.append({"program": program, "status": e.status, "enrollment_date": e.enrollment_date})
+        program_ids.append(e.program_id)
+
+    upcoming_sessions = db.query(MentorSession).filter(
+        MentorSession.program_id.in_(program_ids),
+        MentorSession.status == "scheduled"
+    ).order_by(MentorSession.scheduled_at).limit(4).all() if program_ids else []
+
+    recent_attendance = []
+    att_records = db.query(Attendance).filter(
+        Attendance.user_id == current_user.user_id
+    ).order_by(Attendance.marked_at.desc()).limit(4).all()
+    for a in att_records:
+        session = db.query(MentorSession).filter(MentorSession.session_id == a.session_id).first()
+        recent_attendance.append({"session": session, "status": a.status, "marked_at": a.marked_at})
+
+    stats = {
+        "total_enrollments": len(enrollments),
+        "active_enrollments": sum(1 for e in enrollments if e.status == "active"),
+        "sessions_attended": db.query(Attendance).filter(
+            Attendance.user_id == current_user.user_id, Attendance.status == "present"
+        ).count(),
+        "upcoming_sessions": len(upcoming_sessions),
+        "certificate_eligible": sum(1 for e in enrollments if e.status == "certificate_eligible"),
+    }
+
     return templates.TemplateResponse(
-        request=request, name="mentee_dashboard.html", context={"user": current_user}
+        request=request, name="mentee_dashboard.html",
+        context={"user": current_user, "stats": stats, "enrollments": enrollment_data,
+                 "upcoming_sessions": upcoming_sessions, "recent_attendance": recent_attendance}
     )
 # Replace the existing admin_dashboard route in main.py with this:
 

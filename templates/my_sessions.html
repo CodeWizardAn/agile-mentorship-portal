@@ -4,155 +4,169 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>My Sessions — AgileMentor</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root { --navy:#0F2645;--blue:#2563EB;--teal:#0EA5E9;--white:#FFFFFF;--offwhite:#F8FAFF;--gray:#E8EFF8;--muted:#64748B;--text:#1E293B; }
-    body { font-family:'Inter',sans-serif; background:var(--offwhite); min-height:100vh; display:flex; }
-    .sidebar { width:240px; background:var(--navy); min-height:100vh; display:flex; flex-direction:column; position:fixed; left:0; top:0; bottom:0; z-index:100; }
-    .sidebar-logo { padding:24px 20px; border-bottom:1px solid rgba(255,255,255,0.08); }
+    :root { --navy:#0A1628;--navy-2:#111E35;--blue:#2563EB;--teal:#0EA5E9;--white:#FFFFFF;--surface:#F4F7FF;--border:#E2E8F4;--muted:#64748B;--text:#0F172A; }
+    body { font-family:'Inter',sans-serif; background:var(--surface); min-height:100vh; display:flex; color:var(--text); }
+    .sidebar { width:256px; background:var(--navy); min-height:100vh; display:flex; flex-direction:column; position:fixed; left:0; top:0; bottom:0; z-index:100; }
+    .sidebar-logo { padding:24px 20px 20px; border-bottom:1px solid rgba(255,255,255,0.06); }
     .logo-wrap { display:flex; align-items:center; gap:10px; text-decoration:none; }
-    .logo-icon { width:32px; height:32px; border-radius:8px; background:linear-gradient(135deg,var(--blue),var(--teal)); display:flex; align-items:center; justify-content:center; }
-    .logo-icon svg { width:16px; height:16px; fill:none; stroke:white; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
-    .logo-text { font-size:1.05rem; font-weight:800; color:white; }
-    .logo-text span { color:#60A5FA; }
-    .sidebar-user { padding:20px; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; gap:12px; }
-    .user-avatar { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,var(--blue),var(--teal)); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem; color:white; flex-shrink:0; }
-    .user-name { font-size:0.85rem; font-weight:700; color:white; }
-    .user-role { font-size:0.72rem; color:#64748B; }
-    .sidebar-nav { flex:1; padding:16px 12px; }
-    .nav-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:9px; text-decoration:none; color:#94A3B8; font-size:0.85rem; font-weight:500; transition:all 0.2s; margin-bottom:2px; }
-    .nav-item:hover { background:rgba(255,255,255,0.06); color:white; }
-    .nav-item.active { background:rgba(37,99,235,0.2); color:#60A5FA; font-weight:600; }
-    .nav-item svg { width:16px; height:16px; flex-shrink:0; }
-    .sidebar-footer { padding:16px 12px; border-top:1px solid rgba(255,255,255,0.08); }
-    .logout-btn { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:9px; text-decoration:none; color:#94A3B8; font-size:0.85rem; }
-    .logout-btn:hover { background:rgba(239,68,68,0.1); color:#F87171; }
-    .logout-btn svg { width:16px; height:16px; }
-    .main { margin-left:240px; flex:1; display:flex; flex-direction:column; }
-    .topbar { background:var(--white); border-bottom:1px solid var(--gray); padding:0 32px; height:64px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
-    .topbar-title { font-size:1.1rem; font-weight:700; color:var(--navy); }
-    .topbar-badge { background:var(--gray); color:var(--muted); font-size:0.78rem; font-weight:600; padding:5px 12px; border-radius:20px; }
-    .content { padding:32px; }
-    .page-title { font-size:1.7rem; font-weight:800; color:var(--navy); letter-spacing:-0.5px; margin-bottom:6px; }
-    .page-title span { color:var(--blue); }
-    .page-sub { font-size:0.9rem; color:var(--muted); margin-bottom:28px; }
-    .sessions-list { display:flex; flex-direction:column; gap:14px; }
-    .session-card { background:var(--white); border-radius:14px; border:1px solid var(--gray); padding:20px 24px; transition:box-shadow 0.2s; }
-    .session-card:hover { box-shadow:0 6px 24px rgba(15,38,69,0.07); }
-    .session-card-top { display:flex; align-items:center; gap:20px; }
-    .session-type-icon { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; }
-    .type-live { background:#FEE2E2; }
-    .type-recorded { background:#EEF2FF; }
-    .session-info { flex:1; }
-    .session-title { font-size:1rem; font-weight:700; color:var(--navy); margin-bottom:4px; }
-    .session-meta { display:flex; gap:14px; flex-wrap:wrap; }
-    .meta-item { font-size:0.78rem; color:var(--muted); display:flex; align-items:center; gap:4px; }
-    .session-actions { display:flex; align-items:center; gap:10px; flex-shrink:0; }
-    .type-badge { font-size:0.72rem; font-weight:700; padding:4px 10px; border-radius:6px; }
-    .badge-live { background:#FEE2E2; color:#DC2626; }
-    .badge-recorded { background:#EEF2FF; color:#4338CA; }
-    .status-badge { font-size:0.72rem; font-weight:700; padding:4px 10px; border-radius:6px; }
+    .logo-mark { width:34px; height:34px; border-radius:9px; background:linear-gradient(135deg,var(--blue),var(--teal)); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .logo-mark svg { width:16px; height:16px; fill:none; stroke:white; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+    .logo-name { font-family:'Space Grotesk',sans-serif; font-size:1.05rem; font-weight:700; color:white; }
+    .logo-name em { color:var(--teal); font-style:normal; }
+    .sidebar-user { padding:16px 20px; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; gap:12px; }
+    .u-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--blue),var(--teal)); display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:0.9rem; color:white; flex-shrink:0; }
+    .u-name { font-size:0.83rem; font-weight:600; color:white; }
+    .u-role { font-size:0.7rem; color:#475569; margin-top:1px; }
+    .sidebar-nav { flex:1; padding:12px 10px; }
+    .nav-label { font-size:0.64rem; font-weight:700; color:#334155; letter-spacing:1px; text-transform:uppercase; padding:0 10px; margin:16px 0 6px; }
+    .nav-item { display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:8px; text-decoration:none; color:#64748B; font-size:0.83rem; font-weight:500; transition:all 0.15s; margin-bottom:1px; }
+    .nav-item:hover { background:rgba(255,255,255,0.05); color:#CBD5E1; }
+    .nav-item.active { background:rgba(37,99,235,0.18); color:#93C5FD; font-weight:600; }
+    .nav-item svg { width:15px; height:15px; flex-shrink:0; }
+    .sidebar-footer { padding:12px 10px; border-top:1px solid rgba(255,255,255,0.06); }
+    .logout-btn { display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:8px; text-decoration:none; color:#475569; font-size:0.83rem; transition:all 0.15s; }
+    .logout-btn:hover { background:rgba(239,68,68,0.1); color:#FCA5A5; }
+    .logout-btn svg { width:15px; height:15px; }
+    .main { margin-left:256px; flex:1; display:flex; flex-direction:column; }
+    .topbar { background:var(--white); border-bottom:1px solid var(--border); padding:0 32px; height:60px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+    .topbar-left { display:flex; align-items:center; gap:10px; }
+    .topbar-title { font-family:'Space Grotesk',sans-serif; font-size:1rem; font-weight:700; color:var(--navy); }
+    .breadcrumb { font-size:0.78rem; color:var(--muted); }
+    .role-chip { background:var(--surface); color:var(--muted); font-size:0.72rem; font-weight:700; padding:4px 12px; border-radius:20px; border:1px solid var(--border); }
+    .content { padding:28px 32px; }
+    .page-header { margin-bottom:24px; }
+    .page-title { font-family:'Space Grotesk',sans-serif; font-size:1.7rem; font-weight:700; color:var(--navy); letter-spacing:-0.3px; margin-bottom:5px; }
+    .page-title em { color:var(--blue); font-style:normal; }
+    .page-sub { font-size:0.88rem; color:var(--muted); }
+    .filters { display:flex; gap:8px; margin-bottom:28px; }
+    .filter-btn { padding:7px 18px; border-radius:20px; border:1.5px solid var(--border); background:var(--white); color:var(--muted); font-size:0.8rem; font-weight:600; cursor:pointer; transition:all 0.2s; font-family:'Inter',sans-serif; }
+    .filter-btn:hover { border-color:var(--blue); color:var(--blue); }
+    .filter-btn.active { background:var(--blue); border-color:var(--blue); color:white; }
+    .sessions-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+    .session-card { background:var(--white); border-radius:16px; border:1px solid var(--border); overflow:hidden; transition:transform 0.2s,box-shadow 0.2s; display:flex; flex-direction:column; }
+    .session-card:hover { transform:translateY(-4px); box-shadow:0 16px 40px rgba(10,22,40,0.1); }
+    .card-thumbnail { height:140px; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+    .card-thumbnail-icon { font-size:3rem; z-index:1; }
+    .thumb-live { background:linear-gradient(135deg,#7f1d1d,#dc2626); }
+    .thumb-recorded { background:linear-gradient(135deg,#1e1b4b,#4338ca); }
+    .card-type-tag { position:absolute; top:12px; left:12px; z-index:2; font-size:0.68rem; font-weight:700; padding:4px 10px; border-radius:6px; display:flex; align-items:center; gap:5px; }
+    .tag-live { background:rgba(220,38,38,0.9); color:white; }
+    .tag-recorded { background:rgba(67,56,202,0.9); color:white; }
+    .tag-dot { width:5px; height:5px; border-radius:50%; background:white; display:inline-block; animation:pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+    .tag-recorded .tag-dot { animation:none; }
+    .card-status-tag { position:absolute; top:12px; right:12px; z-index:2; font-size:0.65rem; font-weight:700; padding:3px 9px; border-radius:6px; }
     .status-scheduled { background:#FEF3C7; color:#92400E; }
     .status-completed { background:#DCFCE7; color:#15803D; }
     .status-cancelled { background:#FEE2E2; color:#DC2626; }
-    .join-btn { padding:8px 16px; border-radius:8px; border:none; background:linear-gradient(135deg,var(--blue),var(--teal)); color:white; font-size:0.78rem; font-weight:700; cursor:pointer; text-decoration:none; white-space:nowrap; }
-    .watch-btn { padding:8px 16px; border-radius:8px; border:1.5px solid var(--blue); background:transparent; color:var(--blue); font-size:0.78rem; font-weight:700; cursor:pointer; white-space:nowrap; }
-    .watch-btn:disabled { border-color:#ccc; color:#ccc; cursor:not-allowed; }
-    .completed-badge { font-size:0.72rem; font-weight:700; padding:4px 10px; border-radius:6px; background:#DCFCE7; color:#15803D; }
-
-    /* Progress bar */
-    .progress-wrap { margin-top:12px; display:none; }
+    .card-body { padding:16px 18px; flex:1; display:flex; flex-direction:column; }
+    .card-program { font-size:0.72rem; font-weight:700; color:var(--blue); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }
+    .card-title { font-family:'Space Grotesk',sans-serif; font-size:0.95rem; font-weight:700; color:var(--navy); margin-bottom:8px; line-height:1.4; }
+    .card-desc { font-size:0.78rem; color:var(--muted); line-height:1.6; margin-bottom:12px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; flex:1; }
+    .card-stats { display:flex; gap:14px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+    .card-stat { display:flex; align-items:center; gap:4px; font-size:0.75rem; color:var(--muted); font-weight:500; }
+    .progress-wrap { margin-bottom:14px; display:none; }
     .progress-wrap.visible { display:block; }
-    .progress-label { display:flex; justify-content:space-between; font-size:0.75rem; color:var(--muted); margin-bottom:5px; }
-    .progress-bar-bg { width:100%; height:6px; background:var(--gray); border-radius:99px; overflow:hidden; }
-    .progress-bar-fill { height:6px; background:linear-gradient(90deg,var(--blue),var(--teal)); border-radius:99px; transition:width 0.4s; }
-    .progress-complete-msg { font-size:0.78rem; color:#15803D; font-weight:600; margin-top:6px; }
-
-    /* Video modal */
-    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:999; align-items:center; justify-content:center; }
+    .progress-label { display:flex; justify-content:space-between; font-size:0.72rem; color:var(--muted); margin-bottom:4px; }
+    .progress-bar-bg { width:100%; height:5px; background:var(--surface); border-radius:99px; overflow:hidden; }
+    .progress-bar-fill { height:5px; background:linear-gradient(90deg,var(--blue),var(--teal)); border-radius:99px; transition:width 0.4s; }
+    .progress-complete-msg { font-size:0.72rem; color:#15803D; font-weight:600; margin-top:5px; }
+    .card-footer { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .completed-badge { font-size:0.75rem; font-weight:700; padding:7px 12px; border-radius:8px; background:#DCFCE7; color:#15803D; display:flex; align-items:center; gap:4px; }
+    .join-btn { padding:9px 18px; border-radius:9px; border:none; background:linear-gradient(135deg,#DC2626,#EF4444); color:white; font-size:0.8rem; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; transition:opacity 0.2s; display:inline-block; }
+    .join-btn:hover { opacity:0.88; }
+    .watch-btn { padding:9px 18px; border-radius:9px; border:1.5px solid var(--blue); background:transparent; color:var(--blue); font-size:0.8rem; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; transition:all 0.2s; }
+    .watch-btn:hover { background:var(--blue); color:white; }
+    .watch-btn:disabled { border-color:#ccc; color:#ccc; cursor:not-allowed; }
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:999; align-items:center; justify-content:center; }
     .modal-overlay.open { display:flex; }
-    .modal-box { background:var(--white); border-radius:16px; padding:24px; width:90%; max-width:840px; position:relative; }
-    .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
-    .modal-title { font-size:1rem; font-weight:700; color:var(--navy); }
-    .modal-close { background:none; border:none; font-size:1.4rem; cursor:pointer; color:var(--muted); line-height:1; }
-    .modal-warning { background:#FEF3C7; border:1px solid #FCD34D; border-radius:8px; padding:10px 14px; font-size:0.78rem; color:#92400E; margin-bottom:14px; }
-    #yt-player-container { width:100%; aspect-ratio:16/9; background:#000; border-radius:10px; overflow:hidden; }
+    .modal-box { background:var(--white); border-radius:20px; padding:28px; width:90%; max-width:860px; position:relative; }
+    .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+    .modal-title { font-family:'Space Grotesk',sans-serif; font-size:1rem; font-weight:700; color:var(--navy); }
+    .modal-close { background:var(--surface); border:none; width:32px; height:32px; border-radius:8px; font-size:1rem; cursor:pointer; color:var(--muted); display:flex; align-items:center; justify-content:center; }
+    .modal-close:hover { background:var(--border); }
+    .modal-warning { background:#FEF3C7; border:1px solid #FCD34D; border-radius:10px; padding:10px 14px; font-size:0.78rem; color:#92400E; margin-bottom:14px; }
+    #yt-player-container { width:100%; aspect-ratio:16/9; background:#000; border-radius:12px; overflow:hidden; }
     .modal-progress { margin-top:14px; }
-
+    .modal-progress-label { display:flex; justify-content:space-between; font-size:0.75rem; color:var(--muted); margin-bottom:5px; }
     .empty-state { text-align:center; padding:80px 20px; color:var(--muted); }
     .empty-icon { font-size:3rem; margin-bottom:16px; }
-    .empty-title { font-size:1.1rem; font-weight:700; color:var(--navy); margin-bottom:8px; }
+    .empty-title { font-family:'Space Grotesk',sans-serif; font-size:1.1rem; font-weight:700; color:var(--navy); margin-bottom:8px; }
   </style>
 </head>
 <body>
 <aside class="sidebar">
-  <div class="sidebar-logo"><a class="logo-wrap" href="/"><div class="logo-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><span class="logo-text">Agile<span>Mentor</span></span></a></div>
-  <div class="sidebar-user"><div class="user-avatar">{{ user.full_name[0].upper() }}</div><div><div class="user-name">{{ user.full_name }}</div><div class="user-role">Mentee</div></div></div>
+  <div class="sidebar-logo"><a class="logo-wrap" href="/"><div class="logo-mark"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><span class="logo-name">Agile<em>Mentor</em></span></a></div>
+  <div class="sidebar-user"><div class="u-avatar">{{ user.full_name[0].upper() }}</div><div><div class="u-name">{{ user.full_name }}</div><div class="u-role">MENTEE</div></div></div>
   <nav class="sidebar-nav">
+    <div class="nav-label">Overview</div>
     <a class="nav-item" href="/mentee-dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+    <div class="nav-label">Learning</div>
     <a class="nav-item" href="/programs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Browse Programs</a>
     <a class="nav-item" href="/my-enrollments"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>My Enrollments</a>
     <a class="nav-item active" href="/my-sessions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>My Sessions</a>
     <a class="nav-item" href="/my-attendance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>My Attendance</a>
   </nav>
-  <div class="sidebar-footer"><a class="logout-btn" href="/logout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Logout</a></div>
+  <div class="sidebar-footer"><a class="logout-btn" href="/logout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign out</a></div>
 </aside>
 
 <div class="main">
-  <div class="topbar"><div class="topbar-title">My Sessions</div><span class="topbar-badge">Mentee</span></div>
+  <div class="topbar">
+    <div class="topbar-left"><div class="topbar-title">My Sessions</div><span class="breadcrumb">/ All Sessions</span></div>
+    <span class="role-chip">Mentee</span>
+  </div>
   <div class="content">
-    <div class="page-title">My <span>Sessions</span></div>
-    <div class="page-sub">Live and recorded sessions from your enrolled programs.</div>
-
+    <div class="page-header">
+      <div class="page-title">My <em>Sessions</em></div>
+      <div class="page-sub">Live and recorded sessions from your enrolled programs.</div>
+    </div>
+    <div class="filters">
+      <button class="filter-btn active" onclick="filterSessions(this,'all')">All</button>
+      <button class="filter-btn" onclick="filterSessions(this,'live')">🔴 Live</button>
+      <button class="filter-btn" onclick="filterSessions(this,'recorded')">🎬 Recorded</button>
+    </div>
     {% if sessions %}
-    <div class="sessions-list">
+    <div class="sessions-grid" id="sessionsGrid">
       {% for s in sessions %}
-      <div class="session-card" id="card-{{ s.session_id }}">
-        <div class="session-card-top">
-          <div class="session-type-icon {{ 'type-live' if s.session_type == 'live' else 'type-recorded' }}">
-            {{ '🔴' if s.session_type == 'live' else '🎬' }}
+      <div class="session-card" id="card-{{ s.session_id }}" data-type="{{ s.session_type }}">
+        <div class="card-thumbnail {{ 'thumb-live' if s.session_type == 'live' else 'thumb-recorded' }}">
+          <span class="card-thumbnail-icon">{{ '🔴' if s.session_type == 'live' else '🎬' }}</span>
+          <span class="card-type-tag {{ 'tag-live' if s.session_type == 'live' else 'tag-recorded' }}">
+            <span class="tag-dot"></span>{{ 'LIVE' if s.session_type == 'live' else 'RECORDED' }}
+          </span>
+          <span class="card-status-tag status-{{ s.status }}">{{ s.status.upper() }}</span>
+        </div>
+        <div class="card-body">
+          <div class="card-program">📂 {{ s.program_id }}</div>
+          <div class="card-title">{{ s.title }}</div>
+          {% if s.description %}<div class="card-desc">{{ s.description }}</div>{% endif %}
+          <div class="card-stats">
+            <div class="card-stat">📅 {{ s.scheduled_at.strftime('%d %b %Y, %I:%M %p') if s.scheduled_at else 'Anytime' }}</div>
+            {% if s.duration_minutes %}<div class="card-stat">⏱ {{ s.duration_minutes }} min</div>{% endif %}
           </div>
-          <div class="session-info">
-            <div class="session-title">{{ s.title }}</div>
-            <div class="session-meta">
-              <div class="meta-item">📅 {{ s.scheduled_at.strftime('%d %b %Y, %I:%M %p') if s.scheduled_at else 'Anytime' }}</div>
-              {% if s.duration_minutes %}<div class="meta-item">⏱ {{ s.duration_minutes }} min</div>{% endif %}
-              <div class="meta-item">📂 {{ s.program_id }}</div>
-            </div>
+          {% if s.session_type == 'recorded' and s.video_url %}
+          <div class="progress-wrap" id="progress-{{ s.session_id }}">
+            <div class="progress-label"><span>Watch Progress</span><span id="pct-{{ s.session_id }}">0%</span></div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" id="bar-{{ s.session_id }}" style="width:0%"></div></div>
+            <div class="progress-complete-msg" id="msg-{{ s.session_id }}" style="display:none">🎉 Video completed! Certificate eligible once all sessions done.</div>
           </div>
-          <div class="session-actions">
-            <span class="type-badge {{ 'badge-live' if s.session_type == 'live' else 'badge-recorded' }}">{{ s.session_type.upper() }}</span>
-            <span class="status-badge status-{{ s.status }}">{{ s.status.upper() }}</span>
+          {% endif %}
+          <div class="card-footer">
             {% if s.session_type == 'live' and s.meeting_link %}
-              <form action="/session/join/{{ s.session_id }}" method="post" style="display:inline;">
-                <button class="join-btn" type="submit">Join →</button>
+              <form action="/session/join/{{ s.session_id }}" method="post" style="display:inline;width:100%;">
+                <button class="join-btn" type="submit" style="width:100%;">🔴 Join Live Session →</button>
               </form>
             {% elif s.session_type == 'recorded' and s.video_url %}
-              <button
-                class="watch-btn"
-                id="btn-{{ s.session_id }}"
-                onclick="openVideo('{{ s.session_id }}', '{{ s.video_url }}', '{{ s.title }}', {{ s.duration_minutes or 0 }})"
-              >Watch →</button>
-              <span class="completed-badge" id="done-{{ s.session_id }}" style="display:none">✅ Completed</span>
+              <button class="watch-btn" id="btn-{{ s.session_id }}" onclick="openVideo('{{ s.session_id }}', '{{ s.video_url }}', '{{ s.title }}', {{ s.duration_minutes or 0 }})" style="flex:1;">▶ Watch Now</button>
+              <span class="completed-badge" id="done-{{ s.session_id }}" style="display:none;">✅ Done</span>
+            {% else %}
+              <span style="font-size:0.78rem;color:var(--muted);">No link available yet</span>
             {% endif %}
           </div>
         </div>
-
-        {% if s.session_type == 'recorded' and s.video_url %}
-        <div class="progress-wrap" id="progress-{{ s.session_id }}">
-          <div class="progress-label">
-            <span>Watch Progress</span>
-            <span id="pct-{{ s.session_id }}">0%</span>
-          </div>
-          <div class="progress-bar-bg">
-            <div class="progress-bar-fill" id="bar-{{ s.session_id }}" style="width:0%"></div>
-          </div>
-          <div class="progress-complete-msg" id="msg-{{ s.session_id }}" style="display:none">
-            🎉 Video completed! You're eligible for the certificate once all sessions are done.
-          </div>
-        </div>
-        {% endif %}
       </div>
       {% endfor %}
     </div>
@@ -166,247 +180,92 @@
   </div>
 </div>
 
-<!-- Video Modal -->
 <div class="modal-overlay" id="videoModal">
   <div class="modal-box">
     <div class="modal-header">
       <div class="modal-title" id="modalTitle"></div>
       <button class="modal-close" onclick="closeVideo()">✕</button>
     </div>
-    <div class="modal-warning">
-      ⚠️ <strong>Do not skip ahead.</strong> Only continuously watched portions count toward completion. You must watch at least 95% of the video to mark it as complete.
-    </div>
+    <div class="modal-warning">⚠️ <strong>Do not skip ahead.</strong> Only continuously watched portions count. You need 95% to complete.</div>
     <div id="yt-player-container"></div>
     <div class="modal-progress">
-      <div class="progress-label">
-        <span>Watched</span>
-        <span id="modal-pct">0%</span>
-      </div>
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fill" id="modal-bar" style="width:0%"></div>
-      </div>
+      <div class="modal-progress-label"><span>Watched</span><span id="modal-pct">0%</span></div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="modal-bar" style="width:0%"></div></div>
     </div>
   </div>
 </div>
 
-<!-- YouTube IFrame API -->
 <script src="https://www.youtube.com/iframe_api"></script>
 <script>
-  // ── State ──────────────────────────────────────────────────────────────────
-  let ytPlayer = null;
-  let currentSessionId = null;
-  let currentDurationMinutes = 0;
-  let trackingInterval = null;
-  let segmentStart = null;       // when current continuous watch segment started
-  let lastKnownTime = null;      // for detecting seeks
-  let totalWatched = 0;
-  let isComplete = false;
-
-  // ── On page load: restore progress for all recorded sessions ──────────────
-  document.addEventListener('DOMContentLoaded', async () => {
-    const sessionIds = {{ sessions | selectattr('session_type', 'equalto', 'recorded') | map(attribute='session_id') | list | tojson }};
-    for (const sid of sessionIds) {
-      try {
-        const res = await fetch(`/api/video/progress/${sid}`);
-        const data = await res.json();
-        updateProgressUI(sid, data.percent, data.is_complete);
-      } catch(e) {}
-    }
-  });
-
-  // ── Extract YouTube video ID from URL ─────────────────────────────────────
-  function extractYtId(url) {
-    const patterns = [
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/
-    ];
-    for (const p of patterns) {
-      const m = url.match(p);
-      if (m) return m[1];
-    }
-    return null;
-  }
-
-  // ── Open video modal ───────────────────────────────────────────────────────
-  function openVideo(sessionId, videoUrl, title, durationMinutes) {
-    const ytId = extractYtId(videoUrl);
-    if (!ytId) { alert('Invalid YouTube URL for this session.'); return; }
-
-    currentSessionId = sessionId;
-    currentDurationMinutes = durationMinutes;
-    segmentStart = null;
-    lastKnownTime = null;
-
-    document.getElementById('modalTitle').textContent = title;
-    document.getElementById('videoModal').classList.add('open');
-
-    // Load existing progress
-    fetch(`/api/video/progress/${sessionId}`)
-      .then(r => r.json())
-      .then(data => {
-        totalWatched = data.total_watched || 0;
-        isComplete = data.is_complete || false;
-        updateModalProgress(data.percent);
-      });
-
-    // Create or reload YouTube player
-    document.getElementById('yt-player-container').innerHTML = '<div id="yt-player"></div>';
-    if (ytPlayer) { ytPlayer.destroy(); }
-
-    ytPlayer = new YT.Player('yt-player', {
-      videoId: ytId,
-      width: '100%',
-      height: '100%',
-      playerVars: {
-        autoplay: 0,
-        controls: 1,
-        rel: 0,
-        modestbranding: 1
-      },
-      events: {
-        onReady: onPlayerReady,
-        onStateChange: onPlayerStateChange
-      }
+  function filterSessions(btn, type) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.session-card').forEach(card => {
+      card.style.display = (type === 'all' || card.dataset.type === type) ? '' : 'none';
     });
   }
-
-  // ── YouTube player events ──────────────────────────────────────────────────
-  function onPlayerReady(event) {
-    // Player is ready, nothing auto
+  let ytPlayer=null,currentSessionId=null,currentDurationMinutes=0,trackingInterval=null,segmentStart=null,lastKnownTime=null,totalWatched=0,isComplete=false;
+  document.addEventListener('DOMContentLoaded', async () => {
+    const sessionIds = {{ sessions | selectattr('session_type', 'equalto', 'recorded') | map(attribute='session_id') | list | tojson }};
+    for (const sid of sessionIds) { try { const res = await fetch(`/api/video/progress/${sid}`); const data = await res.json(); updateProgressUI(sid, data.percent, data.is_complete); } catch(e) {} }
+  });
+  function extractYtId(url) { const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/); return m ? m[1] : null; }
+  function openVideo(sessionId, videoUrl, title, durationMinutes) {
+    const ytId = extractYtId(videoUrl); if (!ytId) { alert('Invalid YouTube URL.'); return; }
+    currentSessionId=sessionId; currentDurationMinutes=durationMinutes; segmentStart=null; lastKnownTime=null;
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('videoModal').classList.add('open');
+    fetch(`/api/video/progress/${sessionId}`).then(r=>r.json()).then(data => { totalWatched=data.total_watched||0; isComplete=data.is_complete||false; updateModalProgress(data.percent); });
+    document.getElementById('yt-player-container').innerHTML = '<div id="yt-player"></div>';
+    if (ytPlayer) ytPlayer.destroy();
+    ytPlayer = new YT.Player('yt-player', { videoId:ytId, width:'100%', height:'100%', playerVars:{autoplay:0,controls:1,rel:0,modestbranding:1}, events:{onReady:onPlayerReady,onStateChange:onPlayerStateChange} });
   }
-
-  function onPlayerStateChange(event) {
-    const YT_PLAYING  = 1;
-    const YT_PAUSED   = 2;
-    const YT_ENDED    = 0;
-
-    if (event.data === YT_PLAYING) {
-      // Start tracking segment
-      segmentStart = ytPlayer.getCurrentTime();
-      lastKnownTime = segmentStart;
-      startTracking();
-    } else if (event.data === YT_PAUSED || event.data === YT_ENDED) {
-      // Flush current segment
-      flushSegment();
-      stopTracking();
-    }
+  function onPlayerReady(e) {}
+  function onPlayerStateChange(e) {
+    if (e.data===1) { segmentStart=ytPlayer.getCurrentTime(); lastKnownTime=segmentStart; startTracking(); }
+    else if (e.data===2||e.data===0) { flushSegment(); stopTracking(); }
   }
-
-  // ── Interval: runs every 5s while video is playing ────────────────────────
   function startTracking() {
     stopTracking();
     trackingInterval = setInterval(() => {
-      if (!ytPlayer || !currentSessionId) return;
-
-      const currentTime = ytPlayer.getCurrentTime();
-
-      // Seek detection: if jumped more than 3 seconds forward unexpectedly
-      if (lastKnownTime !== null && currentTime - lastKnownTime > 8) {
-        // User seeked forward — flush up to where they were, reset segment start
-        flushSegment(lastKnownTime);
-        segmentStart = currentTime;
-      }
-
-      lastKnownTime = currentTime;
-
-      // Send segment from segmentStart to currentTime
-      if (segmentStart !== null && currentTime > segmentStart) {
-        sendSegment(segmentStart, currentTime);
-      }
+      if (!ytPlayer||!currentSessionId) return;
+      const ct=ytPlayer.getCurrentTime();
+      if (lastKnownTime!==null&&ct-lastKnownTime>8) { flushSegment(lastKnownTime); segmentStart=ct; }
+      lastKnownTime=ct;
+      if (segmentStart!==null&&ct>segmentStart) sendSegment(segmentStart,ct);
     }, 5000);
   }
-
-  function stopTracking() {
-    if (trackingInterval) { clearInterval(trackingInterval); trackingInterval = null; }
+  function stopTracking() { if (trackingInterval) { clearInterval(trackingInterval); trackingInterval=null; } }
+  function flushSegment(endOverride=null) {
+    if (!ytPlayer||segmentStart===null) return;
+    const end=endOverride!==null?endOverride:ytPlayer.getCurrentTime();
+    if (end>segmentStart) sendSegment(segmentStart,end);
+    segmentStart=null;
   }
-
-  function flushSegment(endOverride = null) {
-    if (!ytPlayer || segmentStart === null) return;
-    const endTime = endOverride !== null ? endOverride : ytPlayer.getCurrentTime();
-    if (endTime > segmentStart) {
-      sendSegment(segmentStart, endTime);
-    }
-    segmentStart = null;
+  function sendSegment(start,end) {
+    if (isComplete) return;
+    fetch('/api/video/progress',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:currentSessionId,start:Math.round(start*100)/100,end:Math.round(end*100)/100})})
+    .then(r=>r.json()).then(data => {
+      totalWatched=data.total_watched; updateModalProgress(data.percent); updateProgressUI(currentSessionId,data.percent,data.is_complete);
+      if (data.is_complete&&!isComplete) { isComplete=true; stopTracking(); showCompletionToast(); }
+    }).catch(()=>{});
   }
-
-  // ── Send segment to backend ────────────────────────────────────────────────
-  function sendSegment(start, end) {
-    if (isComplete) return; // already done, no need to keep sending
-    fetch('/api/video/progress', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        session_id: currentSessionId,
-        start: Math.round(start * 100) / 100,
-        end: Math.round(end * 100) / 100
-      })
-    })
-    .then(r => r.json())
-    .then(data => {
-      totalWatched = data.total_watched;
-      updateModalProgress(data.percent);
-      updateProgressUI(currentSessionId, data.percent, data.is_complete);
-      if (data.is_complete && !isComplete) {
-        isComplete = true;
-        stopTracking();
-        showCompletionToast();
-      }
-    })
-    .catch(() => {});
+  function updateModalProgress(pct) { const c=Math.min(pct,100); document.getElementById('modal-pct').textContent=c.toFixed(1)+'%'; document.getElementById('modal-bar').style.width=c+'%'; }
+  function updateProgressUI(sessionId,pct,complete) {
+    const pw=document.getElementById(`progress-${sessionId}`),bar=document.getElementById(`bar-${sessionId}`),pctEl=document.getElementById(`pct-${sessionId}`),msg=document.getElementById(`msg-${sessionId}`),doneEl=document.getElementById(`done-${sessionId}`),btn=document.getElementById(`btn-${sessionId}`);
+    if (!pw) return;
+    const c=Math.min(pct,100); pw.classList.add('visible');
+    if (bar) bar.style.width=c+'%';
+    if (pctEl) pctEl.textContent=c.toFixed(1)+'%';
+    if (complete) { if (msg) msg.style.display='block'; if (doneEl) doneEl.style.display='inline-flex'; if (btn) btn.style.display='none'; }
   }
-
-  // ── Update UI ──────────────────────────────────────────────────────────────
-  function updateModalProgress(pct) {
-    const clamped = Math.min(pct, 100);
-    document.getElementById('modal-pct').textContent = clamped.toFixed(1) + '%';
-    document.getElementById('modal-bar').style.width = clamped + '%';
-  }
-
-  function updateProgressUI(sessionId, pct, complete) {
-    const progressWrap = document.getElementById(`progress-${sessionId}`);
-    const bar = document.getElementById(`bar-${sessionId}`);
-    const pctEl = document.getElementById(`pct-${sessionId}`);
-    const msg = document.getElementById(`msg-${sessionId}`);
-    const doneEl = document.getElementById(`done-${sessionId}`);
-    const btn = document.getElementById(`btn-${sessionId}`);
-
-    if (!progressWrap) return;
-    const clamped = Math.min(pct, 100);
-    progressWrap.classList.add('visible');
-    if (bar) bar.style.width = clamped + '%';
-    if (pctEl) pctEl.textContent = clamped.toFixed(1) + '%';
-
-    if (complete) {
-      if (msg) msg.style.display = 'block';
-      if (doneEl) doneEl.style.display = 'inline-block';
-      if (btn) btn.style.display = 'none';
-    }
-  }
-
   function showCompletionToast() {
-    const toast = document.createElement('div');
-    toast.style.cssText = `
-      position:fixed; bottom:32px; right:32px; background:#15803D; color:white;
-      padding:14px 20px; border-radius:12px; font-weight:700; font-size:0.9rem;
-      box-shadow:0 8px 24px rgba(0,0,0,0.15); z-index:9999; animation:fadeIn 0.3s;
-    `;
-    toast.textContent = '🎉 Video completed! Great work!';
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 4000);
+    const t=document.createElement('div');
+    t.style.cssText='position:fixed;bottom:32px;right:32px;background:#15803D;color:white;padding:14px 20px;border-radius:12px;font-weight:700;font-size:0.9rem;box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:9999;';
+    t.textContent='🎉 Video completed! Great work!'; document.body.appendChild(t); setTimeout(()=>t.remove(),4000);
   }
-
-  // ── Close modal ────────────────────────────────────────────────────────────
-  function closeVideo() {
-    flushSegment();
-    stopTracking();
-    if (ytPlayer) { ytPlayer.stopVideo(); }
-    document.getElementById('videoModal').classList.remove('open');
-    currentSessionId = null;
-  }
-
-  // Close on overlay click
-  document.getElementById('videoModal').addEventListener('click', function(e) {
-    if (e.target === this) closeVideo();
-  });
+  function closeVideo() { flushSegment(); stopTracking(); if (ytPlayer) ytPlayer.stopVideo(); document.getElementById('videoModal').classList.remove('open'); currentSessionId=null; }
+  document.getElementById('videoModal').addEventListener('click',function(e){if(e.target===this)closeVideo();});
 </script>
 </body>
 </html>

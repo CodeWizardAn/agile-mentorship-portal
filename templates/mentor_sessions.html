@@ -4,138 +4,168 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>My Sessions — AgileMentor</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root { --navy:#0F2645;--blue:#2563EB;--teal:#0EA5E9;--white:#FFFFFF;--offwhite:#F8FAFF;--gray:#E8EFF8;--muted:#64748B;--text:#1E293B; }
-    body { font-family:'Inter',sans-serif; background:var(--offwhite); min-height:100vh; display:flex; }
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root { --navy:#0A1628;--navy-2:#111E35;--blue:#2563EB;--teal:#0EA5E9;--white:#FFFFFF;--surface:#F4F7FF;--border:#E2E8F4;--muted:#64748B;--text:#0F172A;--indigo:#6366F1; }
+    body { font-family:'Inter',sans-serif; background:var(--surface); min-height:100vh; display:flex; color:var(--text); }
 
-    .sidebar { width:240px; background:var(--navy); min-height:100vh; display:flex; flex-direction:column; position:fixed; left:0; top:0; bottom:0; z-index:100; }
-    .sidebar-logo { padding:24px 20px; border-bottom:1px solid rgba(255,255,255,0.08); }
+    /* ── SIDEBAR ── */
+    .sidebar { width:256px; background:var(--navy); min-height:100vh; display:flex; flex-direction:column; position:fixed; left:0; top:0; bottom:0; z-index:100; }
+    .sidebar-logo { padding:24px 20px 20px; border-bottom:1px solid rgba(255,255,255,0.06); }
     .logo-wrap { display:flex; align-items:center; gap:10px; text-decoration:none; }
-    .logo-icon { width:32px; height:32px; border-radius:8px; background:linear-gradient(135deg,var(--blue),var(--teal)); display:flex; align-items:center; justify-content:center; }
-    .logo-icon svg { width:16px; height:16px; fill:none; stroke:white; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
-    .logo-text { font-size:1.05rem; font-weight:800; color:white; }
-    .logo-text span { color:#60A5FA; }
-    .sidebar-user { padding:20px; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; gap:12px; }
-    .user-avatar { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,#6366F1,#8B5CF6); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem; color:white; flex-shrink:0; }
-    .user-name { font-size:0.85rem; font-weight:700; color:white; }
-    .user-role { font-size:0.72rem; color:#64748B; }
-    .sidebar-nav { flex:1; padding:16px 12px; }
-    .nav-section-label { font-size:0.68rem; font-weight:700; color:#475569; letter-spacing:0.8px; text-transform:uppercase; padding:0 8px; margin:16px 0 8px; }
-    .nav-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:9px; text-decoration:none; color:#94A3B8; font-size:0.85rem; font-weight:500; transition:all 0.2s; margin-bottom:2px; }
-    .nav-item:hover { background:rgba(255,255,255,0.06); color:white; }
-    .nav-item.active { background:rgba(99,102,241,0.2); color:#A5B4FC; font-weight:600; }
-    .nav-item svg { width:16px; height:16px; flex-shrink:0; }
-    .sidebar-footer { padding:16px 12px; border-top:1px solid rgba(255,255,255,0.08); }
-    .logout-btn { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:9px; text-decoration:none; color:#94A3B8; font-size:0.85rem; }
-    .logout-btn:hover { background:rgba(239,68,68,0.1); color:#F87171; }
-    .logout-btn svg { width:16px; height:16px; }
+    .logo-mark { width:34px; height:34px; border-radius:9px; background:linear-gradient(135deg,var(--blue),var(--teal)); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .logo-mark svg { width:16px; height:16px; fill:none; stroke:white; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+    .logo-name { font-family:'Space Grotesk',sans-serif; font-size:1.05rem; font-weight:700; color:white; }
+    .logo-name em { color:var(--teal); font-style:normal; }
+    .sidebar-user { padding:16px 20px; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; gap:12px; }
+    .u-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#6366F1,#8B5CF6); display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:0.9rem; color:white; flex-shrink:0; }
+    .u-name { font-size:0.83rem; font-weight:600; color:white; }
+    .u-role { font-size:0.7rem; color:#475569; margin-top:1px; }
+    .sidebar-nav { flex:1; padding:12px 10px; }
+    .nav-label { font-size:0.64rem; font-weight:700; color:#334155; letter-spacing:1px; text-transform:uppercase; padding:0 10px; margin:16px 0 6px; }
+    .nav-item { display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:8px; text-decoration:none; color:#64748B; font-size:0.83rem; font-weight:500; transition:all 0.15s; margin-bottom:1px; }
+    .nav-item:hover { background:rgba(255,255,255,0.05); color:#CBD5E1; }
+    .nav-item.active { background:rgba(99,102,241,0.18); color:#A5B4FC; font-weight:600; }
+    .nav-item svg { width:15px; height:15px; flex-shrink:0; }
+    .sidebar-footer { padding:12px 10px; border-top:1px solid rgba(255,255,255,0.06); }
+    .logout-btn { display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:8px; text-decoration:none; color:#475569; font-size:0.83rem; transition:all 0.15s; }
+    .logout-btn:hover { background:rgba(239,68,68,0.1); color:#FCA5A5; }
+    .logout-btn svg { width:15px; height:15px; }
 
-    .main { margin-left:240px; flex:1; display:flex; flex-direction:column; }
-    .topbar { background:var(--white); border-bottom:1px solid var(--gray); padding:0 32px; height:64px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
-    .topbar-title { font-size:1.1rem; font-weight:700; color:var(--navy); }
-    .topbar-badge { background:#EEF2FF; color:#4338CA; font-size:0.78rem; font-weight:600; padding:5px 12px; border-radius:20px; }
-    .content { padding:32px; }
+    /* ── MAIN ── */
+    .main { margin-left:256px; flex:1; display:flex; flex-direction:column; }
+    .topbar { background:var(--white); border-bottom:1px solid var(--border); padding:0 32px; height:60px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+    .topbar-left { display:flex; align-items:center; gap:10px; }
+    .topbar-title { font-family:'Space Grotesk',sans-serif; font-size:1rem; font-weight:700; color:var(--navy); }
+    .breadcrumb { font-size:0.78rem; color:var(--muted); }
+    .role-chip { background:#EEF2FF; color:#4338CA; font-size:0.72rem; font-weight:700; padding:4px 12px; border-radius:20px; }
+    .content { padding:28px 32px; }
 
-    .page-header { margin-bottom:28px; }
-    .page-title { font-size:1.7rem; font-weight:800; color:var(--navy); letter-spacing:-0.5px; }
-    .page-title span { color:var(--blue); }
-    .page-sub { font-size:0.9rem; color:var(--muted); margin-top:4px; }
+    .page-header { margin-bottom:24px; }
+    .page-title { font-family:'Space Grotesk',sans-serif; font-size:1.7rem; font-weight:700; color:var(--navy); letter-spacing:-0.3px; margin-bottom:5px; }
+    .page-title em { color:var(--indigo); font-style:normal; }
+    .page-sub { font-size:0.88rem; color:var(--muted); }
 
-    /* CREATE FORM */
-    .form-card { background:var(--white); border-radius:16px; border:1px solid var(--gray); margin-bottom:28px; overflow:hidden; }
-    .form-card-header { padding:18px 24px; border-bottom:1px solid var(--gray); display:flex; align-items:center; justify-content:space-between; cursor:pointer; }
-    .form-card-title { font-size:1rem; font-weight:700; color:var(--navy); display:flex; align-items:center; gap:10px; }
-    .form-card-title span { width:28px; height:28px; border-radius:8px; background:linear-gradient(135deg,#6366F1,#8B5CF6); display:flex; align-items:center; justify-content:center; color:white; font-size:0.85rem; }
-    .toggle-icon { font-size:1.1rem; color:var(--muted); }
+    /* ── CREATE FORM CARD ── */
+    .form-card { background:var(--white); border-radius:16px; border:1px solid var(--border); margin-bottom:28px; overflow:hidden; }
+    .form-card-header { padding:16px 22px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; cursor:pointer; transition:background 0.15s; }
+    .form-card-header:hover { background:var(--surface); }
+    .form-card-header-left { display:flex; align-items:center; gap:10px; }
+    .form-card-icon { width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg,var(--indigo),#8B5CF6); display:flex; align-items:center; justify-content:center; color:white; font-size:1rem; font-weight:700; }
+    .form-card-title { font-family:'Space Grotesk',sans-serif; font-size:0.92rem; font-weight:700; color:var(--navy); }
+    .toggle-icon { font-size:0.85rem; color:var(--muted); transition:transform 0.2s; }
+    .toggle-icon.open { transform:rotate(180deg); }
     .form-card-body { padding:24px; display:none; }
     .form-card-body.open { display:block; }
-    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-    .form-group { display:flex; flex-direction:column; gap:6px; }
-    .form-group.full { grid-column:1/-1; }
-    .form-label { font-size:0.8rem; font-weight:600; color:var(--text); }
-    .form-input { padding:10px 14px; border-radius:9px; border:1.5px solid var(--gray); background:var(--offwhite); font-size:0.88rem; font-family:'Inter',sans-serif; color:var(--text); outline:none; transition:border-color 0.2s; }
-    .form-input:focus { border-color:var(--blue); background:var(--white); }
-    .form-input::placeholder { color:#A0AEC0; }
-    .form-select { padding:10px 14px; border-radius:9px; border:1.5px solid var(--gray); background:var(--offwhite); font-size:0.88rem; font-family:'Inter',sans-serif; color:var(--text); outline:none; cursor:pointer; }
-    .form-select:focus { border-color:var(--blue); }
-    .form-textarea { padding:10px 14px; border-radius:9px; border:1.5px solid var(--gray); background:var(--offwhite); font-size:0.88rem; font-family:'Inter',sans-serif; color:var(--text); outline:none; resize:vertical; min-height:80px; }
-    .conditional-field { display:none; }
-    .submit-btn { padding:11px 28px; border-radius:9px; border:none; background:linear-gradient(135deg,#6366F1,#8B5CF6); color:white; font-size:0.88rem; font-weight:700; cursor:pointer; margin-top:8px; }
 
-    /* SESSIONS LIST */
-    .sessions-card { background:var(--white); border-radius:16px; border:1px solid var(--gray); overflow:hidden; }
-    .sessions-card-header { padding:18px 24px; border-bottom:1px solid var(--gray); }
-    .sessions-card-title { font-size:1rem; font-weight:700; color:var(--navy); }
-    .session-item { padding:20px 24px; border-bottom:1px solid var(--gray); display:flex; align-items:center; gap:16px; }
-    .session-item:last-child { border-bottom:none; }
-    .session-type-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; }
-    .type-live { background:#FEE2E2; }
-    .type-recorded { background:#EEF2FF; }
-    .session-info { flex:1; }
-    .session-title { font-size:0.95rem; font-weight:700; color:var(--navy); margin-bottom:4px; }
-    .session-meta { display:flex; gap:14px; flex-wrap:wrap; }
-    .meta-item { font-size:0.78rem; color:var(--muted); display:flex; align-items:center; gap:4px; }
-    .session-actions { display:flex; align-items:center; gap:8px; flex-shrink:0; }
-    .type-badge { font-size:0.7rem; font-weight:700; padding:3px 9px; border-radius:5px; }
-    .badge-live { background:#FEE2E2; color:#DC2626; }
-    .badge-recorded { background:#EEF2FF; color:#4338CA; }
-    .status-badge { font-size:0.7rem; font-weight:700; padding:3px 9px; border-radius:5px; }
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .form-group { display:flex; flex-direction:column; gap:5px; }
+    .form-group.full { grid-column:1/-1; }
+    .form-label { font-size:0.78rem; font-weight:600; color:var(--text); }
+    .form-input, .form-select, .form-textarea {
+      padding:10px 13px; border-radius:9px; border:1.5px solid var(--border);
+      background:var(--surface); font-size:0.85rem; font-family:'Inter',sans-serif;
+      color:var(--text); outline:none; transition:border-color 0.15s;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color:var(--indigo); background:var(--white); }
+    .form-textarea { resize:vertical; min-height:80px; }
+    .conditional-field { display:none; }
+    .submit-btn { padding:10px 24px; border-radius:9px; border:none; background:linear-gradient(135deg,var(--indigo),#8B5CF6); color:white; font-size:0.85rem; font-weight:700; cursor:pointer; margin-top:10px; font-family:'Inter',sans-serif; transition:opacity 0.15s; }
+    .submit-btn:hover { opacity:0.9; }
+
+    /* ── FILTERS ── */
+    .filters { display:flex; gap:8px; margin-bottom:22px; }
+    .filter-btn { padding:7px 18px; border-radius:20px; border:1.5px solid var(--border); background:var(--white); color:var(--muted); font-size:0.8rem; font-weight:600; cursor:pointer; transition:all 0.2s; font-family:'Inter',sans-serif; }
+    .filter-btn:hover { border-color:var(--indigo); color:var(--indigo); }
+    .filter-btn.active { background:var(--indigo); border-color:var(--indigo); color:white; }
+
+    /* ── SESSIONS GRID ── */
+    .sessions-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+
+    /* ── SESSION CARD ── */
+    .session-card { background:var(--white); border-radius:16px; border:1px solid var(--border); overflow:hidden; transition:transform 0.2s,box-shadow 0.2s; display:flex; flex-direction:column; }
+    .session-card:hover { transform:translateY(-3px); box-shadow:0 12px 32px rgba(10,22,40,0.09); }
+    .card-thumbnail { height:120px; display:flex; align-items:center; justify-content:center; position:relative; }
+    .card-thumbnail-icon { font-size:2.8rem; z-index:1; }
+    .thumb-live { background:linear-gradient(135deg,#7f1d1d,#dc2626); }
+    .thumb-recorded { background:linear-gradient(135deg,#1e1b4b,#4338ca); }
+    .card-type-tag { position:absolute; top:10px; left:10px; z-index:2; font-size:0.66rem; font-weight:700; padding:3px 9px; border-radius:6px; display:flex; align-items:center; gap:4px; }
+    .tag-live { background:rgba(220,38,38,0.9); color:white; }
+    .tag-recorded { background:rgba(67,56,202,0.9); color:white; }
+    .tag-dot { width:5px; height:5px; border-radius:50%; background:white; display:inline-block; animation:pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+    .tag-recorded .tag-dot { animation:none; }
+    .card-status-tag { position:absolute; top:10px; right:10px; z-index:2; font-size:0.64rem; font-weight:700; padding:3px 8px; border-radius:6px; }
     .status-scheduled { background:#FEF3C7; color:#92400E; }
     .status-completed { background:#DCFCE7; color:#15803D; }
     .status-cancelled { background:#FEE2E2; color:#DC2626; }
-    .btn-attend { padding:6px 12px; border-radius:7px; border:none; background:linear-gradient(135deg,var(--blue),var(--teal)); color:white; font-size:0.75rem; font-weight:700; cursor:pointer; text-decoration:none; white-space:nowrap; }
-    .btn-edit { padding:6px 12px; border-radius:7px; border:1.5px solid #6366F1; background:transparent; color:#6366F1; font-size:0.75rem; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; transition:all 0.2s; }
-    .btn-edit:hover { background:#6366F1; color:white; }
-    .btn-delete { padding:6px 12px; border-radius:7px; border:1.5px solid #EF4444; background:transparent; color:#EF4444; font-size:0.75rem; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; transition:all 0.2s; }
+
+    .card-body { padding:14px 16px; flex:1; display:flex; flex-direction:column; }
+    .card-program { font-size:0.7rem; font-weight:700; color:var(--indigo); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:5px; }
+    .card-title { font-family:'Space Grotesk',sans-serif; font-size:0.9rem; font-weight:700; color:var(--navy); margin-bottom:6px; line-height:1.4; }
+    .card-stats { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+    .card-stat { font-size:0.72rem; color:var(--muted); font-weight:500; }
+
+    .card-actions { display:flex; gap:6px; flex-wrap:wrap; margin-top:auto; }
+    .btn-sm { padding:6px 12px; border-radius:7px; font-size:0.73rem; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; transition:all 0.15s; text-decoration:none; display:inline-flex; align-items:center; gap:4px; white-space:nowrap; }
+    .btn-join { border:none; background:linear-gradient(135deg,#22C55E,#16A34A); color:white; }
+    .btn-watch { border:none; background:linear-gradient(135deg,var(--indigo),#8B5CF6); color:white; }
+    .btn-attend { border:none; background:linear-gradient(135deg,var(--blue),var(--teal)); color:white; }
+    .btn-edit { border:1.5px solid var(--indigo); background:transparent; color:var(--indigo); }
+    .btn-edit:hover { background:var(--indigo); color:white; }
+    .btn-delete { border:1.5px solid #EF4444; background:transparent; color:#EF4444; }
     .btn-delete:hover { background:#EF4444; color:white; }
 
     .empty-state { text-align:center; padding:60px 20px; color:var(--muted); }
     .empty-icon { font-size:2.5rem; margin-bottom:12px; }
-    .empty-title { font-size:1rem; font-weight:700; color:var(--navy); margin-bottom:6px; }
+    .empty-title { font-family:'Space Grotesk',sans-serif; font-size:1rem; font-weight:700; color:var(--navy); margin-bottom:6px; }
 
-    /* MODAL */
-    .modal-overlay { position:fixed; inset:0; background:rgba(15,38,69,0.5); z-index:200; display:none; align-items:center; justify-content:center; }
+    /* ── MODAL ── */
+    .modal-overlay { position:fixed; inset:0; background:rgba(10,22,40,0.6); z-index:200; display:none; align-items:center; justify-content:center; }
     .modal-overlay.open { display:flex; }
     .modal { background:var(--white); border-radius:20px; padding:28px; width:100%; max-width:520px; max-height:90vh; overflow-y:auto; }
-    .modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
-    .modal-title { font-size:1.1rem; font-weight:800; color:var(--navy); }
-    .modal-close { width:32px; height:32px; border-radius:8px; border:none; background:var(--gray); color:var(--muted); font-size:1.1rem; cursor:pointer; }
+    .modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; }
+    .modal-title { font-family:'Space Grotesk',sans-serif; font-size:1.05rem; font-weight:700; color:var(--navy); }
+    .modal-close { width:32px; height:32px; border-radius:8px; border:none; background:var(--surface); color:var(--muted); font-size:1.1rem; cursor:pointer; transition:0.15s; }
     .modal-close:hover { background:#FEE2E2; color:#EF4444; }
-    .modal-submit { padding:11px 28px; border-radius:9px; border:none; background:linear-gradient(135deg,#6366F1,#8B5CF6); color:white; font-size:0.88rem; font-weight:700; cursor:pointer; margin-top:16px; }
+    .modal-submit { padding:10px 24px; border-radius:9px; border:none; background:linear-gradient(135deg,var(--indigo),#8B5CF6); color:white; font-size:0.85rem; font-weight:700; cursor:pointer; margin-top:16px; font-family:'Inter',sans-serif; }
   </style>
 </head>
 <body>
 
 <aside class="sidebar">
-  <div class="sidebar-logo"><a class="logo-wrap" href="/"><div class="logo-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><span class="logo-text">Agile<span>Mentor</span></span></a></div>
-  <div class="sidebar-user"><div class="user-avatar">{{ user.full_name[0].upper() }}</div><div><div class="user-name">{{ user.full_name }}</div><div class="user-role">Mentor</div></div></div>
+  <div class="sidebar-logo"><a class="logo-wrap" href="/"><div class="logo-mark"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><span class="logo-name">Agile<em>Mentor</em></span></a></div>
+  <div class="sidebar-user"><div class="u-avatar">{{ user.full_name[0].upper() }}</div><div><div class="u-name">{{ user.full_name }}</div><div class="u-role">MENTOR</div></div></div>
   <nav class="sidebar-nav">
-    <div class="nav-section-label">Main</div>
+    <div class="nav-label">Overview</div>
     <a class="nav-item" href="/mentor-dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+    <div class="nav-label">Manage</div>
     <a class="nav-item" href="/mentor-profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>My Profile</a>
     <a class="nav-item active" href="/mentor/sessions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>My Sessions</a>
     <a class="nav-item" href="/mentor/certificates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>My Certificates</a>
   </nav>
-  <div class="sidebar-footer"><a class="logout-btn" href="/logout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Logout</a></div>
+  <div class="sidebar-footer"><a class="logout-btn" href="/logout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign out</a></div>
 </aside>
 
 <div class="main">
   <div class="topbar">
-    <div class="topbar-title">My Sessions</div>
-    <span class="topbar-badge">Mentor</span>
+    <div class="topbar-left"><div class="topbar-title">My Sessions</div><span class="breadcrumb">/ All Sessions</span></div>
+    <span class="role-chip">Mentor</span>
   </div>
   <div class="content">
     <div class="page-header">
-      <div class="page-title">My <span>Sessions</span></div>
+      <div class="page-title">My <em>Sessions</em></div>
       <div class="page-sub">Create and manage live and recorded sessions for your programs.</div>
     </div>
 
     <!-- CREATE FORM -->
     <div class="form-card">
       <div class="form-card-header" onclick="toggleForm()">
-        <div class="form-card-title"><span>+</span> Create New Session</div>
+        <div class="form-card-header-left">
+          <div class="form-card-icon">+</div>
+          <div class="form-card-title">Create New Session</div>
+        </div>
         <span class="toggle-icon" id="toggleIcon">▼</span>
       </div>
       <div class="form-card-body" id="createForm">
@@ -153,8 +183,8 @@
               <label class="form-label">Session Type *</label>
               <select class="form-select" name="session_type" id="sessionType" onchange="toggleFields()" required>
                 <option value="">Select type</option>
-                <option value="live">Live Session</option>
-                <option value="recorded">Recorded Video</option>
+                <option value="live">🔴 Live Session</option>
+                <option value="recorded">🎬 Recorded Video</option>
               </select>
             </div>
             <div class="form-group full">
@@ -170,7 +200,7 @@
               <input class="form-input" type="url" name="meeting_link" placeholder="https://meet.google.com/..."/>
             </div>
             <div class="form-group conditional-field" id="recordedFields">
-              <label class="form-label">Video URL</label>
+              <label class="form-label">Video URL (YouTube)</label>
               <input class="form-input" type="url" name="video_url" placeholder="https://youtube.com/..."/>
             </div>
             <div class="form-group">
@@ -178,55 +208,60 @@
               <input class="form-input" type="number" name="duration_minutes" placeholder="e.g. 60"/>
             </div>
           </div>
-          <button class="submit-btn" type="submit">Create Session</button>
+          <button class="submit-btn" type="submit">Create Session →</button>
         </form>
       </div>
     </div>
 
-    <!-- SESSIONS LIST -->
-    <div class="sessions-card">
-      <div class="sessions-card-header">
-        <div class="sessions-card-title">My Sessions ({{ sessions|length }})</div>
-      </div>
-      {% if sessions %}
-        {% for s in sessions %}
-        <div class="session-item">
-          <div class="session-type-icon {{ 'type-live' if s.session_type == 'live' else 'type-recorded' }}">
-            {{ '🔴' if s.session_type == 'live' else '🎬' }}
+    <!-- FILTERS -->
+    <div class="filters">
+      <button class="filter-btn active" onclick="filterSessions(this,'all')">All ({{ sessions|length }})</button>
+      <button class="filter-btn" onclick="filterSessions(this,'live')">🔴 Live</button>
+      <button class="filter-btn" onclick="filterSessions(this,'recorded')">🎬 Recorded</button>
+    </div>
+
+    <!-- SESSIONS GRID -->
+    {% if sessions %}
+    <div class="sessions-grid" id="sessionsGrid">
+      {% for s in sessions %}
+      <div class="session-card" data-type="{{ s.session_type }}">
+        <div class="card-thumbnail {{ 'thumb-live' if s.session_type == 'live' else 'thumb-recorded' }}">
+          <span class="card-thumbnail-icon">{{ '🔴' if s.session_type == 'live' else '🎬' }}</span>
+          <span class="card-type-tag {{ 'tag-live' if s.session_type == 'live' else 'tag-recorded' }}">
+            <span class="tag-dot"></span>{{ 'LIVE' if s.session_type == 'live' else 'RECORDED' }}
+          </span>
+          <span class="card-status-tag status-{{ s.status }}">{{ s.status.upper() }}</span>
+        </div>
+        <div class="card-body">
+          <div class="card-program">📂 {{ s.program_id }}</div>
+          <div class="card-title">{{ s.title }}</div>
+          <div class="card-stats">
+            <div class="card-stat">📅 {{ s.scheduled_at.strftime('%d %b %Y, %I:%M %p') if s.scheduled_at else 'Anytime' }}</div>
+            {% if s.duration_minutes %}<div class="card-stat">⏱ {{ s.duration_minutes }} min</div>{% endif %}
           </div>
-          <div class="session-info">
-            <div class="session-title">{{ s.title }}</div>
-            <div class="session-meta">
-              <div class="meta-item">📂 {{ s.program_id }}</div>
-              {% if s.scheduled_at %}<div class="meta-item">📅 {{ s.scheduled_at.strftime('%d %b %Y, %I:%M %p') }}</div>{% endif %}
-              {% if s.duration_minutes %}<div class="meta-item">⏱ {{ s.duration_minutes }} min</div>{% endif %}
-            </div>
-          </div>
-          <div class="session-actions">
-            
-            <span class="type-badge {{ 'badge-live' if s.session_type == 'live' else 'badge-recorded' }}">{{ s.session_type.upper() }}</span>
-            <span class="status-badge status-{{ s.status }}">{{ s.status.upper() }}</span>
+          <div class="card-actions">
             {% if s.session_type == 'live' and s.meeting_link %}
-  <a class="btn-attend" href="{{ s.meeting_link }}" target="_blank" style="background:linear-gradient(135deg,#22C55E,#16A34A);">Join →</a>
-{% elif s.session_type == 'recorded' and s.video_url %}
-  <a class="btn-attend" href="{{ s.video_url }}" target="_blank" style="background:linear-gradient(135deg,#8B5CF6,#6366F1);">Watch →</a>
-{% endif %}
-            <a class="btn-attend" href="/attendance/{{ s.session_id }}">Attendance</a>
-            <button class="btn-edit" onclick="openEdit('{{ s.session_id }}','{{ s.title }}','{{ s.status }}','{{ s.meeting_link or '' }}','{{ s.video_url or '' }}','{{ s.duration_minutes or '' }}')">Edit</button>
+              <a class="btn-sm btn-join" href="{{ s.meeting_link }}" target="_blank">🔴 Join</a>
+            {% elif s.session_type == 'recorded' and s.video_url %}
+              <a class="btn-sm btn-watch" href="{{ s.video_url }}" target="_blank">▶ Watch</a>
+            {% endif %}
+            <a class="btn-sm btn-attend" href="/attendance/{{ s.session_id }}">✅ Attendance</a>
+            <button class="btn-sm btn-edit" onclick="openEdit('{{ s.session_id }}','{{ s.title }}','{{ s.status }}','{{ s.meeting_link or '' }}','{{ s.video_url or '' }}','{{ s.duration_minutes or '' }}')">✏ Edit</button>
             <form action="/mentor/sessions/delete/{{ s.session_id }}" method="post" style="display:inline;" onsubmit="return confirm('Delete this session?')">
-              <button class="btn-delete" type="submit">Delete</button>
+              <button class="btn-sm btn-delete" type="submit">🗑</button>
             </form>
           </div>
         </div>
-        {% endfor %}
-      {% else %}
-      <div class="empty-state">
-        <div class="empty-icon">🎥</div>
-        <div class="empty-title">No sessions yet</div>
-        <div>Create your first session using the form above.</div>
       </div>
-      {% endif %}
+      {% endfor %}
     </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">🎥</div>
+      <div class="empty-title">No sessions yet</div>
+      <div>Create your first session using the form above.</div>
+    </div>
+    {% endif %}
   </div>
 </div>
 
@@ -239,22 +274,10 @@
     </div>
     <form id="editForm" method="post">
       <div class="form-grid">
-        <div class="form-group full">
-          <label class="form-label">Session Title</label>
-          <input class="form-input" type="text" name="title" id="edit_title"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Meeting Link</label>
-          <input class="form-input" type="url" name="meeting_link" id="edit_meeting"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Video URL</label>
-          <input class="form-input" type="url" name="video_url" id="edit_video"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Duration (minutes)</label>
-          <input class="form-input" type="number" name="duration_minutes" id="edit_duration"/>
-        </div>
+        <div class="form-group full"><label class="form-label">Session Title</label><input class="form-input" type="text" name="title" id="edit_title"/></div>
+        <div class="form-group"><label class="form-label">Meeting Link</label><input class="form-input" type="url" name="meeting_link" id="edit_meeting"/></div>
+        <div class="form-group"><label class="form-label">Video URL</label><input class="form-input" type="url" name="video_url" id="edit_video"/></div>
+        <div class="form-group"><label class="form-label">Duration (minutes)</label><input class="form-input" type="number" name="duration_minutes" id="edit_duration"/></div>
         <div class="form-group">
           <label class="form-label">Status</label>
           <select class="form-select" name="status" id="edit_status">
@@ -274,16 +297,21 @@
     const body = document.getElementById('createForm');
     const icon = document.getElementById('toggleIcon');
     body.classList.toggle('open');
-    icon.textContent = body.classList.contains('open') ? '▲' : '▼';
+    icon.classList.toggle('open');
   }
-
   function toggleFields() {
     const type = document.getElementById('sessionType').value;
     document.getElementById('liveFields').style.display = type === 'live' ? 'flex' : 'none';
     document.getElementById('liveFields2').style.display = type === 'live' ? 'flex' : 'none';
     document.getElementById('recordedFields').style.display = type === 'recorded' ? 'flex' : 'none';
   }
-
+  function filterSessions(btn, type) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.session-card').forEach(card => {
+      card.style.display = (type === 'all' || card.dataset.type === type) ? '' : 'none';
+    });
+  }
   function openEdit(id, title, status, meeting, video, duration) {
     document.getElementById('editForm').action = '/mentor/sessions/update/' + id;
     document.getElementById('edit_title').value = title;
@@ -293,15 +321,8 @@
     document.getElementById('edit_duration').value = duration;
     document.getElementById('editModal').classList.add('open');
   }
-
-  function closeEdit() {
-    document.getElementById('editModal').classList.remove('open');
-  }
-
-  document.getElementById('editModal').addEventListener('click', function(e) {
-    if (e.target === this) closeEdit();
-  });
+  function closeEdit() { document.getElementById('editModal').classList.remove('open'); }
+  document.getElementById('editModal').addEventListener('click', function(e) { if (e.target === this) closeEdit(); });
 </script>
-
 </body>
 </html>

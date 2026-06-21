@@ -1,325 +1,333 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Manage Sessions — AgileMentor</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Sessions — AgileMentor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root { --navy:#0A1628;--navy-2:#111E35;--blue:#2563EB;--teal:#0EA5E9;--white:#FFFFFF;--surface:#F4F7FF;--border:#E2E8F4;--muted:#64748B;--text:#0F172A;--amber:#F59E0B; }
+    body { font-family:'Inter',sans-serif; background:var(--surface); min-height:100vh; display:flex; color:var(--text); }
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    /* ── SIDEBAR ── */
+    .sidebar { width:256px; background:var(--navy); min-height:100vh; display:flex; flex-direction:column; position:fixed; left:0; top:0; bottom:0; z-index:100; }
+    .sidebar-logo { padding:24px 20px 20px; border-bottom:1px solid rgba(255,255,255,0.06); }
+    .logo-wrap { display:flex; align-items:center; gap:10px; text-decoration:none; }
+    .logo-mark { width:34px; height:34px; border-radius:9px; background:linear-gradient(135deg,var(--blue),var(--teal)); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .logo-mark svg { width:16px; height:16px; fill:none; stroke:white; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+    .logo-name { font-family:'Space Grotesk',sans-serif; font-size:1.05rem; font-weight:700; color:white; }
+    .logo-name em { color:var(--teal); font-style:normal; }
+    .sidebar-user { padding:16px 20px; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; gap:12px; }
+    .u-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--amber),#EF4444); display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:0.9rem; color:white; flex-shrink:0; }
+    .u-name { font-size:0.83rem; font-weight:600; color:white; }
+    .u-role { font-size:0.7rem; color:#475569; margin-top:1px; }
+    .sidebar-nav { flex:1; padding:12px 10px; }
+    .nav-label { font-size:0.64rem; font-weight:700; color:#334155; letter-spacing:1px; text-transform:uppercase; padding:0 10px; margin:16px 0 6px; }
+    .nav-item { display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:8px; text-decoration:none; color:#64748B; font-size:0.83rem; font-weight:500; transition:all 0.15s; margin-bottom:1px; }
+    .nav-item:hover { background:rgba(255,255,255,0.05); color:#CBD5E1; }
+    .nav-item.active { background:rgba(37,99,235,0.18); color:#93C5FD; font-weight:600; }
+    .nav-item svg { width:15px; height:15px; flex-shrink:0; }
+    .sidebar-footer { padding:12px 10px; border-top:1px solid rgba(255,255,255,0.06); }
+    .logout-btn { display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:8px; text-decoration:none; color:#475569; font-size:0.83rem; transition:all 0.15s; }
+    .logout-btn:hover { background:rgba(239,68,68,0.1); color:#FCA5A5; }
+    .logout-btn svg { width:15px; height:15px; }
 
-<style>
-*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    /* ── MAIN ── */
+    .main { margin-left:256px; flex:1; display:flex; flex-direction:column; }
+    .topbar { background:var(--white); border-bottom:1px solid var(--border); padding:0 32px; height:60px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+    .topbar-left { display:flex; align-items:center; gap:10px; }
+    .topbar-title { font-family:'Space Grotesk',sans-serif; font-size:1rem; font-weight:700; color:var(--navy); }
+    .breadcrumb { font-size:0.78rem; color:var(--muted); }
+    .role-chip { background:#FEF3C7; color:#92400E; font-size:0.72rem; font-weight:700; padding:4px 12px; border-radius:20px; }
+    .content { padding:28px 32px; }
 
-:root {
-  --navy:#0F2645;
-  --blue:#2563EB;
-  --teal:#0EA5E9;
-  --white:#FFFFFF;
-  --offwhite:#F8FAFF;
-  --gray:#E8EFF8;
-  --muted:#64748B;
-  --text:#1E293B;
-}
+    .page-header { margin-bottom:24px; }
+    .page-title { font-family:'Space Grotesk',sans-serif; font-size:1.7rem; font-weight:700; color:var(--navy); letter-spacing:-0.3px; margin-bottom:5px; }
+    .page-title em { color:var(--blue); font-style:normal; }
+    .page-sub { font-size:0.88rem; color:var(--muted); }
 
-body {
-  font-family:'Inter',sans-serif;
-  background:var(--offwhite);
-  display:flex;
-}
+    /* ── CREATE FORM ── */
+    .form-card { background:var(--white); border-radius:16px; border:1px solid var(--border); margin-bottom:28px; overflow:hidden; }
+    .form-card-header { padding:16px 22px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; cursor:pointer; transition:background 0.15s; }
+    .form-card-header:hover { background:var(--surface); }
+    .form-card-header-left { display:flex; align-items:center; gap:10px; }
+    .form-card-icon { width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg,var(--blue),var(--teal)); display:flex; align-items:center; justify-content:center; color:white; font-size:1rem; font-weight:700; }
+    .form-card-title { font-family:'Space Grotesk',sans-serif; font-size:0.92rem; font-weight:700; color:var(--navy); }
+    .toggle-icon { font-size:0.85rem; color:var(--muted); transition:transform 0.2s; }
+    .toggle-icon.open { transform:rotate(180deg); }
+    .form-card-body { padding:24px; display:none; }
+    .form-card-body.open { display:block; }
 
-.sidebar {
-  width:240px;
-  background:var(--navy);
-  min-height:100vh;
-  position:fixed;
-  padding:20px;
-}
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .form-group { display:flex; flex-direction:column; gap:5px; }
+    .form-group.full { grid-column:1/-1; }
+    .form-label { font-size:0.78rem; font-weight:600; color:var(--text); }
+    .form-input, .form-select, .form-textarea { padding:10px 13px; border-radius:9px; border:1.5px solid var(--border); background:var(--surface); font-size:0.85rem; font-family:'Inter',sans-serif; color:var(--text); outline:none; transition:border-color 0.15s; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color:var(--blue); background:var(--white); }
+    .form-textarea { resize:vertical; min-height:80px; }
+    .submit-btn { padding:10px 24px; border-radius:9px; border:none; background:linear-gradient(135deg,var(--blue),var(--teal)); color:white; font-size:0.85rem; font-weight:700; cursor:pointer; margin-top:10px; font-family:'Inter',sans-serif; transition:opacity 0.15s; }
+    .submit-btn:hover { opacity:0.9; }
 
-.logo-text {
-  font-size:1.15rem;
-  font-weight:800;
-  color:white;
-  margin-bottom:30px;
-}
+    /* ── FILTERS ── */
+    .filters { display:flex; gap:8px; margin-bottom:22px; }
+    .filter-btn { padding:7px 18px; border-radius:20px; border:1.5px solid var(--border); background:var(--white); color:var(--muted); font-size:0.8rem; font-weight:600; cursor:pointer; transition:all 0.2s; font-family:'Inter',sans-serif; }
+    .filter-btn:hover { border-color:var(--blue); color:var(--blue); }
+    .filter-btn.active { background:var(--blue); border-color:var(--blue); color:white; }
 
-.logo-text span { color:#60A5FA; }
+    /* ── SESSIONS GRID ── */
+    .sessions-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
 
-.nav-item {
-  display:block;
-  padding:12px;
-  border-radius:10px;
-  text-decoration:none;
-  color:#94A3B8;
-  margin-bottom:8px;
-  font-size:0.9rem;
-}
+    /* ── SESSION CARD ── */
+    .session-card { background:var(--white); border-radius:16px; border:1px solid var(--border); overflow:hidden; transition:transform 0.2s,box-shadow 0.2s; display:flex; flex-direction:column; }
+    .session-card:hover { transform:translateY(-3px); box-shadow:0 12px 32px rgba(10,22,40,0.09); }
+    .card-thumbnail { height:120px; display:flex; align-items:center; justify-content:center; position:relative; }
+    .card-thumbnail-icon { font-size:2.8rem; z-index:1; }
+    .thumb-live { background:linear-gradient(135deg,#7f1d1d,#dc2626); }
+    .thumb-recorded { background:linear-gradient(135deg,#1e1b4b,#4338ca); }
+    .card-type-tag { position:absolute; top:10px; left:10px; z-index:2; font-size:0.66rem; font-weight:700; padding:3px 9px; border-radius:6px; display:flex; align-items:center; gap:4px; }
+    .tag-live { background:rgba(220,38,38,0.9); color:white; }
+    .tag-recorded { background:rgba(67,56,202,0.9); color:white; }
+    .tag-dot { width:5px; height:5px; border-radius:50%; background:white; display:inline-block; animation:pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+    .tag-recorded .tag-dot { animation:none; }
+    .card-status-tag { position:absolute; top:10px; right:10px; z-index:2; font-size:0.64rem; font-weight:700; padding:3px 8px; border-radius:6px; }
+    .status-scheduled { background:#FEF3C7; color:#92400E; }
+    .status-completed { background:#DCFCE7; color:#15803D; }
+    .status-cancelled { background:#FEE2E2; color:#DC2626; }
 
-.nav-item:hover {
-  background:rgba(255,255,255,0.06);
-  color:white;
-}
+    .card-body { padding:14px 16px; flex:1; display:flex; flex-direction:column; }
+    .card-program { font-size:0.7rem; font-weight:700; color:var(--blue); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:5px; }
+    .card-title { font-family:'Space Grotesk',sans-serif; font-size:0.9rem; font-weight:700; color:var(--navy); margin-bottom:6px; line-height:1.4; }
+    .card-mentor { font-size:0.72rem; color:var(--muted); margin-bottom:8px; }
+    .card-stats { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+    .card-stat { font-size:0.72rem; color:var(--muted); font-weight:500; }
 
-.nav-item.active {
-  background:rgba(99,102,241,0.2);
-  color:#A5B4FC;
-}
+    .card-actions { display:flex; gap:6px; flex-wrap:wrap; margin-top:auto; }
+    .btn-sm { padding:6px 11px; border-radius:7px; font-size:0.72rem; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; transition:all 0.15s; text-decoration:none; display:inline-flex; align-items:center; gap:3px; white-space:nowrap; }
+    .btn-attend { border:none; background:linear-gradient(135deg,var(--blue),var(--teal)); color:white; }
+    .btn-edit { border:1.5px solid var(--blue); background:transparent; color:var(--blue); }
+    .btn-edit:hover { background:var(--blue); color:white; }
+    .btn-delete { border:1.5px solid #EF4444; background:transparent; color:#EF4444; }
+    .btn-delete:hover { background:#EF4444; color:white; }
 
-.main {
-  margin-left:240px;
-  flex:1;
-}
+    .empty-state { text-align:center; padding:60px 20px; color:var(--muted); }
+    .empty-icon { font-size:2.5rem; margin-bottom:12px; }
+    .empty-title { font-family:'Space Grotesk',sans-serif; font-size:1rem; font-weight:700; color:var(--navy); margin-bottom:6px; }
 
-.topbar {
-  background:white;
-  border-bottom:1px solid var(--gray);
-  padding:20px 32px;
-}
-
-.topbar-title {
-  font-size:1.1rem;
-  font-weight:700;
-  color:var(--navy);
-}
-
-.content {
-  padding:32px;
-  max-width:1100px;
-}
-
-.page-title {
-  font-size:1.8rem;
-  font-weight:800;
-  color:var(--navy);
-  margin-bottom:6px;
-}
-
-.page-title span { color:var(--blue); }
-
-.page-sub {
-  font-size:0.9rem;
-  color:var(--muted);
-  margin-bottom:28px;
-}
-
-.card {
-  background:white;
-  border:1px solid var(--gray);
-  border-radius:16px;
-  padding:24px;
-  margin-bottom:24px;
-}
-
-.section-title {
-  font-size:1rem;
-  font-weight:700;
-  color:var(--navy);
-  margin-bottom:18px;
-}
-
-.form-grid {
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:16px;
-}
-
-.full {
-  grid-column:1/-1;
-}
-
-.form-input, .form-select, textarea {
-  width:100%;
-  padding:12px 14px;
-  border-radius:10px;
-  border:1.5px solid var(--gray);
-  background:var(--offwhite);
-  font-size:0.9rem;
-  outline:none;
-}
-
-.form-input:focus,
-.form-select:focus,
-textarea:focus {
-  border-color:#6366F1;
-  background:white;
-}
-
-textarea {
-  resize:vertical;
-  min-height:90px;
-}
-
-.submit-btn {
-  padding:12px 24px;
-  border:none;
-  border-radius:10px;
-  background:linear-gradient(135deg,#6366F1,#8B5CF6);
-  color:white;
-  font-weight:700;
-  cursor:pointer;
-}
-
-.submit-btn:hover { opacity:0.9; }
-
-.session-card {
-  border:1px solid var(--gray);
-  border-radius:14px;
-  padding:20px;
-  margin-bottom:18px;
-}
-
-.session-title {
-  font-size:1rem;
-  font-weight:700;
-  color:var(--navy);
-  margin-bottom:6px;
-}
-
-.session-meta {
-  font-size:0.82rem;
-  color:var(--muted);
-  margin-bottom:16px;
-}
-
-.action-row {
-  display:flex;
-  gap:10px;
-  margin-top:12px;
-}
-
-.delete-btn {
-  padding:10px 18px;
-  border:none;
-  border-radius:8px;
-  background:#FEE2E2;
-  color:#DC2626;
-  font-weight:700;
-  cursor:pointer;
-}
-
-.empty-state {
-  text-align:center;
-  color:var(--muted);
-  padding:30px;
-}
-</style>
+    /* ── MODAL ── */
+    .modal-overlay { position:fixed; inset:0; background:rgba(10,22,40,0.6); z-index:200; display:none; align-items:center; justify-content:center; }
+    .modal-overlay.open { display:flex; }
+    .modal { background:var(--white); border-radius:20px; padding:28px; width:100%; max-width:520px; max-height:90vh; overflow-y:auto; }
+    .modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; }
+    .modal-title { font-family:'Space Grotesk',sans-serif; font-size:1.05rem; font-weight:700; color:var(--navy); }
+    .modal-close { width:32px; height:32px; border-radius:8px; border:none; background:var(--surface); color:var(--muted); font-size:1.1rem; cursor:pointer; transition:0.15s; }
+    .modal-close:hover { background:#FEE2E2; color:#EF4444; }
+    .modal-submit { padding:10px 24px; border-radius:9px; border:none; background:linear-gradient(135deg,var(--blue),var(--teal)); color:white; font-size:0.85rem; font-weight:700; cursor:pointer; margin-top:16px; font-family:'Inter',sans-serif; }
+  </style>
 </head>
 <body>
 
 <aside class="sidebar">
-  <div class="logo-text">Agile<span>Mentor</span></div>
-
-  <a class="nav-item" href="/admin-dashboard">Dashboard</a>
-  <a class="nav-item active" href="/admin/sessions">Manage Sessions</a>
+  <div class="sidebar-logo"><a class="logo-wrap" href="/"><div class="logo-mark"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><span class="logo-name">Agile<em>Mentor</em></span></a></div>
+  <div class="sidebar-user"><div class="u-avatar">{{ user.full_name[0].upper() }}</div><div><div class="u-name">{{ user.full_name }}</div><div class="u-role">ADMINISTRATOR</div></div></div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">Overview</div>
+    <a class="nav-item" href="/admin-dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+    <div class="nav-label">Manage</div>
+    <a class="nav-item" href="/admin/programs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Programs</a>
+    <a class="nav-item active" href="/admin/sessions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Sessions</a>
+    <a class="nav-item" href="/admin/users"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Users</a>
+    <a class="nav-item" href="/admin/attendance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Attendance</a>
+  </nav>
+  <div class="sidebar-footer"><a class="logout-btn" href="/logout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign out</a></div>
 </aside>
 
 <div class="main">
-
   <div class="topbar">
-    <div class="topbar-title">Manage Sessions</div>
+    <div class="topbar-left"><div class="topbar-title">Manage Sessions</div><span class="breadcrumb">/ All Sessions</span></div>
+    <span class="role-chip">Admin</span>
   </div>
-
   <div class="content">
-
-    <div class="page-title">Manage <span>Sessions</span></div>
-    <div class="page-sub">Create, update and manage mentorship sessions.</div>
-
-    <!-- Create Session -->
-    <div class="card">
-      <div class="section-title">Create Session</div>
-
-      <form action="/admin/sessions/create" method="post">
-        <div class="form-grid">
-
-          <select class="form-select" name="program_id" required>
-            <option value="">Select Program</option>
-            {% for p in programs %}
-            <option value="{{ p.program_id }}">{{ p.program_id }} - {{ p.title }}</option>
-            {% endfor %}
-          </select>
-
-          <select class="form-select" name="mentor_id" required>
-            <option value="">Select Mentor</option>
-            {% for mentor, mentor_user in mentors %}
-            <option value="{{ mentor.mentor_profile_id }}">
-              {{ mentor.mentor_profile_id }} - {{ mentor_user.full_name }}
-            </option>
-            {% endfor %}
-          </select>
-
-          <input class="form-input full" type="text" name="title" placeholder="Session Title" required>
-
-          <textarea class="full" name="description" placeholder="Description"></textarea>
-
-          <select class="form-select" name="session_type" required>
-            <option value="">Session Type</option>
-            <option value="live">Live</option>
-            <option value="recorded">Recorded</option>
-          </select>
-
-          <input class="form-input" type="datetime-local" name="scheduled_at">
-
-          <input class="form-input" type="url" name="meeting_link" placeholder="Meeting Link">
-
-          <input class="form-input" type="url" name="video_url" placeholder="Video URL">
-
-          <input class="form-input" type="number" name="duration_minutes" placeholder="Duration (minutes)">
-        </div>
-
-        <br>
-        <button class="submit-btn" type="submit">Create Session</button>
-      </form>
+    <div class="page-header">
+      <div class="page-title">Manage <em>Sessions</em></div>
+      <div class="page-sub">Create, update and manage mentorship sessions across all programs.</div>
     </div>
 
-    <!-- All Sessions -->
-    <div class="card">
-      <div class="section-title">All Sessions</div>
-
-      {% for s in sessions %}
-      <div class="session-card">
-
-        <div class="session-title">{{ s.title }}</div>
-        <div class="session-meta">
-          ID: {{ s.session_id }} • {{ s.session_type|capitalize }} • {{ s.status|capitalize }}
+    <!-- CREATE FORM -->
+    <div class="form-card">
+      <div class="form-card-header" onclick="toggleForm()">
+        <div class="form-card-header-left">
+          <div class="form-card-icon">+</div>
+          <div class="form-card-title">Create New Session</div>
         </div>
-
-        <form action="/admin/sessions/update/{{ s.session_id }}" method="post">
-          <div class="form-grid">
-            <input class="form-input" type="text" name="title" value="{{ s.title }}">
-
-            <select class="form-select" name="status">
-              <option value="scheduled" {% if s.status == 'scheduled' %}selected{% endif %}>Scheduled</option>
-              <option value="completed" {% if s.status == 'completed' %}selected{% endif %}>Completed</option>
-              <option value="cancelled" {% if s.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
-            </select>
-
-            <input class="form-input" type="url" name="meeting_link" value="{{ s.meeting_link }}">
-
-            <input class="form-input" type="url" name="video_url" value="{{ s.video_url }}">
-          </div>
-
-          <div class="action-row">
-            <button class="submit-btn" type="submit">Update</button>
-          </div>
-        </form>
-
-        <form action="/admin/sessions/delete/{{ s.session_id }}" method="post" style="margin-top:10px;">
-          <button class="delete-btn" type="submit"
-            onclick="return confirm('Delete this session?')">
-            Delete
-          </button>
-        </form>
-
+        <span class="toggle-icon" id="toggleIcon">▼</span>
       </div>
-      {% else %}
-      <div class="empty-state">
-        No sessions created yet.
+      <div class="form-card-body" id="createForm">
+        <form action="/admin/sessions/create" method="post">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Program *</label>
+              <select class="form-select" name="program_id" required>
+                <option value="">Select Program</option>
+                {% for p in programs %}
+                <option value="{{ p.program_id }}">{{ p.program_id }} — {{ p.title }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mentor *</label>
+              <select class="form-select" name="mentor_id" required>
+                <option value="">Select Mentor</option>
+                {% for mentor, mentor_user in mentors %}
+                <option value="{{ mentor.mentor_profile_id }}">{{ mentor.mentor_profile_id }} — {{ mentor_user.full_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Session Title *</label>
+              <input class="form-input" type="text" name="title" placeholder="e.g. Introduction to Scrum" required/>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Description</label>
+              <textarea class="form-textarea" name="description" placeholder="Session agenda or notes..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Session Type *</label>
+              <select class="form-select" name="session_type" id="sessionType" onchange="toggleFields()" required>
+                <option value="">Select type</option>
+                <option value="live">🔴 Live Session</option>
+                <option value="recorded">🎬 Recorded Video</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Duration (minutes)</label>
+              <input class="form-input" type="number" name="duration_minutes" placeholder="e.g. 60"/>
+            </div>
+            <div class="form-group conditional-field" id="liveFields">
+              <label class="form-label">Scheduled Date & Time</label>
+              <input class="form-input" type="datetime-local" name="scheduled_at"/>
+            </div>
+            <div class="form-group conditional-field" id="liveFields2">
+              <label class="form-label">Meeting Link</label>
+              <input class="form-input" type="url" name="meeting_link" placeholder="https://meet.google.com/..."/>
+            </div>
+            <div class="form-group conditional-field" id="recordedFields">
+              <label class="form-label">Video URL (YouTube)</label>
+              <input class="form-input" type="url" name="video_url" placeholder="https://youtube.com/..."/>
+            </div>
+          </div>
+          <button class="submit-btn" type="submit">Create Session →</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filters">
+      <button class="filter-btn active" onclick="filterSessions(this,'all')">All ({{ sessions|length }})</button>
+      <button class="filter-btn" onclick="filterSessions(this,'live')">🔴 Live</button>
+      <button class="filter-btn" onclick="filterSessions(this,'recorded')">🎬 Recorded</button>
+    </div>
+
+    <!-- SESSIONS GRID -->
+    {% if sessions %}
+    <div class="sessions-grid" id="sessionsGrid">
+      {% for s in sessions %}
+      <div class="session-card" data-type="{{ s.session_type }}">
+        <div class="card-thumbnail {{ 'thumb-live' if s.session_type == 'live' else 'thumb-recorded' }}">
+          <span class="card-thumbnail-icon">{{ '🔴' if s.session_type == 'live' else '🎬' }}</span>
+          <span class="card-type-tag {{ 'tag-live' if s.session_type == 'live' else 'tag-recorded' }}">
+            <span class="tag-dot"></span>{{ 'LIVE' if s.session_type == 'live' else 'RECORDED' }}
+          </span>
+          <span class="card-status-tag status-{{ s.status }}">{{ s.status.upper() }}</span>
+        </div>
+        <div class="card-body">
+          <div class="card-program">📂 {{ s.program_id }}</div>
+          <div class="card-title">{{ s.title }}</div>
+          <div class="card-mentor">👤 {{ s.mentor_id }}</div>
+          <div class="card-stats">
+            <div class="card-stat">📅 {{ s.scheduled_at.strftime('%d %b %Y, %I:%M %p') if s.scheduled_at else 'Anytime' }}</div>
+            {% if s.duration_minutes %}<div class="card-stat">⏱ {{ s.duration_minutes }} min</div>{% endif %}
+          </div>
+          <div class="card-actions">
+            <a class="btn-sm btn-attend" href="/attendance/{{ s.session_id }}">✅ Attendance</a>
+            <button class="btn-sm btn-edit" onclick="openEdit('{{ s.session_id }}','{{ s.title }}','{{ s.status }}','{{ s.meeting_link or '' }}','{{ s.video_url or '' }}','{{ s.duration_minutes or '' }}')">✏ Edit</button>
+            <form action="/admin/sessions/delete/{{ s.session_id }}" method="post" style="display:inline;" onsubmit="return confirm('Delete this session?')">
+              <button class="btn-sm btn-delete" type="submit">🗑 Delete</button>
+            </form>
+          </div>
+        </div>
       </div>
       {% endfor %}
-
     </div>
-
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">🎯</div>
+      <div class="empty-title">No sessions yet</div>
+      <div>Create your first session using the form above.</div>
+    </div>
+    {% endif %}
   </div>
 </div>
 
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Edit Session</div>
+      <button class="modal-close" onclick="closeEdit()">✕</button>
+    </div>
+    <form id="editForm" method="post">
+      <div class="form-grid">
+        <div class="form-group full"><label class="form-label">Session Title</label><input class="form-input" type="text" name="title" id="edit_title"/></div>
+        <div class="form-group"><label class="form-label">Meeting Link</label><input class="form-input" type="url" name="meeting_link" id="edit_meeting"/></div>
+        <div class="form-group"><label class="form-label">Video URL</label><input class="form-input" type="url" name="video_url" id="edit_video"/></div>
+        <div class="form-group"><label class="form-label">Duration (minutes)</label><input class="form-input" type="number" name="duration_minutes" id="edit_duration"/></div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" name="status" id="edit_status">
+            <option value="scheduled">Scheduled</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+      </div>
+      <button class="modal-submit" type="submit">Update Session</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  function toggleForm() {
+    const body = document.getElementById('createForm');
+    const icon = document.getElementById('toggleIcon');
+    body.classList.toggle('open');
+    icon.classList.toggle('open');
+  }
+  function toggleFields() {
+    const type = document.getElementById('sessionType').value;
+    document.getElementById('liveFields').style.display = type === 'live' ? 'flex' : 'none';
+    document.getElementById('liveFields2').style.display = type === 'live' ? 'flex' : 'none';
+    document.getElementById('recordedFields').style.display = type === 'recorded' ? 'flex' : 'none';
+  }
+  function filterSessions(btn, type) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.session-card').forEach(card => {
+      card.style.display = (type === 'all' || card.dataset.type === type) ? '' : 'none';
+    });
+  }
+  function openEdit(id, title, status, meeting, video, duration) {
+    document.getElementById('editForm').action = '/admin/sessions/update/' + id;
+    document.getElementById('edit_title').value = title;
+    document.getElementById('edit_status').value = status;
+    document.getElementById('edit_meeting').value = meeting;
+    document.getElementById('edit_video').value = video;
+    document.getElementById('edit_duration').value = duration;
+    document.getElementById('editModal').classList.add('open');
+  }
+  function closeEdit() { document.getElementById('editModal').classList.remove('open'); }
+  document.getElementById('editModal').addEventListener('click', function(e) { if (e.target === this) closeEdit(); });
+</script>
 </body>
 </html>

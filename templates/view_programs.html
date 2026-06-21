@@ -4,161 +4,187 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Programs — AgileMentor</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --navy:#0F2645;--blue:#2563EB;--teal:#0EA5E9;--white:#FFFFFF;
-      --offwhite:#F8FAFF;--gray:#E8EFF8;--muted:#64748B;--text:#1E293B;
+      --navy:#0A1628;--navy-2:#111E35;--blue:#2563EB;--teal:#0EA5E9;
+      --white:#FFFFFF;--surface:#F4F7FF;--border:#E2E8F4;--muted:#64748B;--text:#0F172A;
     }
-    body { font-family:'Inter',sans-serif; background:var(--offwhite); min-height:100vh; display:flex; }
+    body { font-family:'Inter',sans-serif; background:var(--surface); min-height:100vh; display:flex; color:var(--text); }
 
-    /* SIDEBAR */
-    .sidebar { width:240px; background:var(--navy); min-height:100vh; display:flex; flex-direction:column; position:fixed; left:0; top:0; bottom:0; z-index:100; }
-    .sidebar-logo { padding:24px 20px; border-bottom:1px solid rgba(255,255,255,0.08); }
+    /* ── SIDEBAR ── */
+    .sidebar { width:256px; background:var(--navy); min-height:100vh; display:flex; flex-direction:column; position:fixed; left:0; top:0; bottom:0; z-index:100; }
+    .sidebar-logo { padding:24px 20px 20px; border-bottom:1px solid rgba(255,255,255,0.06); }
     .logo-wrap { display:flex; align-items:center; gap:10px; text-decoration:none; }
-    .logo-icon { width:32px; height:32px; border-radius:8px; background:linear-gradient(135deg,var(--blue),var(--teal)); display:flex; align-items:center; justify-content:center; }
-    .logo-icon svg { width:16px; height:16px; fill:none; stroke:white; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
-    .logo-text { font-size:1.05rem; font-weight:800; color:white; }
-    .logo-text span { color:#60A5FA; }
-    .sidebar-user { padding:20px; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; gap:12px; }
-    .user-avatar { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,var(--blue),var(--teal)); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem; color:white; flex-shrink:0; }
-    .user-name { font-size:0.85rem; font-weight:700; color:white; }
-    .user-role { font-size:0.72rem; color:#64748B; }
-    .sidebar-nav { flex:1; padding:16px 12px; }
-    .nav-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:9px; text-decoration:none; color:#94A3B8; font-size:0.85rem; font-weight:500; transition:all 0.2s; margin-bottom:2px; }
-    .nav-item:hover { background:rgba(255,255,255,0.06); color:white; }
-    .nav-item.active { background:rgba(37,99,235,0.2); color:#60A5FA; font-weight:600; }
-    .nav-item svg { width:16px; height:16px; flex-shrink:0; }
-    .sidebar-footer { padding:16px 12px; border-top:1px solid rgba(255,255,255,0.08); }
-    .logout-btn { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:9px; text-decoration:none; color:#94A3B8; font-size:0.85rem; }
-    .logout-btn:hover { background:rgba(239,68,68,0.1); color:#F87171; }
-    .logout-btn svg { width:16px; height:16px; }
+    .logo-mark { width:34px; height:34px; border-radius:9px; background:linear-gradient(135deg,var(--blue),var(--teal)); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .logo-mark svg { width:16px; height:16px; fill:none; stroke:white; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+    .logo-name { font-family:'Space Grotesk',sans-serif; font-size:1.05rem; font-weight:700; color:white; }
+    .logo-name em { color:var(--teal); font-style:normal; }
+    .sidebar-user { padding:16px 20px; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; gap:12px; }
+    .u-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--blue),var(--teal)); display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:0.9rem; color:white; flex-shrink:0; }
+    .u-name { font-size:0.83rem; font-weight:600; color:white; }
+    .u-role { font-size:0.7rem; color:#475569; margin-top:1px; }
+    .sidebar-nav { flex:1; padding:12px 10px; }
+    .nav-label { font-size:0.64rem; font-weight:700; color:#334155; letter-spacing:1px; text-transform:uppercase; padding:0 10px; margin:16px 0 6px; }
+    .nav-item { display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:8px; text-decoration:none; color:#64748B; font-size:0.83rem; font-weight:500; transition:all 0.15s; margin-bottom:1px; }
+    .nav-item:hover { background:rgba(255,255,255,0.05); color:#CBD5E1; }
+    .nav-item.active { background:rgba(37,99,235,0.18); color:#93C5FD; font-weight:600; }
+    .nav-item svg { width:15px; height:15px; flex-shrink:0; }
+    .sidebar-footer { padding:12px 10px; border-top:1px solid rgba(255,255,255,0.06); }
+    .logout-btn { display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:8px; text-decoration:none; color:#475569; font-size:0.83rem; transition:all 0.15s; }
+    .logout-btn:hover { background:rgba(239,68,68,0.1); color:#FCA5A5; }
+    .logout-btn svg { width:15px; height:15px; }
 
-    /* MAIN */
-    .main { margin-left:240px; flex:1; display:flex; flex-direction:column; }
-    .topbar { background:var(--white); border-bottom:1px solid var(--gray); padding:0 32px; height:64px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
-    .topbar-title { font-size:1.1rem; font-weight:700; color:var(--navy); }
-    .topbar-badge { background:var(--gray); color:var(--muted); font-size:0.78rem; font-weight:600; padding:5px 12px; border-radius:20px; }
-    .content { padding:32px; }
+    /* ── MAIN ── */
+    .main { margin-left:256px; flex:1; display:flex; flex-direction:column; }
+    .topbar { background:var(--white); border-bottom:1px solid var(--border); padding:0 32px; height:60px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+    .topbar-left { display:flex; align-items:center; gap:10px; }
+    .topbar-title { font-family:'Space Grotesk',sans-serif; font-size:1rem; font-weight:700; color:var(--navy); }
+    .breadcrumb { font-size:0.78rem; color:var(--muted); }
+    .role-chip { background:var(--surface); color:var(--muted); font-size:0.72rem; font-weight:700; padding:4px 12px; border-radius:20px; border:1px solid var(--border); }
+    .content { padding:28px 32px; }
 
-    /* HEADER */
-    .page-header { margin-bottom:28px; }
-    .page-title { font-size:1.7rem; font-weight:800; color:var(--navy); letter-spacing:-0.5px; margin-bottom:6px; }
-    .page-title span { color:var(--blue); }
-    .page-sub { font-size:0.9rem; color:var(--muted); }
+    /* ── PAGE HEADER ── */
+    .page-header { margin-bottom:24px; }
+    .page-title { font-family:'Space Grotesk',sans-serif; font-size:1.7rem; font-weight:700; color:var(--navy); letter-spacing:-0.3px; margin-bottom:5px; }
+    .page-title em { color:var(--blue); font-style:normal; }
+    .page-sub { font-size:0.88rem; color:var(--muted); }
 
-    /* FILTERS */
-    .filters { display:flex; gap:10px; margin-bottom:28px; flex-wrap:wrap; }
-    .filter-btn { padding:7px 18px; border-radius:20px; border:1.5px solid var(--gray); background:var(--white); color:var(--muted); font-size:0.82rem; font-weight:600; cursor:pointer; transition:all 0.2s; font-family:'Inter',sans-serif; }
+    /* ── FILTERS ── */
+    .filters { display:flex; gap:8px; margin-bottom:28px; flex-wrap:wrap; }
+    .filter-btn { padding:7px 18px; border-radius:20px; border:1.5px solid var(--border); background:var(--white); color:var(--muted); font-size:0.8rem; font-weight:600; cursor:pointer; transition:all 0.2s; font-family:'Inter',sans-serif; }
     .filter-btn:hover { border-color:var(--blue); color:var(--blue); }
     .filter-btn.active { background:var(--blue); border-color:var(--blue); color:white; }
 
-    /* PROGRAMS GRID */
-    .programs-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
-    .program-card { background:var(--white); border-radius:16px; border:1px solid var(--gray); overflow:hidden; transition:transform 0.2s, box-shadow 0.2s; }
-    .program-card:hover { transform:translateY(-4px); box-shadow:0 16px 40px rgba(15,38,69,0.1); }
-    .program-card-top { height:130px; display:flex; align-items:center; justify-content:center; font-size:3rem; position:relative; }
-    .program-tag { position:absolute; top:12px; left:12px; font-size:0.7rem; font-weight:700; letter-spacing:0.5px; padding:4px 10px; border-radius:6px; }
-    .tag-active { background:#DCFCE7; color:#15803D; }
-    .tag-draft { background:#FEF3C7; color:#92400E; }
-    .tag-completed { background:#E0E7FF; color:#3730A3; }
-    .program-card-body { padding:18px 20px; }
-    .program-card-title { font-size:1rem; font-weight:700; color:var(--navy); margin-bottom:6px; line-height:1.4; }
-    .program-card-desc { font-size:0.8rem; color:var(--muted); line-height:1.6; margin-bottom:14px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-    .program-meta { display:flex; gap:14px; margin-bottom:14px; }
-    .meta-item { display:flex; align-items:center; gap:5px; font-size:0.78rem; color:var(--muted); font-weight:500; }
-    .program-card-footer { padding-top:14px; border-top:1px solid var(--gray); display:flex; justify-content:space-between; align-items:center; }
-    .program-id { font-size:0.72rem; color:var(--muted); font-weight:600; background:var(--gray); padding:3px 8px; border-radius:6px; }
-    .enroll-btn { padding:8px 18px; border-radius:8px; border:none; background:linear-gradient(135deg,var(--blue),var(--teal)); color:white; font-size:0.82rem; font-weight:700; cursor:pointer; text-decoration:none; transition:opacity 0.2s; display:inline-block; }
-    .enroll-btn:hover { opacity:0.85; }
-    .enrolled-badge { padding:8px 14px; border-radius:8px; background:#DCFCE7; color:#15803D; font-size:0.82rem; font-weight:700; }
+    /* ── PROGRAMS GRID ── */
+    .programs-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
 
-    /* EMPTY */
+    /* ── PROGRAM CARD ── */
+    .program-card { background:var(--white); border-radius:16px; border:1px solid var(--border); overflow:hidden; transition:transform 0.2s, box-shadow 0.2s; display:flex; flex-direction:column; }
+    .program-card:hover { transform:translateY(-5px); box-shadow:0 20px 48px rgba(10,22,40,0.12); }
+
+    .card-thumbnail { height:160px; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+    .card-thumbnail-emoji { font-size:3.5rem; z-index:1; }
+    .card-thumbnail::after { content:''; position:absolute; inset:0; background:linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.15)); }
+
+    .thumb-1 { background:linear-gradient(135deg,#1e3a8a,#3b82f6); }
+    .thumb-2 { background:linear-gradient(135deg,#065f46,#10b981); }
+    .thumb-3 { background:linear-gradient(135deg,#7c2d12,#f97316); }
+    .thumb-4 { background:linear-gradient(135deg,#4c1d95,#8b5cf6); }
+    .thumb-5 { background:linear-gradient(135deg,#0c4a6e,#0ea5e9); }
+    .thumb-6 { background:linear-gradient(135deg,#881337,#f43f5e); }
+
+    .card-tag { position:absolute; top:12px; left:12px; z-index:2; font-size:0.68rem; font-weight:700; letter-spacing:0.5px; padding:4px 10px; border-radius:6px; display:flex; align-items:center; gap:5px; }
+    .tag-active { background:#16a34a; color:white; }
+    .tag-draft { background:#d97706; color:white; }
+    .tag-completed { background:#4338ca; color:white; }
+    .tag-dot { width:5px; height:5px; border-radius:50%; background:white; display:inline-block; }
+
+    .card-body { padding:16px 18px; flex:1; display:flex; flex-direction:column; }
+
+    .card-meta-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+    .card-category { font-size:0.72rem; font-weight:700; color:var(--blue); text-transform:uppercase; letter-spacing:0.5px; }
+    .card-duration { font-size:0.72rem; color:var(--muted); font-weight:500; background:var(--surface); padding:3px 8px; border-radius:6px; }
+
+    .card-title { font-family:'Space Grotesk',sans-serif; font-size:0.98rem; font-weight:700; color:var(--navy); margin-bottom:8px; line-height:1.4; }
+    .card-desc { font-size:0.78rem; color:var(--muted); line-height:1.6; margin-bottom:14px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; flex:1; }
+
+    .card-stats { display:flex; gap:16px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--border); }
+    .card-stat { display:flex; align-items:center; gap:5px; font-size:0.75rem; color:var(--muted); font-weight:500; }
+
+    .card-footer { display:flex; align-items:center; justify-content:space-between; }
+    .card-id { font-size:0.7rem; color:var(--muted); font-weight:600; }
+
+    .enroll-btn { padding:9px 20px; border-radius:9px; border:none; background:linear-gradient(135deg,var(--blue),var(--teal)); color:white; font-size:0.8rem; font-weight:700; cursor:pointer; text-decoration:none; transition:opacity 0.2s; display:inline-block; font-family:'Inter',sans-serif; }
+    .enroll-btn:hover { opacity:0.88; }
+    .enrolled-badge { padding:9px 16px; border-radius:9px; background:#DCFCE7; color:#15803D; font-size:0.8rem; font-weight:700; display:flex; align-items:center; gap:5px; }
+
+    /* ── EMPTY ── */
     .empty-state { text-align:center; padding:80px 20px; color:var(--muted); }
     .empty-icon { font-size:3rem; margin-bottom:16px; }
-    .empty-title { font-size:1.1rem; font-weight:700; color:var(--navy); margin-bottom:8px; }
-    .empty-sub { font-size:0.88rem; }
-
-    /* BG VARIANTS */
-    .bg-1 { background:linear-gradient(135deg,#EEF2FF,#C7D2FE); }
-    .bg-2 { background:linear-gradient(135deg,#DCFCE7,#BBF7D0); }
-    .bg-3 { background:linear-gradient(135deg,#FFF7ED,#FED7AA); }
-    .bg-4 { background:linear-gradient(135deg,#F0F9FF,#BAE6FD); }
-    .bg-5 { background:linear-gradient(135deg,#FDF4FF,#E9D5FF); }
-    .bg-6 { background:linear-gradient(135deg,#FFF1F2,#FECDD3); }
-    .emojis { font-size:2.4rem; }
+    .empty-title { font-family:'Space Grotesk',sans-serif; font-size:1.1rem; font-weight:700; color:var(--navy); margin-bottom:8px; }
   </style>
 </head>
 <body>
 
 <aside class="sidebar">
   <div class="sidebar-logo">
-    <a class="logo-wrap" href="/"><div class="logo-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><span class="logo-text">Agile<span>Mentor</span></span></a>
+    <a class="logo-wrap" href="/"><div class="logo-mark"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><span class="logo-name">Agile<em>Mentor</em></span></a>
   </div>
   <div class="sidebar-user">
-    <div class="user-avatar">{{ user.full_name[0].upper() }}</div>
-    <div><div class="user-name">{{ user.full_name }}</div><div class="user-role">Mentee</div></div>
+    <div class="u-avatar">{{ user.full_name[0].upper() }}</div>
+    <div><div class="u-name">{{ user.full_name }}</div><div class="u-role">MENTEE</div></div>
   </div>
   <nav class="sidebar-nav">
+    <div class="nav-label">Overview</div>
     <a class="nav-item" href="/mentee-dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+    <div class="nav-label">Learning</div>
     <a class="nav-item active" href="/programs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Browse Programs</a>
     <a class="nav-item" href="/my-enrollments"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>My Enrollments</a>
     <a class="nav-item" href="/my-sessions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>My Sessions</a>
     <a class="nav-item" href="/my-attendance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>My Attendance</a>
   </nav>
   <div class="sidebar-footer">
-    <a class="logout-btn" href="/logout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Logout</a>
+    <a class="logout-btn" href="/logout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign out</a>
   </div>
 </aside>
 
 <div class="main">
   <div class="topbar">
-    <div class="topbar-title">Browse Programs</div>
-    <span class="topbar-badge">Mentee</span>
+    <div class="topbar-left">
+      <div class="topbar-title">Browse Programs</div>
+      <span class="breadcrumb">/ All Programs</span>
+    </div>
+    <span class="role-chip">Mentee</span>
   </div>
-  <div class="content">
 
+  <div class="content">
     <div class="page-header">
-      <div class="page-title">Available <span>Programs</span></div>
-      <div class="page-sub">Enroll in a program to start your Agile learning journey.</div>
+      <div class="page-title">Explore <em>Programs</em></div>
+      <div class="page-sub">Enroll in a program to kickstart your Agile learning journey.</div>
     </div>
 
     <div class="filters">
-      <button class="filter-btn active">All</button>
-      <button class="filter-btn">Agile</button>
-      <button class="filter-btn">Product</button>
-      <button class="filter-btn">DevOps</button>
-      <button class="filter-btn">Leadership</button>
+      <button class="filter-btn active" onclick="filterCards(this, 'all')">All</button>
+      <button class="filter-btn" onclick="filterCards(this, 'Agile')">Agile</button>
+      <button class="filter-btn" onclick="filterCards(this, 'Product')">Product</button>
+      <button class="filter-btn" onclick="filterCards(this, 'DevOps')">DevOps</button>
+      <button class="filter-btn" onclick="filterCards(this, 'Leadership')">Leadership</button>
     </div>
 
     {% if programs %}
-    <div class="programs-grid">
-      {% set bg_classes = ['bg-1','bg-2','bg-3','bg-4','bg-5','bg-6'] %}
-      {% set emojis = ['🚀','📋','⚡','🎯','💡','🏆'] %}
+    {% set thumbs = ['thumb-1','thumb-2','thumb-3','thumb-4','thumb-5','thumb-6'] %}
+    {% set emojis = ['🚀','📋','⚡','🎯','💡','🏆'] %}
+    <div class="programs-grid" id="programsGrid">
       {% for program in programs %}
-      <div class="program-card">
-        <div class="program-card-top {{ bg_classes[loop.index0 % 6] }}">
-          <span class="emojis">{{ emojis[loop.index0 % 6] }}</span>
-          <span class="program-tag tag-{{ program.status }}">{{ program.status.upper() }}</span>
+      <div class="program-card" data-category="{{ program.category or '' }}">
+        <div class="card-thumbnail {{ thumbs[loop.index0 % 6] }}">
+          <span class="card-thumbnail-emoji">{{ emojis[loop.index0 % 6] }}</span>
+          <span class="card-tag tag-{{ program.status }}">
+            <span class="tag-dot"></span>
+            {{ program.status.upper() }}
+          </span>
         </div>
-        <div class="program-card-body">
-          <div class="program-card-title">{{ program.title }}</div>
-          {% if program.description %}
-          <div class="program-card-desc">{{ program.description }}</div>
-          {% endif %}
-          <div class="program-meta">
+        <div class="card-body">
+          <div class="card-meta-row">
+            <span class="card-category">{{ program.category or 'General' }}</span>
             {% if program.duration_weeks %}
-            <div class="meta-item">📅 {{ program.duration_weeks }} weeks</div>
-            {% endif %}
-            {% if program.category %}
-            <div class="meta-item">🏷 {{ program.category }}</div>
+            <span class="card-duration">📅 {{ program.duration_weeks }} weeks</span>
             {% endif %}
           </div>
-          <div class="program-card-footer">
-            <span class="program-id">{{ program.program_id }}</span>
+          <div class="card-title">{{ program.title }}</div>
+          <div class="card-desc">{{ program.description or 'No description provided.' }}</div>
+          <div class="card-stats">
+            <div class="card-stat">
+              {% if program.start_date %}📅 Starts {{ program.start_date }}{% else %}📅 Flexible start{% endif %}
+            </div>
+            <div class="card-stat">🆔 {{ program.program_id }}</div>
+          </div>
+          <div class="card-footer">
+            <span class="card-id">{{ program.program_id }}</span>
             <form action="/enroll/{{ program.program_id }}" method="post" style="display:inline;">
-              <button class="enroll-btn" type="submit">Enroll Now</button>
+              <button class="enroll-btn" type="submit">Enroll Now →</button>
             </form>
           </div>
         </div>
@@ -170,12 +196,21 @@
     <div class="empty-state">
       <div class="empty-icon">📚</div>
       <div class="empty-title">No programs available yet</div>
-      <div class="empty-sub">Check back soon — new programs are being added regularly.</div>
+      <div>Check back soon — new programs are being added regularly.</div>
     </div>
     {% endif %}
-
   </div>
 </div>
 
+<script>
+  function filterCards(btn, category) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.program-card').forEach(card => {
+      const cat = card.dataset.category || '';
+      card.style.display = (category === 'all' || cat.toLowerCase().includes(category.toLowerCase())) ? '' : 'none';
+    });
+  }
+</script>
 </body>
 </html>

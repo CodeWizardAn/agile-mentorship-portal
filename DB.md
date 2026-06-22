@@ -246,6 +246,21 @@ CREATE TABLE "PasswordResetToken" (
     created_at  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     expires_at  TIMESTAMP       NOT NULL
 );
+
+CREATE TABLE "Resource" (
+    resource_id     VARCHAR(10)     PRIMARY KEY,         -- e.g. RES0001
+    program_id      VARCHAR(10)     REFERENCES "Programs"(program_id),  -- NULL = global
+    uploaded_by     VARCHAR(10)     NOT NULL REFERENCES "User"(user_id),
+    uploaded_by_role VARCHAR(10)    NOT NULL CHECK (uploaded_by_role IN ('admin', 'mentor')),
+    title           VARCHAR(200)    NOT NULL,
+    description     TEXT,
+    resource_type   VARCHAR(10)     NOT NULL CHECK (resource_type IN ('file', 'link', 'text')),
+    file_url        VARCHAR(255),    -- used when resource_type = 'file'
+    file_type       VARCHAR(10),     -- pdf, docx, jpg, mp4, etc. used when resource_type = 'file'
+    link_url         VARCHAR(255),    -- used when resource_type = 'link'
+    text_content    TEXT,            -- used when resource_type = 'text'
+    created_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
+);
 ---
 
 ## Admin Seed User

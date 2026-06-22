@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Resources — AgileMentor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root { --navy:#0A1628;--blue:#2563EB;--teal:#0EA5E9;--white:#FFFFFF;--surface:#F4F7FF;--border:#E2E8F4;--muted:#64748B;--text:#0F172A;--amber:#F59E0B; }
+    body { font-family:'Inter',sans-serif; background:var(--surface); min-height:100vh; display:flex; color:var(--text); }
+    .sidebar { width:256px; background:var(--navy); min-height:100vh; display:flex; flex-direction:column; position:fixed; left:0; top:0; bottom:0; z-index:100; }
+    .sidebar-logo { padding:24px 20px 20px; border-bottom:1px solid rgba(255,255,255,0.06); }
+    .logo-wrap { display:flex; align-items:center; gap:10px; text-decoration:none; }
+    .logo-mark { width:34px; height:34px; border-radius:9px; background:linear-gradient(135deg,var(--blue),var(--teal)); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .logo-mark svg { width:16px; height:16px; fill:none; stroke:white; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+    .logo-name { font-family:'Space Grotesk',sans-serif; font-size:1.05rem; font-weight:700; color:white; }
+    .logo-name em { color:var(--teal); font-style:normal; }
+    .sidebar-user { padding:16px 20px; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; gap:12px; }
+    .u-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--amber),#EF4444); display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:0.9rem; color:white; flex-shrink:0; }
+    .u-name { font-size:0.83rem; font-weight:600; color:white; }
+    .u-role { font-size:0.7rem; color:#475569; margin-top:1px; }
+    .sidebar-nav { flex:1; padding:12px 10px; }
+    .nav-label { font-size:0.64rem; font-weight:700; color:#334155; letter-spacing:1px; text-transform:uppercase; padding:0 10px; margin:16px 0 6px; }
+    .nav-item { display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:8px; text-decoration:none; color:#64748B; font-size:0.83rem; font-weight:500; transition:all 0.15s; margin-bottom:1px; }
+    .nav-item:hover { background:rgba(255,255,255,0.05); color:#CBD5E1; }
+    .nav-item.active { background:rgba(37,99,235,0.18); color:#93C5FD; font-weight:600; }
+    .nav-item svg { width:15px; height:15px; flex-shrink:0; }
+    .sidebar-footer { padding:12px 10px; border-top:1px solid rgba(255,255,255,0.06); }
+    .logout-btn { display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:8px; text-decoration:none; color:#475569; font-size:0.83rem; transition:all 0.15s; }
+    .logout-btn:hover { background:rgba(239,68,68,0.1); color:#FCA5A5; }
+    .logout-btn svg { width:15px; height:15px; }
+    .main { margin-left:256px; flex:1; display:flex; flex-direction:column; }
+    .topbar { background:var(--white); border-bottom:1px solid var(--border); padding:0 32px; height:60px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+    .topbar-left { display:flex; align-items:center; gap:10px; }
+    .topbar-title { font-family:'Space Grotesk',sans-serif; font-size:1rem; font-weight:700; color:var(--navy); }
+    .breadcrumb { font-size:0.78rem; color:var(--muted); }
+    .role-chip { background:#FEF3C7; color:#92400E; font-size:0.72rem; font-weight:700; padding:4px 12px; border-radius:20px; }
+    .content { padding:28px 32px; }
+    .page-header { margin-bottom:24px; }
+    .page-title { font-family:'Space Grotesk',sans-serif; font-size:1.7rem; font-weight:700; color:var(--navy); letter-spacing:-0.3px; margin-bottom:5px; }
+    .page-title em { color:var(--blue); font-style:normal; }
+    .page-sub { font-size:0.88rem; color:var(--muted); }
+
+    /* ── UPLOAD FORM ── */
+    .form-card { background:var(--white); border-radius:16px; border:1px solid var(--border); margin-bottom:28px; overflow:hidden; }
+    .form-card-header { padding:16px 22px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; cursor:pointer; transition:background 0.15s; }
+    .form-card-header:hover { background:var(--surface); }
+    .form-card-header-left { display:flex; align-items:center; gap:10px; }
+    .form-card-icon { width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg,var(--blue),var(--teal)); display:flex; align-items:center; justify-content:center; color:white; font-size:1rem; }
+    .form-card-title { font-family:'Space Grotesk',sans-serif; font-size:0.92rem; font-weight:700; color:var(--navy); }
+    .toggle-icon { font-size:0.85rem; color:var(--muted); transition:transform 0.2s; }
+    .toggle-icon.open { transform:rotate(180deg); }
+    .form-card-body { padding:24px; display:none; }
+    .form-card-body.open { display:block; }
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .form-group { display:flex; flex-direction:column; gap:5px; }
+    .form-group.full { grid-column:1/-1; }
+    .form-label { font-size:0.78rem; font-weight:600; color:var(--text); }
+    .form-input, .form-select, .form-textarea { padding:10px 13px; border-radius:9px; border:1.5px solid var(--border); background:var(--surface); font-size:0.85rem; font-family:'Inter',sans-serif; color:var(--text); outline:none; transition:border-color 0.15s; width:100%; }
+    .form-input:focus, .form-select:focus { border-color:var(--blue); background:var(--white); }
+    .form-textarea { resize:vertical; min-height:70px; }
+    .file-input-wrap { border:2px dashed var(--border); border-radius:10px; padding:20px; text-align:center; cursor:pointer; transition:border-color 0.2s; background:var(--surface); }
+    .file-input-wrap:hover { border-color:var(--blue); }
+    .file-input-wrap input { display:none; }
+    .file-input-label { font-size:0.85rem; color:var(--muted); cursor:pointer; }
+    .file-input-label strong { color:var(--blue); }
+    .file-name { font-size:0.8rem; color:var(--text); margin-top:6px; font-weight:600; display:none; }
+    .submit-btn { padding:10px 24px; border-radius:9px; border:none; background:linear-gradient(135deg,var(--blue),var(--teal)); color:white; font-size:0.85rem; font-weight:700; cursor:pointer; margin-top:10px; font-family:'Inter',sans-serif; }
+    .submit-btn:hover { opacity:0.9; }
+
+    /* ── FILTERS ── */
+    .filters { display:flex; gap:8px; margin-bottom:22px; flex-wrap:wrap; }
+    .filter-btn { padding:7px 18px; border-radius:20px; border:1.5px solid var(--border); background:var(--white); color:var(--muted); font-size:0.8rem; font-weight:600; cursor:pointer; transition:all 0.2s; font-family:'Inter',sans-serif; }
+    .filter-btn:hover { border-color:var(--blue); color:var(--blue); }
+    .filter-btn.active { background:var(--blue); border-color:var(--blue); color:white; }
+
+    /* ── RESOURCES GRID ── */
+    .resources-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+    .resource-card { background:var(--white); border-radius:14px; border:1px solid var(--border); overflow:hidden; transition:transform 0.2s,box-shadow 0.2s; display:flex; flex-direction:column; }
+    .resource-card:hover { transform:translateY(-3px); box-shadow:0 10px 28px rgba(10,22,40,0.08); }
+
+    .card-thumb { height:100px; display:flex; align-items:center; justify-content:center; font-size:2.8rem; position:relative; }
+    .thumb-pdf { background:linear-gradient(135deg,#7f1d1d,#dc2626); }
+    .thumb-ppt { background:linear-gradient(135deg,#7c2d12,#f97316); }
+    .thumb-doc { background:linear-gradient(135deg,#1e3a8a,#3b82f6); }
+    .thumb-excel { background:linear-gradient(135deg,#14532d,#22c55e); }
+    .thumb-image { background:linear-gradient(135deg,#4c1d95,#8b5cf6); }
+    .thumb-video { background:linear-gradient(135deg,#1e1b4b,#4338ca); }
+    .thumb-txt { background:linear-gradient(135deg,#1f2937,#6b7280); }
+    .thumb-file { background:linear-gradient(135deg,#0c4a6e,#0ea5e9); }
+
+    .file-type-badge { position:absolute; top:8px; right:8px; font-size:0.65rem; font-weight:700; padding:3px 8px; border-radius:5px; background:rgba(0,0,0,0.35); color:white; text-transform:uppercase; }
+    .scope-badge { position:absolute; top:8px; left:8px; font-size:0.65rem; font-weight:700; padding:3px 8px; border-radius:5px; }
+    .scope-program { background:#DCFCE7; color:#15803D; }
+    .scope-session { background:#EEF2FF; color:#4338CA; }
+    .scope-general { background:#F1F5F9; color:#64748B; }
+
+    .card-body { padding:14px 16px; flex:1; display:flex; flex-direction:column; }
+    .card-title { font-family:'Space Grotesk',sans-serif; font-size:0.88rem; font-weight:700; color:var(--navy); margin-bottom:5px; line-height:1.4; }
+    .card-desc { font-size:0.75rem; color:var(--muted); line-height:1.5; margin-bottom:10px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; flex:1; }
+    .card-meta { font-size:0.7rem; color:var(--muted); margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+    .card-actions { display:flex; gap:6px; }
+    .btn-download { padding:7px 14px; border-radius:7px; border:none; background:linear-gradient(135deg,var(--blue),var(--teal)); color:white; font-size:0.75rem; font-weight:700; cursor:pointer; text-decoration:none; flex:1; text-align:center; transition:opacity 0.15s; }
+    .btn-download:hover { opacity:0.88; }
+    .btn-delete { padding:7px 12px; border-radius:7px; border:1.5px solid #EF4444; background:transparent; color:#EF4444; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s; }
+    .btn-delete:hover { background:#EF4444; color:white; }
+
+    .empty-state { text-align:center; padding:60px 20px; color:var(--muted); }
+    .empty-icon { font-size:2.5rem; margin-bottom:12px; }
+    .empty-title { font-family:'Space Grotesk',sans-serif; font-size:1rem; font-weight:700; color:var(--navy); margin-bottom:6px; }
+  </style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-logo"><a class="logo-wrap" href="/"><div class="logo-mark"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><span class="logo-name">Agile<em>Mentor</em></span></a></div>
+  <div class="sidebar-user"><div class="u-avatar">{{ user.full_name[0].upper() }}</div><div><div class="u-name">{{ user.full_name }}</div><div class="u-role">ADMINISTRATOR</div></div></div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">Overview</div>
+    <a class="nav-item" href="/admin-dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+    <div class="nav-label">Manage</div>
+    <a class="nav-item" href="/admin/programs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Programs</a>
+    <a class="nav-item" href="/admin/sessions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Sessions</a>
+    <a class="nav-item" href="/admin/users"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Users</a>
+    <a class="nav-item" href="/admin/attendance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Attendance</a>
+    <a class="nav-item active" href="/admin/resources"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Resources</a>
+  </nav>
+  <div class="sidebar-footer"><a class="logout-btn" href="/logout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign out</a></div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left"><div class="topbar-title">Resources</div><span class="breadcrumb">/ All Resources</span></div>
+    <span class="role-chip">Admin</span>
+  </div>
+  <div class="content">
+    <div class="page-header">
+      <div class="page-title">Manage <em>Resources</em></div>
+      <div class="page-sub">Upload notes, slides, PDFs and videos for programs and sessions.</div>
+    </div>
+
+    <!-- UPLOAD FORM -->
+    <div class="form-card">
+      <div class="form-card-header" onclick="toggleForm()">
+        <div class="form-card-header-left">
+          <div class="form-card-icon">📎</div>
+          <div class="form-card-title">Upload New Resource</div>
+        </div>
+        <span class="toggle-icon" id="toggleIcon">▼</span>
+      </div>
+      <div class="form-card-body" id="uploadForm">
+        <form action="/admin/resources/upload" method="post" enctype="multipart/form-data">
+          <div class="form-grid">
+            <div class="form-group full">
+              <label class="form-label">Title *</label>
+              <input class="form-input" type="text" name="title" placeholder="e.g. Week 1 Slides" required/>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Description</label>
+              <textarea class="form-textarea" name="description" placeholder="Brief description of this resource..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Attach to Program (optional)</label>
+              <select class="form-select" name="program_id">
+                <option value="">None</option>
+                {% for p in programs %}
+                <option value="{{ p.program_id }}">{{ p.program_id }} — {{ p.title }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Attach to Session (optional)</label>
+              <select class="form-select" name="session_id">
+                <option value="">None</option>
+                {% for s in sessions %}
+                <option value="{{ s.session_id }}">{{ s.session_id }} — {{ s.title }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">File *</label>
+              <div class="file-input-wrap" onclick="document.getElementById('fileInput').click()">
+                <input type="file" id="fileInput" name="file" required onchange="showFileName(this)"/>
+                <div class="file-input-label">📁 <strong>Click to browse</strong> or drag & drop<br/><span style="font-size:0.72rem;">PDF, PPT, DOC, TXT, Images, Videos supported</span></div>
+                <div class="file-name" id="fileName"></div>
+              </div>
+            </div>
+          </div>
+          <button class="submit-btn" type="submit">Upload Resource →</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filters">
+      <button class="filter-btn active" onclick="filterResources(this,'all')">All ({{ resources|length }})</button>
+      <button class="filter-btn" onclick="filterResources(this,'pdf')">📄 PDF</button>
+      <button class="filter-btn" onclick="filterResources(this,'ppt')">📊 PPT</button>
+      <button class="filter-btn" onclick="filterResources(this,'doc')">📝 DOC</button>
+      <button class="filter-btn" onclick="filterResources(this,'image')">🖼 Image</button>
+      <button class="filter-btn" onclick="filterResources(this,'video')">🎬 Video</button>
+    </div>
+
+    {% if resources %}
+    <div class="resources-grid" id="resourcesGrid">
+      {% for r in resources %}
+      {% set thumb_map = {'pdf':'thumb-pdf','ppt':'thumb-ppt','doc':'thumb-doc','excel':'thumb-excel','image':'thumb-image','video':'thumb-video','txt':'thumb-txt'} %}
+      {% set emoji_map = {'pdf':'📄','ppt':'📊','doc':'📝','excel':'📈','image':'🖼','video':'🎬','txt':'📃','file':'📁'} %}
+      <div class="resource-card" data-type="{{ r.file_type }}">
+        <div class="card-thumb {{ thumb_map.get(r.file_type, 'thumb-file') }}">
+          <span>{{ emoji_map.get(r.file_type, '📁') }}</span>
+          <span class="file-type-badge">{{ r.file_type.upper() }}</span>
+          {% if r.program_id %}
+            <span class="scope-badge scope-program">📚 Program</span>
+          {% elif r.session_id %}
+            <span class="scope-badge scope-session">🎯 Session</span>
+          {% else %}
+            <span class="scope-badge scope-general">General</span>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          <div class="card-title">{{ r.title }}</div>
+          <div class="card-desc">{{ r.description or 'No description.' }}</div>
+          <div class="card-meta">
+            📅 {{ r.uploaded_at.strftime('%d %b %Y') if r.uploaded_at else '' }}
+            {% if r.program_id %} • 📚 {{ r.program_id }}{% endif %}
+            {% if r.session_id %} • 🎯 {{ r.session_id }}{% endif %}
+          </div>
+          <div class="card-actions">
+            <a class="btn-download" href="{{ r.file_url }}" target="_blank">⬇ Download</a>
+            <form action="/admin/resources/delete/{{ r.resource_id }}" method="post" style="display:inline;" onsubmit="return confirm('Delete this resource?')">
+              <button class="btn-delete" type="submit">🗑</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">📁</div>
+      <div class="empty-title">No resources yet</div>
+      <div>Upload your first resource using the form above.</div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  function toggleForm() {
+    const body = document.getElementById('uploadForm');
+    const icon = document.getElementById('toggleIcon');
+    body.classList.toggle('open');
+    icon.classList.toggle('open');
+  }
+  function showFileName(input) {
+    const el = document.getElementById('fileName');
+    el.textContent = input.files[0]?.name || '';
+    el.style.display = input.files[0] ? 'block' : 'none';
+  }
+  function filterResources(btn, type) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.resource-card').forEach(card => {
+      card.style.display = (type === 'all' || card.dataset.type === type) ? '' : 'none';
+    });
+  }
+</script>
+</body>
+</html>

@@ -32,12 +32,14 @@ from models.password_reset_token import PasswordResetToken
 from email_service import send_email, forgot_password_email, session_created_email, session_reminder_email, enrollment_confirmation_email
 from models.feedback import Feedback
 from models.password_reset_token import PasswordResetToken
-
+from models.resource import Resource
+from fastapi.staticfiles import StaticFiles
 
 BASE_URL = "http://localhost:8000"
 
 
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 templates = Jinja2Templates(directory="templates")
 
@@ -125,6 +127,14 @@ def generate_cert_id(db: Session) -> str:
     else:
         last_serial = 1
     return f"CRT{last_serial:04d}"
+
+def generate_resource_id(db: Session) -> str:
+    last = db.query(func.max(Resource.resource_id)).scalar()
+    if last:
+        last_serial = int(last[3:]) + 1
+    else:
+        last_serial = 1
+    return f"RES{last_serial:04d}"
 
 
 # ── GET CURRENT USER FROM COOKIE ─────────────────────────────────────────────
@@ -400,6 +410,7 @@ def logout():
 @app.post("/admin/generate-invite")
 def generate_invite(
     admin_email: str = Form(...),
+    mentor_email: str = Form(...),
     db: Session = Depends(get_db)
 ):
     admin = db.query(User).filter(User.email == admin_email).first()
@@ -415,6 +426,18 @@ def generate_invite(
     )
     db.add(invite)
     db.commit()
+
+    html = f"""
+<p>Hello,</p>
+<p>You have been invited to join <strong>AgileMentor</strong> as a mentor.</p>
+<p>Use the code below to complete your registration at <a href="{BASE_URL}/signup/mentor">{BASE_URL}/signup/mentor</a>:</p>
+<h2 style="letter-spacing:4px;">{invite_code}</h2>
+<p>This is a one-time code — it will expire once used.</p>
+<p>Welcome aboard!<br>— The AgileMentor Team</p>
+"""
+    send_email(mentor_email, "You've been invited to join AgileMentor as a Mentor", html)
+
+    return RedirectResponse(url=f"/admin-dashboard?invite_code={invite_code}", status_code=302)
 
     # redirect back to admin dashboard with invite code in query param
     return RedirectResponse(url=f"/admin-dashboard?invite_code={invite_code}", status_code=302)
@@ -1735,4 +1758,252 @@ def schedule_session_reminder(session_id: str, session_title: str, program_title
  
  
 # ── REPLACE admin_create_session WITH THIS ────────────────────────────────────
- 
+
+
+# ── RESOURCES ─────────────────────────────────────────────────────────────────
+
+RESOURCE_TYPE_MAP = {
+    "pdf": "pdf",
+    "ppt": "ppt", "pptx": "ppt",
+    "doc": "doc", "docx": "doc",
+    "xls": "excel", "xlsx": "excel", "csv": "excel",
+    "jpg": "image", "jpeg": "image", "png": "image", "gif": "image", "webp": "image",
+    "mp4": "video", "mov": "video", "avi": "video", "webm": "video",
+    "txt": "txt",
+}
+
+def detect_file_type(filename: str) -> str:
+    ext = filename.lower().rsplit(".", 1)[-1] if "." in filename else ""
+    return RESOURCE_TYPE_MAP.get(ext, "file")
+
+def detect_cloudinary_resource_type(file_type: str) -> str:
+    # Cloudinary needs "image"/"video"/"raw" — everything non-image/video goes as raw.
+    if file_type == "image":
+        return "image"
+    if file_type == "video":
+        return "video"
+    return "raw"
+
+
+# ── ADMIN RESOURCES ───────────────────────────────────────────────────────────
+
+@app.get("/admin/resources", response_class=HTMLResponse)
+def admin_resources_page(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "admin":
+        return RedirectResponse(url="/login/admin", status_code=302)
+
+    resources = db.query(Resource).order_by(Resource.uploaded_at.desc()).all()
+    programs = db.query(Program).all()
+    sessions = db.query(MentorSession).all()
+
+    return templates.TemplateResponse(
+        request=request, name="admin_resources.html",
+        context={"user": current_user, "resources": resources,
+                 "programs": programs, "sessions": sessions}
+    )
+
+@app.post("/admin/resources/upload")
+async def admin_upload_resource(
+    title: str = Form(...),
+    description: str = Form(None),
+    program_id: str = Form(None),
+    session_id: str = Form(None),
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "admin":
+        return RedirectResponse(url="/login/admin", status_code=302)
+
+    program_id = program_id if program_id else None
+    session_id = session_id if session_id else None
+
+    # A session must belong to the chosen program, if both are given.
+    if session_id:
+        session_obj = db.query(MentorSession).filter(MentorSession.session_id == session_id).first()
+        if not session_obj:
+            return RedirectResponse(url="/admin/resources", status_code=302)
+        program_id = session_obj.program_id  # keep them consistent
+
+    contents = await file.read()
+    file_type = detect_file_type(file.filename)
+    cloud_resource_type = detect_cloudinary_resource_type(file_type)
+    url = upload_file(contents, folder="agilementor/resources", resource_type=cloud_resource_type)
+
+    resource_id = generate_resource_id(db)
+    resource = Resource(
+        resource_id=resource_id,
+        program_id=program_id,
+        session_id=session_id,
+        uploaded_by=current_user.user_id,
+        uploader_role="admin",
+        title=title,
+        description=description,
+        file_url=url,
+        file_type=file_type
+    )
+    db.add(resource)
+    db.commit()
+    return RedirectResponse(url="/admin/resources", status_code=302)
+
+@app.post("/admin/resources/delete/{resource_id}")
+def admin_delete_resource(
+    resource_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "admin":
+        return RedirectResponse(url="/login/admin", status_code=302)
+
+    resource = db.query(Resource).filter(Resource.resource_id == resource_id).first()
+    if resource:
+        db.delete(resource)
+        db.commit()
+    return RedirectResponse(url="/admin/resources", status_code=302)
+
+
+# ── MENTOR RESOURCES ──────────────────────────────────────────────────────────
+
+@app.get("/mentor/resources", response_class=HTMLResponse)
+def mentor_resources_page(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "mentor":
+        return RedirectResponse(url="/login/mentor", status_code=302)
+
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.user_id).first()
+    if not mentor:
+        return templates.TemplateResponse(
+            request=request, name="mentor_resources.html",
+            context={"user": current_user, "resources": [], "programs": [], "sessions": []}
+        )
+
+    programs = db.query(Program).filter(
+        Program.assigned_mentor == mentor.mentor_profile_id
+    ).all()
+    program_ids = [p.program_id for p in programs]
+
+    sessions = db.query(MentorSession).filter(
+        MentorSession.mentor_id == mentor.mentor_profile_id
+    ).all()
+
+    resources = db.query(Resource).filter(
+        Resource.uploaded_by == current_user.user_id
+    ).order_by(Resource.uploaded_at.desc()).all()
+
+    return templates.TemplateResponse(
+        request=request, name="mentor_resources.html",
+        context={"user": current_user, "resources": resources,
+                 "programs": programs, "sessions": sessions}
+    )
+
+@app.post("/mentor/resources/upload")
+async def mentor_upload_resource(
+    title: str = Form(...),
+    description: str = Form(None),
+    program_id: str = Form(...),
+    session_id: str = Form(None),
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "mentor":
+        return RedirectResponse(url="/login/mentor", status_code=302)
+
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.user_id).first()
+    if not mentor:
+        return RedirectResponse(url="/mentor/resources", status_code=302)
+
+    # Mentors may only attach resources to programs assigned to them — no global uploads.
+    program = db.query(Program).filter(
+        Program.program_id == program_id,
+        Program.assigned_mentor == mentor.mentor_profile_id
+    ).first()
+    if not program:
+        return RedirectResponse(url="/mentor/resources", status_code=302)
+
+    session_id = session_id if session_id else None
+    if session_id:
+        session_obj = db.query(MentorSession).filter(
+            MentorSession.session_id == session_id,
+            MentorSession.mentor_id == mentor.mentor_profile_id,
+            MentorSession.program_id == program_id
+        ).first()
+        if not session_obj:
+            session_id = None
+
+    contents = await file.read()
+    file_type = detect_file_type(file.filename)
+    cloud_resource_type = detect_cloudinary_resource_type(file_type)
+    url = upload_file(contents, folder="agilementor/resources", resource_type=cloud_resource_type)
+
+    resource_id = generate_resource_id(db)
+    resource = Resource(
+        resource_id=resource_id,
+        program_id=program_id,
+        session_id=session_id,
+        uploaded_by=current_user.user_id,
+        uploader_role="mentor",
+        title=title,
+        description=description,
+        file_url=url,
+        file_type=file_type
+    )
+    db.add(resource)
+    db.commit()
+    return RedirectResponse(url="/mentor/resources", status_code=302)
+
+@app.post("/mentor/resources/delete/{resource_id}")
+def mentor_delete_resource(
+    resource_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "mentor":
+        return RedirectResponse(url="/login/mentor", status_code=302)
+
+    resource = db.query(Resource).filter(
+        Resource.resource_id == resource_id,
+        Resource.uploaded_by == current_user.user_id
+    ).first()
+    if resource:
+        db.delete(resource)
+        db.commit()
+    return RedirectResponse(url="/mentor/resources", status_code=302)
+
+
+# ── MENTEE RESOURCES (VIEW ONLY) ──────────────────────────────────────────────
+
+@app.get("/my-resources", response_class=HTMLResponse)
+def my_resources_page(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "mentee":
+        return RedirectResponse(url="/login/mentee", status_code=302)
+
+    enrollments = db.query(Enrollment).filter(
+        Enrollment.user_id == current_user.user_id
+    ).all()
+    program_ids = [e.program_id for e in enrollments]
+
+    programs = []
+    resources = []
+    if program_ids:
+        programs = db.query(Program).filter(Program.program_id.in_(program_ids)).all()
+        # Mentees see: resources scoped to their enrolled programs, plus global (admin) resources.
+        resources = db.query(Resource).filter(
+            (Resource.program_id.in_(program_ids)) | (Resource.program_id.is_(None))
+        ).order_by(Resource.uploaded_at.desc()).all()
+
+    return templates.TemplateResponse(
+        request=request, name="mentee_resources.html",
+        context={"user": current_user, "resources": resources, "programs": programs}
+    )

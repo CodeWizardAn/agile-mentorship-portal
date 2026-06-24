@@ -450,6 +450,7 @@ def logout():
 @app.post("/admin/generate-invite")
 def generate_invite(
     admin_email: str = Form(...),
+    mentor_email: str = Form(...),
     db: Session = Depends(get_db)
 ):
     admin = db.query(User).filter(User.email == admin_email).first()
@@ -466,10 +467,20 @@ def generate_invite(
     db.add(invite)
     db.commit()
 
-    # redirect back to admin dashboard with invite code in query param
+    html = f"""
+<p>Hello,</p>
+<p>You have been invited to join <strong>AgileMentor</strong> as a mentor.</p>
+<p>Use the code below to complete your registration at <a href="{BASE_URL}/signup/mentor">{BASE_URL}/signup/mentor</a>:</p>
+<h2 style="letter-spacing:4px;">{invite_code}</h2>
+<p>This is a one-time code — it will expire once used.</p>
+<p>Welcome aboard!<br>— The AgileMentor Team</p>
+"""
+    send_email(mentor_email, "You've been invited to join AgileMentor as a Mentor", html)
+
     return RedirectResponse(url=f"/admin-dashboard?invite_code={invite_code}", status_code=302)
 
-
+    # redirect back to admin dashboard with invite code in query param
+    return RedirectResponse(url=f"/admin-dashboard?invite_code={invite_code}", status_code=302)
 # ── MENTOR PROFILE ────────────────────────────────────────────────────────────
 
 @app.get("/mentor-profile", response_class=HTMLResponse)

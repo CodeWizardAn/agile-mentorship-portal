@@ -14,7 +14,8 @@ from models.password_reset_token import PasswordResetToken
 from models.resource import Resource
 from models.email_otp import EmailOTP
 from models.feedback import Feedback
-
+from models.resource import Resource
+ 
 Base.metadata.create_all(bind=engine)
 
 print("Tables created successfully!")

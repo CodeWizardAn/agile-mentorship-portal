@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Dashboard — AgileMentor</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-  <style>
   
  <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -35,7 +34,6 @@
       color: var(--text);
     }
 
-    /* ── SIDEBAR ── */
      /* ── SIDEBAR ── */
     .sidebar {
       width: 256px;
@@ -560,7 +558,6 @@
           </div>
           <form class="invite-form" action="/admin/generate-invite" method="post">
             <input class="invite-input" type="email" name="admin_email" placeholder="Your admin email" required/>
-            <button class="invite-btn" type="submit">Generate Invite Code</button>
             <input class="invite-input" type="email" name="mentor_email" placeholder="Mentor's email (code will be sent here)" required/>
             <button class="invite-btn" type="submit">Generate &amp; Send Invite Code</button>
           </form>

@@ -148,3 +148,30 @@ def enrollment_confirmation_email(full_name: str, program_title: str,
       </div>
     </div>
     """
+
+def otp_verification_email(full_name: str, otp_code: str) -> str:
+    return f"""
+    <div style="font-family:'Inter',sans-serif;max-width:560px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #E2E8F4;">
+      <div style="background:linear-gradient(135deg,#0F2645,#1a3a6b);padding:32px 36px;">
+        <div style="font-size:1.2rem;font-weight:800;color:white;letter-spacing:-0.3px;">Agile<span style="color:#60A5FA;">Mentor</span></div>
+      </div>
+      <div style="padding:36px;">
+        <h2 style="font-size:1.3rem;font-weight:700;color:#0F2645;margin-bottom:8px;">Verify your email</h2>
+        <p style="font-size:0.9rem;color:#64748B;margin-bottom:24px;line-height:1.6;">
+          Hi {full_name}, welcome to AgileMentor! Use the OTP below to verify your email address.
+          This code expires in <strong>5 minutes</strong>.
+        </p>
+        <div style="background:#F4F7FF;border:2px dashed #2563EB;border-radius:12px;padding:24px;text-align:center;margin-bottom:24px;">
+          <div style="font-size:2.5rem;font-weight:800;letter-spacing:10px;color:#0F2645;font-family:'Courier New',monospace;">{otp_code}</div>
+          <div style="font-size:0.75rem;color:#64748B;margin-top:6px;">Enter this code on the verification page</div>
+        </div>
+        <p style="font-size:0.78rem;color:#94A3B8;line-height:1.6;">
+          If you didn't create an account, please ignore this email.<br/>
+          Do not share this OTP with anyone.
+        </p>
+      </div>
+      <div style="background:#F8FAFC;padding:16px 36px;border-top:1px solid #E2E8F4;text-align:center;">
+        <p style="font-size:0.72rem;color:#94A3B8;">© 2026 AgileMentor. All rights reserved.</p>
+      </div>
+    </div>
+    """

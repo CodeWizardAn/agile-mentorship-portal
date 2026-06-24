@@ -5,13 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>My Certificates — AgileMentor</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="/static/css/mentor_sidebar.css"> 
+
   <style>
     *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
 
     :root {
-      --navy:#0A1628;--navy-2:#111E35;--blue:#2563EB;--teal:#0EA5E9;
-      --white:#FFFFFF;--surface:#F4F7FF;--border:#E2E8F4;--muted:#64748B;--text:#0F172A;
+      --navy:#0F2645;
+      --blue:#2563EB;
+      --teal:#0EA5E9;
+      --white:#FFFFFF;
+      --offwhite:#F8FAFF;
+      --gray:#E8EFF8;
+      --muted:#64748B;
+      --text:#1E293B;
     }
 
     body {
@@ -20,6 +26,39 @@
       min-height:100vh;
       display:flex;
     }
+
+    .sidebar {
+      width:240px;
+      background:var(--navy);
+      min-height:100vh;
+      position:fixed;
+      left:0;
+      top:0;
+      padding:20px;
+    }
+
+    .logo-text {
+      font-size:1.2rem;
+      font-weight:800;
+      color:white;
+      margin-bottom:30px;
+    }
+
+    .logo-text span { color:#60A5FA; }
+
+    .nav-item {
+      display:block;
+      padding:12px;
+      border-radius:10px;
+      color:#94A3B8;
+      text-decoration:none;
+      margin-bottom:8px;
+      font-size:0.9rem;
+      font-weight:500;
+    }
+
+    .nav-item:hover { background:rgba(255,255,255,0.06); color:white; }
+    .nav-item.active { background:rgba(99,102,241,0.2); color:#A5B4FC; }
 
     .main {
       margin-left:240px;
@@ -42,8 +81,8 @@
     }
 
     .content {
-    padding:32px;
-    max-width:1200px;
+      padding:32px;
+      max-width:900px;
     }
 
     .page-title {
@@ -96,21 +135,16 @@
     }
 
     .submit-btn {
-    padding: 14px 28px;
-    border: none;
-    border-radius: 12px;
-    background: linear-gradient(135deg,#2563EB,#6366F1);
-    color: white;
-    font-weight: 700;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: 0.2s;
+      padding:12px 24px;
+      border:none;
+      border-radius:10px;
+      background:linear-gradient(135deg,#6366F1,#8B5CF6);
+      color:white;
+      font-weight:700;
+      cursor:pointer;
     }
 
-    .submit-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(37,99,235,0.25);
-    }
+    .submit-btn:hover { opacity:0.9; }
 
     .cert-card {
       border:1px solid var(--gray);
@@ -162,89 +196,18 @@
       padding:30px;
       color:var(--muted);
     }
-
-    .stats-grid {
-    display:flex;
-    gap:20px;
-    margin-bottom:24px;
-    }
-
-    .stat-card {
-    flex:1;
-    background:white;
-    border:1px solid var(--border);
-    border-radius:16px;
-    padding:24px;
-    }
-
-    .stat-card h2 {
-    font-size:2rem;
-    color:var(--navy);
-    margin-bottom:8px;
-    }
-
-    .stat-card p {
-    color:var(--muted);
-    }
-
-    .empty-state {
-    text-align:center;
-    padding:60px 20px;
-    color:var(--muted);
-    }
-
-    .empty-state h2 {
-    font-size:3rem;
-    margin-bottom:10px;
-    }
-
-    .empty-state h3 {
-    color:var(--navy);
-    margin-bottom:8px;
-    }
-
-    .form-label {
-    display: block;
-    margin-bottom: 8px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text);
-  }
-
-  .upload-box {
-      border: 2px dashed var(--border);
-      border-radius: 14px;
-      padding: 30px;
-      text-align: center;
-      background: var(--surface);
-      transition: 0.2s;
-  }
-
-  .upload-box:hover {
-      border-color: var(--blue);
-      background: white;
-  }
-
-  .upload-box p {
-      color: var(--text);
-      font-weight: 600;
-      margin-top: 10px;
-  }
-
-  .upload-box span {
-      color: var(--muted);
-      font-size: 0.85rem;
-  }
-
-  .file-input {
-      width: 100%;
-      margin-bottom: 10px;
-  }
   </style>
 </head>
 <body>
 
-  {% include "mentor_sidebar.html" %}
+  <aside class="sidebar">
+    <div class="logo-text">Agile<span>Mentor</span></div>
+
+    <a class="nav-item" href="/mentor-dashboard">Dashboard</a>
+    <a class="nav-item" href="/mentor-profile">My Profile</a>
+    <a class="nav-item" href="/mentor/sessions">My Sessions</a>
+    <a class="nav-item active" href="/mentor/certificates">My Certificates</a>
+  </aside>
 
   <div class="main">
     <div class="topbar">
@@ -255,59 +218,22 @@
       <div class="page-title">My <span>Certificates</span></div>
       <div class="page-sub">Upload and manage your professional certifications.</div>
 
-    <div class="stats-grid">
-      <div class="stat-card">
-        <h2>{{ certs|length }}</h2>
-        <p>Total Certificates</p>
-      </div>
-
-      <div class="stat-card">
-        <h2>0</h2>
-        <p>PDF Files</p>
-      </div>
-
-      <div class="stat-card">
-        <h2>0</h2>
-        <p>Images</p>
-      </div>
-    </div>
       <!-- Upload Card -->
       <div class="card">
-        <div class="section-title">🏆 Upload New Certificate</div>
-          <form action="/mentor/upload-certificate"
-            method="post"
-            enctype="multipart/form-data">
-            <div class="form-group">
-              <label class="form-label">
-                Certificate Title
-              </label>
-              <input class="form-input"
-                type="text"
-                name="title"
-                placeholder="AWS Cloud Practitioner"
-                required>
-            </div>
+        <div class="section-title">Upload New Certificate</div>
 
-            <div class="form-group">
-              <label class="form-label">
-              Choose Certificate File
-              </label>
-
-              <div class="upload-box">
-                <input class="file-input"
-                   type="file"
-                   name="file"
-                   accept=".jpg,.jpeg,.png,.pdf"
-                   required>
-                <p>Drag & drop or click to browse</p>
-                <span>PDF, JPG, PNG</span>
-              </div>
+        <form action="/mentor/upload-certificate" method="post" enctype="multipart/form-data">
+          <div class="form-group">
+            <input class="form-input" type="text" name="title" placeholder="Certificate Title" required>
           </div>
 
-          <button class="submit-btn" type="submit">
-            Upload Certificate
-          </button>
-          </form>
+          <div class="form-group">
+            <input class="form-input" type="file" name="file" accept=".jpg,.jpeg,.png,.pdf" required>
+          </div>
+
+          <button class="submit-btn" type="submit">Upload Certificate</button>
+        </form>
+      </div>
 
       <!-- Certificates List -->
       <div class="card">
@@ -337,9 +263,7 @@
         </div>
         {% else %}
         <div class="empty-state">
-          <h2>🏆</h2>
-          <h3>No certificates uploaded yet</h3>
-          <p>Upload your first certificate to showcase your achievements.</p>
+          No certificates uploaded yet.
         </div>
         {% endfor %}
       </div>

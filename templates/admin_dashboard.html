@@ -6,6 +6,8 @@
   <title>Admin Dashboard — AgileMentor</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
+  
+ <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
@@ -34,6 +36,7 @@
     }
 
     /* ── SIDEBAR ── */
+     /* ── SIDEBAR ── */
     .sidebar {
       width: 256px;
       background: var(--navy);
@@ -408,6 +411,7 @@
     <a class="nav-item" href="/admin/attendance">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
       Attendance
+    </a>
     <a class="nav-item" href="/admin/resources">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
       Resources
@@ -557,7 +561,11 @@
           <form class="invite-form" action="/admin/generate-invite" method="post">
             <input class="invite-input" type="email" name="admin_email" placeholder="Your admin email" required/>
             <button class="invite-btn" type="submit">Generate Invite Code</button>
+            <input class="invite-input" type="email" name="mentor_email" placeholder="Mentor's email (code will be sent here)" required/>
+            <button class="invite-btn" type="submit">Generate &amp; Send Invite Code</button>
           </form>
+
+          <div class="invite-code-note">Code sent to mentor's email. Single use only.</div>
         </div>
       </div>
 
